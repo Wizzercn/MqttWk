@@ -43,4 +43,17 @@ public class WkKafkaAdmin {
         }
         zkUtils.close();
     }
+
+    public void createTopic(String topic, int partition, int replication) {
+        ZkUtils zkUtils = ZkUtils.apply(conf.get("mqttwk.kafka.zookeepers", "127.0.0.1:2181"), 30000, 30000,
+                JaasUtils.isZkSecurityEnabled());
+        Seq<String> allTopics = zkUtils.getAllTopics();
+        log.info("allTopics : " + Json.toJson(allTopics));
+        if (!allTopics.contains(topic)) {//没有则创建
+            AdminUtils.createTopic(zkUtils, topic,
+                    partition, replication,
+                    new Properties(), new RackAwareMode.Enforced$());
+        }
+        zkUtils.close();
+    }
 }

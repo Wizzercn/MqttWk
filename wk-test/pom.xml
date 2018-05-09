@@ -2,15 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>mqttwk</artifactId>
+        <groupId>cn.wizzer</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>cn.wizzer</groupId>
-    <artifactId>mqttwk</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>wk-broker</module>
-        <module>wk-test</module>
+        <module>wk-test-device-client</module>
+        <module>wk-test-server-client</module>
     </modules>
+    <artifactId>wk-test</artifactId>
+
 
 </project>
