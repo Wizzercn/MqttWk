@@ -12,6 +12,9 @@
         <module>wk-broker</module>
         <module>wk-test</module>
     </modules>
+    <properties>
+    	<nutzboot.version>2.2-SNAPSHOT</nutzboot.version>
+    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
