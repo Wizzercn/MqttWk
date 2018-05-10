@@ -15,7 +15,7 @@ import org.nutz.mvc.annotation.Modules;
  */
 @IocBean(create = "init", depose = "close")
 @Modules(packages = "cn.wizzer")
-public class MainLauncher {
+public class MqttServerMainLauncher {
     private final static Log log = Logs.get();
     @Inject("refer:$ioc")
     private Ioc ioc;
