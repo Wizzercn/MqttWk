@@ -1,4 +1,4 @@
-package cn.wizzer.mqttwk.mqtt.common.packets;
+package cn.wizzer.mqttwk.mqtt.common.message;
 
 import cn.wizzer.mqttwk.mqtt.common.utils.StringUtil;
 

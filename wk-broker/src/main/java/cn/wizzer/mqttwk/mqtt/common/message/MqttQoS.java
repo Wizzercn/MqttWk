@@ -1,4 +1,4 @@
-package cn.wizzer.mqttwk.mqtt.common.packets;
+package cn.wizzer.mqttwk.mqtt.common.message;
 
 /**
  * Created by wizzer on 2018/5/9.

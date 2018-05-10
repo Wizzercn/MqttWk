@@ -1,7 +1,7 @@
 package cn.wizzer.mqttwk.mqtt.common.intf;
 
 import cn.wizzer.mqttwk.mqtt.common.MqttPacket;
-import cn.wizzer.mqttwk.mqtt.common.packets.MqttMessage;
+import cn.wizzer.mqttwk.mqtt.common.message.MqttMessage;
 import org.nutz.lang.Encoding;
 import org.tio.core.ChannelContext;
 import org.tio.utils.json.Json;

@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package cn.wizzer.mqttwk.mqtt.common.packets;
+package cn.wizzer.mqttwk.mqtt.common.message;
 
 /**
  * See <a href="http://public.dhe.ibm.com/software/dw/webservices/ws-mqtt/mqtt-v3r1.html#connect">MQTTV3.1/connect</a>

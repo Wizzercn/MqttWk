@@ -3,12 +3,11 @@ package cn.wizzer.mqttwk.mqtt.common.handler;
 import cn.wizzer.mqttwk.mqtt.common.MqttPacket;
 import cn.wizzer.mqttwk.mqtt.common.intf.AbsMqttBsHandler;
 import cn.wizzer.mqttwk.mqtt.common.intf.MqttBsHandlerIntf;
-import cn.wizzer.mqttwk.mqtt.common.packets.MqttConnectMessage;
+import cn.wizzer.mqttwk.mqtt.common.message.MqttConnectMessage;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tio.core.Aio;
 import org.tio.core.ChannelContext;
 
 /**

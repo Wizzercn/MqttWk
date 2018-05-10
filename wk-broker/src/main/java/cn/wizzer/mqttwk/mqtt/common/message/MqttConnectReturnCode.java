@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package cn.wizzer.mqttwk.mqtt.common.packets;
+package cn.wizzer.mqttwk.mqtt.common.message;
 
 import java.util.Collections;
 import java.util.HashMap;

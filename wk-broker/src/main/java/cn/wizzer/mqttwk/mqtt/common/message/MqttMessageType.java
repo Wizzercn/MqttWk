@@ -1,4 +1,4 @@
-package cn.wizzer.mqttwk.mqtt.common.packets;
+package cn.wizzer.mqttwk.mqtt.common.message;
 
 /**
  * mqtt消息类型
