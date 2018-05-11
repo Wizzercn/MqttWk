@@ -1,5 +1,7 @@
 package cn.wizzer.mqttwk.mqtt.common;
 
+import cn.wizzer.mqttwk.mqtt.common.message.MqttDecoder;
+import cn.wizzer.mqttwk.mqtt.common.message.MqttFixedHeader;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.tio.core.ChannelContext;
 import org.tio.core.GroupContext;
@@ -24,11 +26,8 @@ public abstract class MqttAbsAioHandler implements AioHandler {
         if (readableLength < MqttPacket.HEADER_LENGHT) {
             return null;
         }
-
-        //消息类型
-        byte header = buffer.get();
-
-        int bodyLength = buffer.getInt();
+        MqttFixedHeader mqttFixedHeader = MqttDecoder.decodeFixedHeader(buffer);
+        int bodyLength = mqttFixedHeader.remainingLength();
 
         if (bodyLength < 0) {
             throw new AioDecodeException("bodyLength [" + bodyLength + "] is not right, remote:" + channelContext.getClientNode());
@@ -40,15 +39,14 @@ public abstract class MqttAbsAioHandler implements AioHandler {
         {
             return null;
         } else {
-            MqttPacket imPacket = new MqttPacket();
-            imPacket.setHeader(header);
-            imPacket.setBodyLength(bodyLength);
+            MqttPacket mqttPacket = new MqttPacket();
+            mqttPacket.setMqttFixedHeader(mqttFixedHeader);
             if (bodyLength > 0) {
                 byte[] dst = new byte[bodyLength];
                 buffer.get(dst);
-                imPacket.setBody(dst);
+                mqttPacket.setBody(dst);
             }
-            return imPacket;
+            return mqttPacket;
         }
     }
 
@@ -71,11 +69,11 @@ public abstract class MqttAbsAioHandler implements AioHandler {
 
         ByteBuffer buffer = ByteBuffer.allocate(allLen);
         buffer.order(groupContext.getByteOrder());
-
-        //写入消息类型
-        buffer.put(showcasePacket.getHeader());
-        //写入消息体长度
-        buffer.putInt(bodyLen);
+//
+//        //写入消息类型
+//        buffer.put(showcasePacket.getMqttFixedHeader());
+//        //写入消息体长度
+//        buffer.putInt(bodyLen);
 
         //写入消息体
         if (body != null) {

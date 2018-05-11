@@ -38,10 +38,9 @@ public class MqttServerAioHandler extends MqttAbsAioHandler implements ServerAio
     @Override
     public void handler(Packet packet, ChannelContext channelContext) throws Exception {
         MqttPacket mqttPacket = (MqttPacket) packet;
-        MqttFixedHeader mqttFixedHeader = MqttDecoder.decodeFixedHeader(mqttPacket.getHeader(),mqttPacket.getBodyLength());
-        AbsMqttBsHandler<?> mqttBsHandler = handlerMap.get(mqttFixedHeader.messageType());
+        AbsMqttBsHandler<?> mqttBsHandler = handlerMap.get(mqttPacket.getMqttFixedHeader().messageType());
         if (mqttBsHandler == null) {
-            log.error("{}, 找不到处理类，type:{}", channelContext, mqttFixedHeader.messageType());
+            log.error("{}, 找不到处理类，type:{}", channelContext, mqttPacket.getMqttFixedHeader().messageType());
             return;
         }
         mqttBsHandler.handler(mqttPacket, channelContext);

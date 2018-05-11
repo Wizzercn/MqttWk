@@ -27,6 +27,8 @@ public class MqttServerMainLauncher {
     }
 
     public void init() {
+        System.out.println(ioc);
+
         //初始化kafka topic
         ioc.get(WkKafkaAdmin.class);
         //初始化kafka生产者
