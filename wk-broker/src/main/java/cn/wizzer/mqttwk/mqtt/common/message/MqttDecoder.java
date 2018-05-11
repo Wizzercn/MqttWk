@@ -1,6 +1,7 @@
 package cn.wizzer.mqttwk.mqtt.common.message;
 
 import cn.wizzer.mqttwk.mqtt.common.exception.DecoderException;
+import cn.wizzer.mqttwk.mqtt.common.exception.MqttIdentifierRejectedException;
 import org.nutz.lang.Encoding;
 import org.tio.core.utils.ByteBufferUtils;
 
@@ -85,6 +86,83 @@ public class MqttDecoder {
     }
 
     /**
+     * 解码消息内容
+     *
+     * @param buffer
+     * @param messageType
+     * @param bytesRemainingInVariablePart
+     * @param variableHeader
+     * @return
+     */
+    public static Result<?> decodePayload(
+            ByteBuffer buffer,
+            MqttMessageType messageType,
+            int bytesRemainingInVariablePart,
+            Object variableHeader) {
+        switch (messageType) {
+            case CONNECT:
+                return decodeConnectionPayload(buffer, (MqttConnectVariableHeader) variableHeader);
+//
+//            case SUBSCRIBE:
+//                return decodeSubscribePayload(buffer, bytesRemainingInVariablePart);
+//
+//            case SUBACK:
+//                return decodeSubackPayload(buffer, bytesRemainingInVariablePart);
+//
+//            case UNSUBSCRIBE:
+//                return decodeUnsubscribePayload(buffer, bytesRemainingInVariablePart);
+//
+//            case PUBLISH:
+//                return decodePublishPayload(buffer, bytesRemainingInVariablePart);
+
+            default:
+                // unknown payload , no byte consumed
+                return new Result<Object>(null, 0);
+        }
+    }
+
+    private static Result<MqttConnectPayload> decodeConnectionPayload(
+            ByteBuffer buffer,
+            MqttConnectVariableHeader mqttConnectVariableHeader) {
+        final Result<String> decodedClientId = decodeString(buffer);
+        final String decodedClientIdValue = decodedClientId.value;
+        final MqttVersion mqttVersion = MqttVersion.fromProtocolNameAndLevel(mqttConnectVariableHeader.name(),
+                (byte) mqttConnectVariableHeader.version());
+        if (!MqttCodecUtil.isValidClientId(mqttVersion, decodedClientIdValue)) {
+            throw new MqttIdentifierRejectedException("invalid clientIdentifier: " + decodedClientIdValue);
+        }
+        int numberOfBytesConsumed = decodedClientId.numberOfBytesConsumed;
+
+        Result<String> decodedWillTopic = null;
+        Result<byte[]> decodedWillMessage = null;
+        if (mqttConnectVariableHeader.isWillFlag()) {
+            decodedWillTopic = decodeString(buffer, 0, 32767);
+            numberOfBytesConsumed += decodedWillTopic.numberOfBytesConsumed;
+            decodedWillMessage = decodeByteArray(buffer);
+            numberOfBytesConsumed += decodedWillMessage.numberOfBytesConsumed;
+        }
+        Result<String> decodedUserName = null;
+        Result<byte[]> decodedPassword = null;
+        if (mqttConnectVariableHeader.hasUserName()) {
+            decodedUserName = decodeString(buffer);
+            numberOfBytesConsumed += decodedUserName.numberOfBytesConsumed;
+        }
+        if (mqttConnectVariableHeader.hasPassword()) {
+            decodedPassword = decodeByteArray(buffer);
+            numberOfBytesConsumed += decodedPassword.numberOfBytesConsumed;
+        }
+
+        final MqttConnectPayload mqttConnectPayload =
+                new MqttConnectPayload(
+                        decodedClientId.value,
+                        decodedWillTopic != null ? decodedWillTopic.value : null,
+                        decodedWillMessage != null ? decodedWillMessage.value : null,
+                        decodedUserName != null ? decodedUserName.value : null,
+                        decodedPassword != null ? decodedPassword.value : null);
+        return new Result<MqttConnectPayload>(mqttConnectPayload, numberOfBytesConsumed);
+    }
+
+    /**
      * MqttConnectVariableHeader
      *
      * @param buffer
@@ -152,6 +230,14 @@ public class MqttDecoder {
         return new Result<String>(s, numberOfBytesConsumed);
     }
 
+    private static Result<byte[]> decodeByteArray(ByteBuffer buffer) {
+        final Result<Integer> decodedSize = decodeMsbLsb(buffer);
+        int size = decodedSize.value;
+        byte[] bytes = new byte[size];
+        buffer.get(bytes);
+        return new Result<byte[]>(bytes, decodedSize.numberOfBytesConsumed + size);
+    }
+
     private static Result<Integer> decodeMsbLsb(ByteBuffer buffer) {
         return decodeMsbLsb(buffer, 0, 65535);
     }
@@ -169,8 +255,8 @@ public class MqttDecoder {
 
     public static final class Result<T> {
 
-        private final T value;
-        private final int numberOfBytesConsumed;
+        public final T value;
+        public final int numberOfBytesConsumed;
 
         Result(T value, int numberOfBytesConsumed) {
             this.value = value;

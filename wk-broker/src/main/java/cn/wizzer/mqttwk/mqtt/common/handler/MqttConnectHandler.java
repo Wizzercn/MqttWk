@@ -20,8 +20,8 @@ public class MqttConnectHandler extends AbsMqttBsHandler<MqttConnectMessage> imp
 
     @Override
     public Object handler(MqttPacket packet, MqttMessage message, ChannelContext channelContext) throws Exception {
-        MqttConnectMessage connectMessage=(MqttConnectMessage)message;
-        log.info("收到消息:{}", Json.toJson(message));
+        MqttConnectMessage connectMessage = (MqttConnectMessage) message;
+        log.debug("收到消息:{}", Json.toJson(message));
 
 //        GroupMsgRespBody groupMsgRespBody = new GroupMsgRespBody();
 //        groupMsgRespBody.setText(bsBody.getText());
