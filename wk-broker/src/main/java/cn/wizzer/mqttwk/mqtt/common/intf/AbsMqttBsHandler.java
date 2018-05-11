@@ -21,7 +21,7 @@ public abstract class AbsMqttBsHandler<T extends MqttMessage> implements MqttBsH
             jsonStr = new String(packet.getBody(), Encoding.CHARSET_UTF8);
             bsBody = Json.toBean(jsonStr, bodyClass());
         }
-
+        //解析动态头部内容
         return handler(packet, bsBody, channelContext);
     }
 

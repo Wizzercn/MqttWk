@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 public abstract class MqttAbsAioHandler implements AioHandler {
     /**
      * 解码：把接收到的ByteBuffer，解码成应用可以识别的业务消息包
-     * 消息头：type + bodyLength
+     * 消息头：MqttFixedHeader
      * 消息体：byte[]
      */
     @Override
@@ -26,6 +26,7 @@ public abstract class MqttAbsAioHandler implements AioHandler {
         if (readableLength < MqttPacket.HEADER_LENGHT) {
             return null;
         }
+        //解析固定头部内容
         MqttFixedHeader mqttFixedHeader = MqttDecoder.decodeFixedHeader(buffer);
         int bodyLength = mqttFixedHeader.remainingLength();
 

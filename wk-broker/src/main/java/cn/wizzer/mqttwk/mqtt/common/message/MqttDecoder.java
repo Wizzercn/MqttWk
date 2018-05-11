@@ -25,12 +25,12 @@ public class MqttDecoder {
         int qosLevel = (b1 & 0x06) >> 1;
         boolean retain = (b1 & 0x01) != 0;
 
-        int remainingLength = ByteBufferUtils.readUB1(buffer);
+        int remainingLength = 0;
         int multiplier = 1;
         short digit;
         int loops = 0;
         do {
-            digit = buffer.get();
+            digit = (short)ByteBufferUtils.readUB1(buffer);
             remainingLength += (digit & 127) * multiplier;
             multiplier *= 128;
             loops++;
@@ -45,4 +45,15 @@ public class MqttDecoder {
         return validateFixedHeader(resetUnusedFields(decodedFixedHeader));
     }
 
+
+    private static final class Result<T> {
+
+        private final T value;
+        private final int numberOfBytesConsumed;
+
+        Result(T value, int numberOfBytesConsumed) {
+            this.value = value;
+            this.numberOfBytesConsumed = numberOfBytesConsumed;
+        }
+    }
 }
