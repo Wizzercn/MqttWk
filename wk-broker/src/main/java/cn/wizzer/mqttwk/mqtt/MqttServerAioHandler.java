@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 消息处理
  * Created by wizzer on 2018/5/9.
  */
 @IocBean(create = "init")
@@ -33,7 +34,10 @@ public class MqttServerAioHandler extends MqttAbsAioHandler implements ServerAio
     }
 
     /**
-     * 处理消息
+     * 处理消息，先解析固定头，然后根据 MqttMessageType 交给对应的handler处理
+     * @param packet
+     * @param channelContext
+     * @throws Exception
      */
     @Override
     public void handler(Packet packet, ChannelContext channelContext) throws Exception {
@@ -44,6 +48,5 @@ public class MqttServerAioHandler extends MqttAbsAioHandler implements ServerAio
             return;
         }
         mqttBsHandler.handler(mqttPacket, channelContext);
-        return;
     }
 }

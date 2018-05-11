@@ -4,6 +4,7 @@ import cn.wizzer.mqttwk.mqtt.common.MqttPacket;
 import cn.wizzer.mqttwk.mqtt.common.intf.AbsMqttBsHandler;
 import cn.wizzer.mqttwk.mqtt.common.intf.MqttBsHandlerIntf;
 import cn.wizzer.mqttwk.mqtt.common.message.MqttConnectMessage;
+import cn.wizzer.mqttwk.mqtt.common.message.MqttMessage;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.json.Json;
 import org.slf4j.Logger;
@@ -16,33 +17,11 @@ import org.tio.core.ChannelContext;
 @IocBean
 public class MqttConnectHandler extends AbsMqttBsHandler<MqttConnectMessage> implements MqttBsHandlerIntf {
     private static Logger log = LoggerFactory.getLogger(MqttConnectHandler.class);
-    /**
-     *
-     * @author tanyaowu
-     */
-    public MqttConnectHandler() {
-    }
 
-    /**
-     * @return
-     * @author tanyaowu
-     */
     @Override
-    public Class<MqttConnectMessage> bodyClass() {
-        return MqttConnectMessage.class;
-    }
-
-    /**
-     * @param packet
-     * @param bsBody
-     * @param channelContext
-     * @return
-     * @throws Exception
-     * @author tanyaowu
-     */
-    @Override
-    public Object handler(MqttPacket packet, MqttConnectMessage bsBody, ChannelContext channelContext) throws Exception {
-        log.info("收到群聊请求消息:{}", Json.toJson(bsBody));
+    public Object handler(MqttPacket packet, MqttMessage message, ChannelContext channelContext) throws Exception {
+        MqttConnectMessage connectMessage=(MqttConnectMessage)message;
+        log.info("收到消息:{}", Json.toJson(message));
 
 //        GroupMsgRespBody groupMsgRespBody = new GroupMsgRespBody();
 //        groupMsgRespBody.setText(bsBody.getText());

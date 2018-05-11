@@ -9,7 +9,13 @@ public class MqttMessage {
     private final MqttFixedHeader mqttFixedHeader;
     private final Object variableHeader;
     private final Object payload;
-    private final boolean decoderResult;
+    private final DecoderResult decoderResult;
+
+    public enum DecoderResult {
+        SUCCESS,
+        FINISHED,
+        FAILURE
+    }
 
     public MqttMessage(MqttFixedHeader mqttFixedHeader) {
         this(mqttFixedHeader, null, null);
@@ -20,14 +26,14 @@ public class MqttMessage {
     }
 
     public MqttMessage(MqttFixedHeader mqttFixedHeader, Object variableHeader, Object payload) {
-        this(mqttFixedHeader, variableHeader, payload, true);
+        this(mqttFixedHeader, variableHeader, payload, DecoderResult.SUCCESS);
     }
 
     public MqttMessage(
             MqttFixedHeader mqttFixedHeader,
             Object variableHeader,
             Object payload,
-            boolean decoderResult) {
+            DecoderResult decoderResult) {
         this.mqttFixedHeader = mqttFixedHeader;
         this.variableHeader = variableHeader;
         this.payload = payload;
@@ -46,7 +52,7 @@ public class MqttMessage {
         return payload;
     }
 
-    public boolean decoderResult() {
+    public DecoderResult decoderResult() {
         return decoderResult;
     }
 

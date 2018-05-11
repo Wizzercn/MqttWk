@@ -53,7 +53,7 @@ public abstract class MqttAbsAioHandler implements AioHandler {
 
     /**
      * 编码：把业务消息包编码为可以发送的ByteBuffer
-     * 消息头：type + bodyLength
+     * 消息头：MqttFixedHeader
      * 消息体：byte[]
      */
     @Override
