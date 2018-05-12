@@ -2,10 +2,7 @@ package cn.wizzer.mqttwk.test;
 
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.*;
 import org.nutz.boot.NbApp;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
@@ -27,7 +24,7 @@ public class DeviceMainLauncher {
     MqttAsyncClient mqttAsyncClient;
     
 	public void init() throws MqttException {
-	    // 这里为了方便演示,订阅发布都是同一个topic
+        // 这里为了方便演示,订阅发布都是同一个topic
 	    String topic = "data-topic";
 	    // 启动一个订阅者
 	    Tasks.getTaskScheduler().schedule(()->{

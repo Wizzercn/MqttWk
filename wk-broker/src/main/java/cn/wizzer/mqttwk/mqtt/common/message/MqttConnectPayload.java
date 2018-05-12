@@ -69,14 +69,6 @@ public final class MqttConnectPayload {
         return userName;
     }
 
-    /**
-     * @deprecated use {@link MqttConnectPayload#passwordInBytes()} instead
-     */
-    @Deprecated
-    public String password() {
-        return password == null ? null : new String(password, Encoding.CHARSET_UTF8);
-    }
-
     public byte[] passwordInBytes() {
         return password;
     }
