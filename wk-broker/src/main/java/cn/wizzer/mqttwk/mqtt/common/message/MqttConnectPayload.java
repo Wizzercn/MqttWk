@@ -14,24 +14,6 @@ public final class MqttConnectPayload {
     private final String userName;
     private final byte[] password;
 
-    /**
-     * @deprecated use {@link MqttConnectPayload#MqttConnectPayload(String, String, byte[], String, byte[])} instead
-     */
-    @Deprecated
-    public MqttConnectPayload(
-            String clientIdentifier,
-            String willTopic,
-            String willMessage,
-            String userName,
-            String password) {
-        this(
-          clientIdentifier,
-          willTopic,
-          willMessage.getBytes(Encoding.CHARSET_UTF8),
-          userName,
-          password.getBytes(Encoding.CHARSET_UTF8));
-    }
-
     public MqttConnectPayload(
             String clientIdentifier,
             String willTopic,
@@ -51,14 +33,6 @@ public final class MqttConnectPayload {
 
     public String willTopic() {
         return willTopic;
-    }
-
-    /**
-     * @deprecated use {@link MqttConnectPayload#willMessageInBytes()} instead
-     */
-    @Deprecated
-    public String willMessage() {
-        return willMessage == null ? null : new String(willMessage, Encoding.CHARSET_UTF8);
     }
 
     public byte[] willMessageInBytes() {

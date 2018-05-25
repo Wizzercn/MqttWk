@@ -1,5 +1,6 @@
 package cn.wizzer.mqttwk.mqtt;
 
+import cn.wizzer.mqttwk.mqtt.common.connections.MqttSession;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -83,6 +84,6 @@ public class MqttServerListener implements ServerAioListener {
     @Override
     public void onAfterHandled(ChannelContext channelContext, Packet packet, long cost) throws Exception {
         // TODO Auto-generated method stub
-
+        channelContext.setAttribute(new MqttSession());
     }
 }
