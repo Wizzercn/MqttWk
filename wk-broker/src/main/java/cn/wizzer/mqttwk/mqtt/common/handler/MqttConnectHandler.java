@@ -21,7 +21,7 @@ import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tio.core.Aio;
+import org.tio.core.Tio;
 import org.tio.core.ChannelContext;
 
 import java.io.IOException;
@@ -32,7 +32,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static cn.wizzer.mqttwk.mqtt.ConnectionDescriptor.ConnectionState.*;
 import static cn.wizzer.mqttwk.mqtt.common.message.MqttConnectReturnCode.*;
 
 /**
@@ -82,8 +81,8 @@ public class MqttConnectHandler extends AbsMqttBsHandler<MqttConnectMessage> imp
         //协议版本判断
         if (msg.variableHeader().version() != MqttVersion.MQTT_3_1.protocolLevel()
                 && msg.variableHeader().version() != MqttVersion.MQTT_3_1_1.protocolLevel()) {
-            Aio.send(channelContext, connAckPacket(CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION, false));
-            Aio.close(channelContext, "MQTT protocol version is not valid");
+            Tio.send(channelContext, connAckPacket(CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION, false));
+            Tio.close(channelContext, "MQTT protocol version is not valid");
             log.error("MQTT protocol version is not valid. CId={}", clientId);
             return null;
         }
@@ -91,8 +90,8 @@ public class MqttConnectHandler extends AbsMqttBsHandler<MqttConnectMessage> imp
         final boolean cleanSession = msg.variableHeader().isCleanSession();
         if (clientId == null || clientId.length() == 0) {
             if (!cleanSession || !this.allowZeroByteClientId) {
-                Aio.send(channelContext, connAckPacket(CONNECTION_REFUSED_IDENTIFIER_REJECTED, false));
-                Aio.close(channelContext, "The MQTT client ID cannot be empty");
+                Tio.send(channelContext, connAckPacket(CONNECTION_REFUSED_IDENTIFIER_REJECTED, false));
+                Tio.close(channelContext, "The MQTT client ID cannot be empty");
                 log.error("The MQTT client ID cannot be empty. Username={}", payload.userName());
                 return null;
             }
@@ -118,20 +117,20 @@ public class MqttConnectHandler extends AbsMqttBsHandler<MqttConnectMessage> imp
         initializeKeepAliveTimeout(channelContext, msg, clientId);
         storeWillMessage(msg, clientId);
         if (!sendAck(descriptor, msg, clientId)) {
-            Aio.close(channelContext, "");
+            Tio.close(channelContext, "");
             return null;
         }
 //
         m_interceptor.notifyClientConnected(msg);
         //
         if (!descriptor.assignState(SENDACK, SESSION_CREATED)) {
-            Aio.close(channelContext, "");
+            Tio.close(channelContext, "");
             return null;
         }
         final ClientSession clientSession = this.sessionsRepository.createOrLoadClientSession(clientId, cleanSession);
 
         if (!republish(descriptor, msg, clientSession)) {
-            Aio.close(channelContext, "");
+            Tio.close(channelContext, "");
             return null;
         }
 
@@ -140,7 +139,7 @@ public class MqttConnectHandler extends AbsMqttBsHandler<MqttConnectMessage> imp
 
         final boolean success = descriptor.assignState(MESSAGES_REPUBLISHED, ESTABLISHED);
         if (!success) {
-            Aio.close(channelContext, "");
+            Tio.close(channelContext, "");
         }
 
         log.info("Connected client <{}> with login <{}>", clientId, payload.userName());
@@ -231,8 +230,8 @@ public class MqttConnectHandler extends AbsMqttBsHandler<MqttConnectMessage> imp
     }
 
     private void failedCredentials(ChannelContext channelContext) throws IOException {
-        Aio.send(channelContext, connAckPacket(CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD, false));
-        Aio.close(channelContext, "Client {} failed to connect with bad username or password.");
+        Tio.send(channelContext, connAckPacket(CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD, false));
+        Tio.close(channelContext, "Client {} failed to connect with bad username or password.");
         log.info("Client {} failed to connect with bad username or password.", channelContext);
     }
 

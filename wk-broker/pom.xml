@@ -13,7 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <nutzboot.version>2.2-SNAPSHOT</nutzboot.version>
-        <tio.version>2.4.0.v20180508-RELEASE</tio.version>
+        <tio.version>3.0.1.v20180601-RELEASE</tio.version>
         <kafka_2.12.version>1.1.0</kafka_2.12.version>
     </properties>
     <developers>
