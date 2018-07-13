@@ -11,6 +11,7 @@
     <modules>
         <module>wk-broker</module>
         <module>wk-test</module>
+        <module>mqtt-codec</module>
     </modules>
     <properties>
     	<nutzboot.version>2.2-SNAPSHOT</nutzboot.version>
