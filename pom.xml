@@ -12,10 +12,21 @@
         <module>wk-broker</module>
         <module>wk-test</module>
         <module>mqtt-codec</module>
+        <module>mqtt-common</module>
     </modules>
     <properties>
-    	<nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
+        <nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
+        <tio.version>3.1.2.v20180712-RELEASE</tio.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <developers>
+        <developer>
+            <id>wizzercn</id>
+            <name>Wizzer</name>
+            <email>wizzer@qq.com</email>
+            <url>https://wizzer.cn</url>
+        </developer>
+    </developers>
     <dependencyManagement>
         <dependencies>
             <dependency>

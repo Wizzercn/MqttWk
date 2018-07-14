@@ -312,7 +312,7 @@ public final class MqttEncoder {
         buf.putShort((short) topicNameBytes.length);
         buf.put(topicNameBytes);
         if (mqttFixedHeader.qosLevel().value() > 0) {
-            buf.putShort((short) variableHeader.messageId());
+            buf.putShort((short) variableHeader.packetId());
         }
         buf.put(payload);
 
