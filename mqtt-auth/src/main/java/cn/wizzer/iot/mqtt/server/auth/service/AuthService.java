@@ -26,7 +26,7 @@ public class AuthService implements IAuthService {
 		if (StrUtil.isBlank(username)) return false;
 		if (StrUtil.isBlank(password)) return false;
 		RSA rsa = new RSA(privateKey, null);
-		String value = rsa.encryptStr(username, KeyType.PrivateKey);
+		String value = rsa.encryptBcd(username, KeyType.PrivateKey);
 		return value.equals(password) ? true : false;
 	}
 
