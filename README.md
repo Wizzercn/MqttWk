@@ -11,7 +11,7 @@
 * kafka 版本 2.12-1.1.0 [http://kafka.apache.org/downloads](http://kafka.apache.org/downloads)
 
 
-# 代码来源
+# 代码主要来源
 
 * [https://github.com/netty/netty](https://github.com/netty/netty)
 * [https://gitee.com/recallcode/iot-mqtt-server](https://gitee.com/recallcode/iot-mqtt-server)
