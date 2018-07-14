@@ -14,11 +14,14 @@
         <module>mqtt-codec</module>
         <module>mqtt-common</module>
         <module>mqtt-auth</module>
+        <module>mqtt-broker</module>
+        <module>mqtt-store</module>
     </modules>
     <properties>
         <nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
         <tio.version>3.1.2.v20180712-RELEASE</tio.version>
         <hutool.version>4.1.1</hutool.version>
+        <ignite.version>2.5.0</ignite.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
