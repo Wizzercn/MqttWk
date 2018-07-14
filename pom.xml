@@ -14,7 +14,7 @@
         <module>mqtt-codec</module>
     </modules>
     <properties>
-    	<nutzboot.version>2.2-SNAPSHOT</nutzboot.version>
+    	<nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
     </properties>
     <dependencyManagement>
         <dependencies>
