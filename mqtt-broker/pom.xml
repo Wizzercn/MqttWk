@@ -14,21 +14,44 @@
         <dependency>
             <groupId>cn.wizzer</groupId>
             <artifactId>mqtt-common</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${mqttwk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.wizzer</groupId>
+            <artifactId>mqtt-store</artifactId>
+            <version>${mqttwk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.wizzer</groupId>
+            <artifactId>mqtt-auth</artifactId>
+            <version>${mqttwk.version}</version>
         </dependency>
         <dependency>
             <groupId>org.nutz</groupId>
             <artifactId>nutzboot-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.nutz</groupId>
-            <artifactId>nutzboot-starter-tio</artifactId>
+            <groupId>org.t-io</groupId>
+            <artifactId>tio-core</artifactId>
+            <version>${tio.version}</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-crypto</artifactId>
             <version>${hutool.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
     </dependencies>
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.nutz.boot</groupId>
+                <artifactId>nutzboot-maven-plugin</artifactId>
+                <version>${nutzboot.version}</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>

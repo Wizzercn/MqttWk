@@ -9,8 +9,6 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>wk-broker</module>
-        <module>wk-test</module>
         <module>mqtt-codec</module>
         <module>mqtt-common</module>
         <module>mqtt-auth</module>
@@ -18,6 +16,7 @@
         <module>mqtt-store</module>
     </modules>
     <properties>
+        <mqttwk.version>1.0-SNAPSHOT</mqttwk.version>
         <nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
         <tio.version>3.1.2.v20180712-RELEASE</tio.version>
         <hutool.version>4.1.1</hutool.version>

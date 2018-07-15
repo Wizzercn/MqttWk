@@ -81,7 +81,7 @@ public final class MqttMessageFactory {
     }
 
     public static MqttMessage newInvalidMessage(Throwable cause) {
-        return new MqttMessage(null, null, null, "UNFINISHED");
+        return new MqttMessage(null, null, null, "UNFINISHED",cause);
     }
 
     private MqttMessageFactory() { }

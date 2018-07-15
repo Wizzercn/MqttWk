@@ -14,11 +14,12 @@
         <dependency>
             <groupId>cn.wizzer</groupId>
             <artifactId>mqtt-codec</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${mqttwk.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.nutz</groupId>
-            <artifactId>nutzboot-starter-tio</artifactId>
+            <groupId>org.t-io</groupId>
+            <artifactId>tio-core</artifactId>
+            <version>${tio.version}</version>
         </dependency>
     </dependencies>
 

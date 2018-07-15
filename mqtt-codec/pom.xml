@@ -16,8 +16,9 @@
             <artifactId>nutzboot-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.nutz</groupId>
-            <artifactId>nutzboot-starter-tio</artifactId>
+            <groupId>org.t-io</groupId>
+            <artifactId>tio-core</artifactId>
+            <version>${tio.version}</version>
         </dependency>
     </dependencies>
 </project>

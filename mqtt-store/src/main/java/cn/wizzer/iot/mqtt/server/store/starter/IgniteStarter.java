@@ -1,6 +1,5 @@
 package cn.wizzer.iot.mqtt.server.store.starter;
 
-import cn.hutool.core.util.StrUtil;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteMessaging;
@@ -19,9 +18,13 @@ import org.nutz.boot.annotation.PropDoc;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.lang.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Created by wizzer on 2018
+ */
 @IocBean
 public class IgniteStarter {
     @Inject
@@ -38,7 +41,7 @@ public class IgniteStarter {
     @PropDoc(group = "ignite", value = "组播地址", defaultValue = "239.255.255.255")
     public static final String multicastGroup = PRE + "multicast-group";
 
-    @PropDoc(group = "ignite", value = "静态IP地址 ,号分隔", defaultValue = "127.0.0.1")
+    @PropDoc(group = "ignite", value = "静态IP地址 ,号分隔")
     public static final String staticIpAddresses = PRE + "static-ip-addresses";
 
     @PropDoc(group = "ignite", value = "持久化缓存内存初始化大小(MB), 默认值: 64", defaultValue = "64")
@@ -74,9 +77,9 @@ public class IgniteStarter {
                 .setMaxSize(conf.getInt(persistenceMaxSize, 128) * 1024 * 1024).setName("persistence-data-region");
         DataStorageConfiguration dataStorageConfiguration = new DataStorageConfiguration().setDefaultDataRegionConfiguration(notPersistence)
                 .setDataRegionConfigurations(persistence)
-                .setWalArchivePath(StrUtil.isNotBlank(conf.get(this.persistenceStorePath)) ? conf.get(this.persistenceStorePath) : null)
-                .setWalPath(StrUtil.isNotBlank(conf.get(this.persistenceStorePath)) ? conf.get(this.persistenceStorePath) : null)
-                .setStoragePath(StrUtil.isNotBlank(conf.get(this.persistenceStorePath)) ? conf.get(this.persistenceStorePath) : null);
+                .setWalArchivePath(Strings.isNotBlank(conf.get(this.persistenceStorePath)) ? conf.get(this.persistenceStorePath) : null)
+                .setWalPath(Strings.isNotBlank(conf.get(this.persistenceStorePath)) ? conf.get(this.persistenceStorePath) : null)
+                .setStoragePath(Strings.isNotBlank(conf.get(this.persistenceStorePath)) ? conf.get(this.persistenceStorePath) : null);
         igniteConfiguration.setDataStorageConfiguration(dataStorageConfiguration);
         // 集群, 基于组播或静态IP配置
         TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
