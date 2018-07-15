@@ -6,62 +6,65 @@ package cn.wizzer.iot.mqtt.server.broker.server;
 
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
-import io.netty.channel.EventLoopGroup;
-import io.netty.handler.ssl.SslContext;
+import org.nutz.boot.AppContext;
+import org.nutz.ioc.Ioc;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
+import org.tio.core.GroupContext;
+import org.tio.core.exception.AioDecodeException;
+import org.tio.core.intf.Packet;
+import org.tio.core.ssl.SslConfig;
+import org.tio.server.ServerGroupContext;
+import org.tio.server.TioServer;
+import org.tio.server.intf.ServerAioHandler;
+import org.tio.server.intf.ServerAioListener;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLEngine;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.security.KeyStore;
 
 /**
  * Netty启动Broker
  */
-@IocBean(create = "start",depose = "stop")
+@IocBean(create = "start", depose = "stop")
 public class BrokerServer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(BrokerServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrokerServer.class);
 
-	@Inject
-	private BrokerProperties brokerProperties;
+    @Inject
+    private BrokerProperties brokerProperties;
 
-	@Inject
-	private ProtocolProcess protocolProcess;
+    @Inject
+    private ProtocolProcess protocolProcess;
 
-	private EventLoopGroup bossGroup;
+    protected TioServer tioServer;
+    @Inject("refer:$ioc")
+    private Ioc ioc;
 
-	private EventLoopGroup workerGroup;
+    private SslConfig sslConfig;
 
-	private SslContext sslContext;
+    private ChannelContext channel;
 
-	private ChannelContext channel;
+    private ChannelContext websocketChannel;
 
-	private ChannelContext websocketChannel;
+    public void start() throws Exception {
+        LOGGER.info("Initializing {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("keystore/mqtt-broker.pfx");
+        keyStore.load(inputStream, brokerProperties.getSslPassword().toCharArray());
+        sslConfig = SslConfig.forServer(inputStream, null,
+                brokerProperties.getSslPassword());
 
- public void start() throws Exception {
-		LOGGER.info("Initializing {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
-//		bossGroup = brokerProperties.isUseEpoll() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
-//		workerGroup = brokerProperties.isUseEpoll() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
-//		KeyStore keyStore = KeyStore.getInstance("PKCS12");
-//		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("keystore/mqtt-broker.pfx");
-//		keyStore.load(inputStream, brokerProperties.getSslPassword().toCharArray());
-//		KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-//		kmf.init(keyStore, brokerProperties.getSslPassword().toCharArray());
-//		sslContext = SslContextBuilder.forServer(kmf).build();
-//		mqttServer();
+        mqttServer();
 //		websocketServer();
 //		LOGGER.info("MQTT Broker {} is up and running. Open SSLPort: {} WebSocketSSLPort: {}", "[" + brokerProperties.getId() + "]", brokerProperties.getSslPort(), brokerProperties.getWebsocketSslPort());
-	}
+    }
 
 
-	public void stop() {
+    public void stop() {
 //		LOGGER.info("Shutdown {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
 //		bossGroup.shutdownGracefully();
 //		bossGroup = null;
@@ -72,37 +75,39 @@ public class BrokerServer {
 //		websocketChannel.closeFuture().syncUninterruptibly();
 //		websocketChannel = null;
 //		LOGGER.info("MQTT Broker {} shutdown finish.", "[" + brokerProperties.getId() + "]");
-	}
+    }
 
-	private void mqttServer() throws Exception {
-//		ServerBootstrap sb = new ServerBootstrap();
-//		sb.group(bossGroup, workerGroup)
-//			.channel(brokerProperties.isUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
-//			// handler在初始化时就会执行
-//			.handler(new LoggingHandler(LogLevel.INFO))
-//			// childHandler会在客户端成功connect后才执行
-//			.childHandler(new ChannelInitializer<SocketChannel>() {
-//				@Override
-//				protected void initChannel(SocketChannel socketChannel) throws Exception {
-//					ChannelPipeline channelPipeline = socketChannel.pipeline();
-//					// Netty提供的心跳检测
-//					channelPipeline.addFirst("idle", new IdleStateHandler(0, 0, brokerProperties.getKeepAlive()));
-//					// Netty提供的SSL处理
-//					SSLEngine sslEngine = sslContext.newEngine(socketChannel.alloc());
-//					sslEngine.setUseClientMode(false);        // 服务端模式
-//					sslEngine.setNeedClientAuth(false);        // 不需要验证客户端
-//					channelPipeline.addLast("ssl", new SslHandler(sslEngine));
-//					channelPipeline.addLast("decoder", new MqttDecoder());
-//					channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
-//					channelPipeline.addLast("broker", new BrokerHandler(protocolProcess));
-//				}
-//			})
-//			.option(ChannelOption.SO_BACKLOG, brokerProperties.getSoBacklog())
-//			.childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.isSoKeepAlive());
-//		channel = sb.bind(brokerProperties.getSslPort()).sync().channel();
-	}
+    @IocBean(name = "nopServerAioHandler")
+    public NopServerAioXXX getServerAioHandler() {
+        return new NopServerAioXXX();
+    }
 
-	private void websocketServer() throws Exception {
+    @IocBean(name = "nopServerAioListener")
+    public NopServerAioXXX getServerAioListener() {
+        return new NopServerAioXXX();
+    }
+
+    @IocBean(name = "serverGroupContext")
+    public ServerGroupContext getServerGroupContext(@Inject ServerAioHandler serverAioHandler,
+                                                    @Inject ServerAioListener serverAioListener) throws Exception {
+        ServerGroupContext serverGroupContext = new ServerGroupContext(serverAioHandler, serverAioListener);
+        serverGroupContext.setName(brokerProperties.getId());
+        serverGroupContext.setHeartbeatTimeout(brokerProperties.getKeepAlive());
+        serverGroupContext.setSslConfig(sslConfig);
+        return serverGroupContext;
+    }
+
+    @IocBean
+    public TioServer getAioServer(@Inject ServerGroupContext serverGroupContext) {
+        return new TioServer(serverGroupContext);
+    }
+
+    private void mqttServer() throws Exception {
+        tioServer = ioc.getByType(TioServer.class);
+        tioServer.start(brokerProperties.getStaticIpAddresses(), brokerProperties.getSslPort());
+    }
+
+    private void websocketServer() throws Exception {
 //		ServerBootstrap sb = new ServerBootstrap();
 //		sb.group(bossGroup, workerGroup)
 //			.channel(brokerProperties.isUseEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
@@ -135,6 +140,39 @@ public class BrokerServer {
 //			.option(ChannelOption.SO_BACKLOG, brokerProperties.getSoBacklog())
 //			.childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.isSoKeepAlive());
 //		websocketChannel = sb.bind(brokerProperties.getWebsocketSslPort()).sync().channel();
-	}
+    }
 
+    protected static class NopServerAioXXX implements ServerAioListener, ServerAioHandler {
+        public void onBeforeClose(ChannelContext channelContext, Throwable throwable, String remark, boolean isRemove) {
+        }
+
+        public void onAfterSent(ChannelContext channelContext, Packet packet, boolean isSentSuccess) throws Exception {
+        }
+
+        public void onAfterConnected(ChannelContext channelContext, boolean isConnected, boolean isReconnect) throws Exception {
+        }
+
+        public void onAfterClose(ChannelContext channelContext, Throwable throwable, String remark, boolean isRemove) throws Exception {
+        }
+
+        public ByteBuffer encode(Packet packet, GroupContext groupContext, ChannelContext channelContext) {
+            return null;
+        }
+
+        public void handler(Packet packet, ChannelContext channelContext) throws Exception {
+        }
+
+        public void onAfterDecoded(ChannelContext channelContext, Packet packet, int packetSize) throws Exception {
+        }
+
+        public void onAfterReceivedBytes(ChannelContext channelContext, int receivedBytes) throws Exception {
+        }
+
+        public void onAfterHandled(ChannelContext channelContext, Packet packet, long cost) throws Exception {
+        }
+
+        public Packet decode(ByteBuffer buffer, int limit, int position, int readableLength, ChannelContext channelContext) throws AioDecodeException {
+            return null;
+        }
+    }
 }

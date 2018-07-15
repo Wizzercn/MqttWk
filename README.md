@@ -6,12 +6,7 @@
 
 本项目代码主要来源于 netty/t-io/iot-mqtt-server 等众多项目，开源免费，欢迎交流学习
 
-* nutzboot 版本 2.3-SNAPSHOT [https://github.com/nutzam/nutzboot](https://github.com/nutzam/nutzboot)
-* t-io 版本 3.1.2.v20180712-RELEASE [https://gitee.com/tywo45/t-io](https://gitee.com/tywo45/t-io)
-* kafka 版本 2.12-1.1.0 [http://kafka.apache.org/downloads](http://kafka.apache.org/downloads)
-
-
-# 代码主要来源
+# 参考项目
 
 * [https://github.com/netty/netty](https://github.com/netty/netty)
 * [https://gitee.com/recallcode/iot-mqtt-server](https://gitee.com/recallcode/iot-mqtt-server)
