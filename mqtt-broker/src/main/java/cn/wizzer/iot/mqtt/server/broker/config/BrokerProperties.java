@@ -24,6 +24,13 @@ public class BrokerProperties {
 
     //	@PropDoc(group = "broker", value = "Broker唯一标识", need = true, defaultValue = "mqttwk")
     public static final String _id = PRE + "id";
+
+    /**
+     * SSL启动的IP地址, 默认127.0.0.1
+     */
+    private String sslHost;
+    @PropDoc(group = "broker", value = "SSL服务启动的IP", defaultValue = "127.0.0.1")
+    public static final String PROP_SSLHOST = PRE + "ssl-host";
     /**
      * SSL端口号, 默认8885端口
      */
@@ -90,6 +97,7 @@ public class BrokerProperties {
 
     public void init() {
         this.id = conf.get(_id, "mqttwk");
+        this.sslHost = conf.get(PROP_SSLHOST, "127.0.0.1");
         this.sslPort = conf.getInt(PROP_SSLPORT, 8885);
         this.websocketSslPort = conf.getInt(PROP_WEBSOCKETSSLPORT, 9995);
         this.websocketPath = conf.get(PROP_WEBSOCKETPATH, "/mqtt");
@@ -110,6 +118,14 @@ public class BrokerProperties {
     public BrokerProperties setId(String id) {
         this.id = id;
         return this;
+    }
+
+    public String getSslHost() {
+        return sslHost;
+    }
+
+    public void setSslHost(String sslHost) {
+        this.sslHost = sslHost;
     }
 
     public int getSslPort() {

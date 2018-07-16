@@ -60,6 +60,9 @@ public class IgniteStarter {
     public static final String PROP_NOTPERSISTENCEMAXSIZE = PRE + "cache.notpersistence-max-size";
 
     //以下部分只是为了打印propDoc
+    @PropDoc(group = "broker", value = "SSL服务启动的IP", defaultValue = "127.0.0.1")
+    public static final String PROP_SSLHOST = PRE + "ssl-host";
+
     @PropDoc(group = "broker", value = "SSL端口号, 默认8885端口", type = "int", defaultValue = "8885")
     public static final String PROP_SSLPORT = PRE + "ssl-port";
 

@@ -52,12 +52,8 @@ public class BrokerServer {
 
     public void start() throws Exception {
         LOGGER.info("Initializing {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
-        KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("keystore/mqtt-broker.pfx");
-        keyStore.load(inputStream, brokerProperties.getSslPassword().toCharArray());
-        sslConfig = SslConfig.forServer(inputStream, null,
-                brokerProperties.getSslPassword());
-
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("keystore/server.jks");
+        sslConfig = SslConfig.forServer(inputStream, null,brokerProperties.getSslPassword());
         mqttServer();
 //		websocketServer();
 //		LOGGER.info("MQTT Broker {} is up and running. Open SSLPort: {} WebSocketSSLPort: {}", "[" + brokerProperties.getId() + "]", brokerProperties.getSslPort(), brokerProperties.getWebsocketSslPort());
@@ -104,7 +100,7 @@ public class BrokerServer {
 
     private void mqttServer() throws Exception {
         tioServer = ioc.getByType(TioServer.class);
-        tioServer.start(brokerProperties.getStaticIpAddresses(), brokerProperties.getSslPort());
+        tioServer.start(brokerProperties.getSslHost(), brokerProperties.getSslPort());
     }
 
     private void websocketServer() throws Exception {
