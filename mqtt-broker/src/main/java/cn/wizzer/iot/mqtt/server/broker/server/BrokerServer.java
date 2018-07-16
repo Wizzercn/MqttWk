@@ -5,6 +5,8 @@
 package cn.wizzer.iot.mqtt.server.broker.server;
 
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
+import cn.wizzer.iot.mqtt.server.broker.handler.BrokerHandler;
+import cn.wizzer.iot.mqtt.server.broker.listener.MqttServerListener;
 import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
 import org.nutz.boot.AppContext;
 import org.nutz.ioc.Ioc;
@@ -73,20 +75,9 @@ public class BrokerServer {
 //		LOGGER.info("MQTT Broker {} shutdown finish.", "[" + brokerProperties.getId() + "]");
     }
 
-    @IocBean(name = "nopServerAioHandler")
-    public NopServerAioXXX getServerAioHandler() {
-        return new NopServerAioXXX();
-    }
-
-    @IocBean(name = "nopServerAioListener")
-    public NopServerAioXXX getServerAioListener() {
-        return new NopServerAioXXX();
-    }
-
     @IocBean(name = "serverGroupContext")
-    public ServerGroupContext getServerGroupContext(@Inject ServerAioHandler serverAioHandler,
-                                                    @Inject ServerAioListener serverAioListener) throws Exception {
-        ServerGroupContext serverGroupContext = new ServerGroupContext(serverAioHandler, serverAioListener);
+    public ServerGroupContext getServerGroupContext() throws Exception {
+        ServerGroupContext serverGroupContext = new ServerGroupContext(ioc.get(BrokerHandler.class), ioc.get(MqttServerListener.class));
         serverGroupContext.setName(brokerProperties.getId());
         serverGroupContext.setHeartbeatTimeout(brokerProperties.getKeepAlive());
         serverGroupContext.setSslConfig(sslConfig);
@@ -138,37 +129,4 @@ public class BrokerServer {
 //		websocketChannel = sb.bind(brokerProperties.getWebsocketSslPort()).sync().channel();
     }
 
-    protected static class NopServerAioXXX implements ServerAioListener, ServerAioHandler {
-        public void onBeforeClose(ChannelContext channelContext, Throwable throwable, String remark, boolean isRemove) {
-        }
-
-        public void onAfterSent(ChannelContext channelContext, Packet packet, boolean isSentSuccess) throws Exception {
-        }
-
-        public void onAfterConnected(ChannelContext channelContext, boolean isConnected, boolean isReconnect) throws Exception {
-        }
-
-        public void onAfterClose(ChannelContext channelContext, Throwable throwable, String remark, boolean isRemove) throws Exception {
-        }
-
-        public ByteBuffer encode(Packet packet, GroupContext groupContext, ChannelContext channelContext) {
-            return null;
-        }
-
-        public void handler(Packet packet, ChannelContext channelContext) throws Exception {
-        }
-
-        public void onAfterDecoded(ChannelContext channelContext, Packet packet, int packetSize) throws Exception {
-        }
-
-        public void onAfterReceivedBytes(ChannelContext channelContext, int receivedBytes) throws Exception {
-        }
-
-        public void onAfterHandled(ChannelContext channelContext, Packet packet, long cost) throws Exception {
-        }
-
-        public Packet decode(ByteBuffer buffer, int limit, int position, int readableLength, ChannelContext channelContext) throws AioDecodeException {
-            return null;
-        }
-    }
 }

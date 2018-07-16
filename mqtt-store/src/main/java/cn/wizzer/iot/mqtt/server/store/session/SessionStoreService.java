@@ -22,6 +22,8 @@ public class SessionStoreService implements ISessionStoreService {
 
     @Override
     public void put(String clientId, SessionStore sessionStore) {
+        System.out.println("redisService:::"+redisService);
+        System.out.println("sessionStore:::"+sessionStore);
         redisService.set(Lang.toBytes("mqttwk:session:" + clientId), Lang.toBytes(sessionStore));
     }
 
