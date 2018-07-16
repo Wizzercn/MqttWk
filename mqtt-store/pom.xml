@@ -22,14 +22,14 @@
             <artifactId>nutzboot-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.ignite</groupId>
-            <artifactId>ignite-core</artifactId>
-            <version>${ignite.version}</version>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.12</artifactId>
+            <version>${kafka_2.12.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.ignite</groupId>
-            <artifactId>ignite-slf4j</artifactId>
-            <version>${ignite.version}</version>
+            <groupId>org.nutz</groupId>
+            <artifactId>nutzboot-starter-redis</artifactId>
+            <version>${nutzboot.version}</version>
         </dependency>
     </dependencies>
 </project>

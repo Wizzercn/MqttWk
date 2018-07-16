@@ -10,7 +10,7 @@ import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.tio.codec.*;
-import org.apache.ignite.IgniteMessaging;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Lang;
@@ -33,7 +33,7 @@ public class InternalCommunication {
     private final String internalTopic = "internal-communication-topic";
 
     @Inject
-    private IgniteMessaging igniteMessaging;
+    private KafkaProducer kafkaProducer;
 
     @Inject
     private ISessionStoreService sessionStoreService;
@@ -45,17 +45,17 @@ public class InternalCommunication {
     private IMessageIdService messageIdService;
 
     public void internalListen() {
-        igniteMessaging.localListen(internalTopic, (nodeId, msg) -> {
-            InternalMessage internalMessage = (InternalMessage) msg;
-            this.sendPublishMessage(internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
-            return true;
-        });
+//        igniteMessaging.localListen(internalTopic, (nodeId, msg) -> {
+//            InternalMessage internalMessage = (InternalMessage) msg;
+//            this.sendPublishMessage(internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
+//            return true;
+//        });
     }
 
     public void internalSend(InternalMessage internalMessage) {
-        if (igniteMessaging.clusterGroup().nodes() != null && igniteMessaging.clusterGroup().nodes().size() > 0) {
-            igniteMessaging.send(internalTopic, internalMessage);
-        }
+//        if (igniteMessaging.clusterGroup().nodes() != null && igniteMessaging.clusterGroup().nodes().size() > 0) {
+//            igniteMessaging.send(internalTopic, internalMessage);
+//        }
     }
 
     private void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {

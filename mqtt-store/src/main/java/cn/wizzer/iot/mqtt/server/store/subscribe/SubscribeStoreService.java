@@ -7,7 +7,8 @@ package cn.wizzer.iot.mqtt.server.store.subscribe;
 import cn.hutool.core.util.StrUtil;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
-import org.apache.ignite.IgniteCache;
+import cn.wizzer.iot.mqtt.server.store.cache.SubscribeNotWildcardCache;
+import cn.wizzer.iot.mqtt.server.store.cache.SubscribeWildcardCache;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 
@@ -23,10 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SubscribeStoreService implements ISubscribeStoreService {
 
     @Inject
-    private IgniteCache<String, ConcurrentHashMap<String, SubscribeStore>> subscribeNotWildcardCache;
+    private SubscribeNotWildcardCache subscribeNotWildcardCache;
 
     @Inject
-    private IgniteCache<String, ConcurrentHashMap<String, SubscribeStore>> subscribeWildcardCache;
+    private SubscribeWildcardCache subscribeWildcardCache;
 
     @Override
     public void put(String topicFilter, SubscribeStore subscribeStore) {
@@ -74,25 +75,23 @@ public class SubscribeStoreService implements ISubscribeStoreService {
 
     @Override
     public void removeForClient(String clientId) {
-        subscribeNotWildcardCache.forEach(entry -> {
-            ConcurrentHashMap<String, SubscribeStore> map = entry.getValue();
+        subscribeNotWildcardCache.all().forEach((entry, map) -> {
             if (map.containsKey(clientId)) {
                 map.remove(clientId);
                 if (map.size() > 0) {
-                    subscribeNotWildcardCache.put(entry.getKey(), map);
+                    subscribeNotWildcardCache.put(entry, map);
                 } else {
-                    subscribeNotWildcardCache.remove(entry.getKey());
+                    subscribeNotWildcardCache.remove(entry);
                 }
             }
         });
-        subscribeWildcardCache.forEach(entry -> {
-            ConcurrentHashMap<String, SubscribeStore> map = entry.getValue();
+        subscribeWildcardCache.all().forEach((entry, map) -> {
             if (map.containsKey(clientId)) {
                 map.remove(clientId);
                 if (map.size() > 0) {
-                    subscribeWildcardCache.put(entry.getKey(), map);
+                    subscribeWildcardCache.put(entry, map);
                 } else {
-                    subscribeWildcardCache.remove(entry.getKey());
+                    subscribeWildcardCache.remove(entry);
                 }
             }
         });
@@ -107,8 +106,7 @@ public class SubscribeStoreService implements ISubscribeStoreService {
             List<SubscribeStore> list = new ArrayList<SubscribeStore>(collection);
             subscribeStores.addAll(list);
         }
-        subscribeWildcardCache.forEach(entry -> {
-            String topicFilter = entry.getKey();
+        subscribeWildcardCache.all().forEach((topicFilter, map) -> {
             if (StrUtil.split(topic, '/').size() >= StrUtil.split(topicFilter, '/').size()) {
                 List<String> splitTopics = StrUtil.split(topic, '/');
                 List<String> spliteTopicFilters = StrUtil.split(topicFilter, '/');
@@ -126,7 +124,6 @@ public class SubscribeStoreService implements ISubscribeStoreService {
                 }
                 newTopicFilter = StrUtil.removeSuffix(newTopicFilter, "/");
                 if (topicFilter.equals(newTopicFilter)) {
-                    ConcurrentHashMap<String, SubscribeStore> map = entry.getValue();
                     Collection<SubscribeStore> collection = map.values();
                     List<SubscribeStore> list = new ArrayList<SubscribeStore>(collection);
                     subscribeStores.addAll(list);

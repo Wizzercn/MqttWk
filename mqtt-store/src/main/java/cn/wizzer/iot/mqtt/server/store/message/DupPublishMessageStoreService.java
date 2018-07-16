@@ -7,7 +7,7 @@ package cn.wizzer.iot.mqtt.server.store.message;
 import cn.wizzer.iot.mqtt.server.common.message.DupPublishMessageStore;
 import cn.wizzer.iot.mqtt.server.common.message.IDupPublishMessageStoreService;
 import cn.wizzer.iot.mqtt.server.common.message.IMessageIdService;
-import org.apache.ignite.IgniteCache;
+import cn.wizzer.iot.mqtt.server.store.cache.DupPublishMessageCache;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 
@@ -21,9 +21,8 @@ public class DupPublishMessageStoreService implements IDupPublishMessageStoreSer
 
     @Inject
     private IMessageIdService messageIdService;
-
     @Inject
-    private IgniteCache<String, ConcurrentHashMap<Integer, DupPublishMessageStore>> dupPublishMessageCache;
+    private DupPublishMessageCache dupPublishMessageCache;
 
     @Override
     public void put(String clientId, DupPublishMessageStore dupPublishMessageStore) {
@@ -37,9 +36,9 @@ public class DupPublishMessageStoreService implements IDupPublishMessageStoreSer
         if (dupPublishMessageCache.containsKey(clientId)) {
             ConcurrentHashMap<Integer, DupPublishMessageStore> map = dupPublishMessageCache.get(clientId);
             Collection<DupPublishMessageStore> collection = map.values();
-            return new ArrayList<DupPublishMessageStore>(collection);
+            return new ArrayList<>(collection);
         }
-        return new ArrayList<DupPublishMessageStore>();
+        return new ArrayList<>();
     }
 
     @Override
