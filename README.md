@@ -13,8 +13,6 @@
 
 # 使用说明
 
-照搬 iot-mqtt-server
-
 #### 软件架构说明
 
 1. 使用t-io实现通信及协议解析
@@ -29,7 +27,7 @@ MqttWk
   ├── mqtt-auth -- MQTT服务连接时用户名和密码认证
   ├── mqtt-broker -- MQTT服务器功能的核心实现
   ├── mqtt-common -- 公共类及其他模块使用的服务接口及对象
-  ├── mqtt-store -- MQTT服务器会话信息, 主题信息等内容的kafka转发机制
+  ├── mqtt-store -- MQTT服务器会话信息, 主题信息等内容的redis缓存及kafka转发机制
 ```
 
 #### 功能说明
@@ -53,11 +51,14 @@ MqttWk
 - 连接使用的证书在 `mqtt-zoo` \keystore\server.cer
 
 #### 集群使用
-目前支持组播方式集群和静态IP方式集群(不能同时使用组播和静态IP)
-- 多机环境集群: 配置application.properties中的`mqttwk.mqtt.broker.id - 保证该值在集群环境中的唯一性`
-  - 组播方式: 配置`mqttwk.mqtt.enable-multicast-group=true`及`mqttwk.mqtt.multicast-group=组播地址`
-  - 静态IP方式: 配置`mqttwk.mqtt.enable-multicast-group=false`及`mqttwk.mqtt.static-ip-addresses=多个IP使用逗号分隔`
-- 单机环境集群: 除上述配置外需要修改相应的端口,避免端口冲突
+- 多机环境集群:
+  - `mqttwk.broker.kafka.bootstrap.servers=192.168.1.101:9092,192.168.1.102:9092`
+  - `redis.mode=cluster` 
+  - `redis.nodes=192.168.1.103:16379,192.168.1.104:26379`
+- 单机环境集群: 
+  - `mqttwk.broker.kafka.bootstrap.servers=127.0.0.1:9092,127.0.0.1:9093`
+  - `redis.mode=normal`
+  - `redis.host=127.0.0.1`
 
 #### 自定义 - 连接认证
 - 默认只是简单使用对用户名进行RSA密钥对加密生成密码, 连接认证时对密码进行解密和相应用户名进行匹配认证

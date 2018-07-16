@@ -10,7 +10,11 @@ import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.tio.codec.*;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Lang;
@@ -25,12 +29,12 @@ import java.util.List;
 /**
  * 内部通信, 基于发布-订阅范式
  */
-@IocBean(create = "internalListen")
+@IocBean
 public class InternalCommunication {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalCommunication.class);
-
-    private final String internalTopic = "internal-communication-topic";
+    @Inject
+    private PropertiesProxy conf;
 
     @Inject
     private KafkaProducer kafkaProducer;
@@ -44,18 +48,19 @@ public class InternalCommunication {
     @Inject
     private IMessageIdService messageIdService;
 
-    public void internalListen() {
-//        igniteMessaging.localListen(internalTopic, (nodeId, msg) -> {
-//            InternalMessage internalMessage = (InternalMessage) msg;
-//            this.sendPublishMessage(internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
-//            return true;
-//        });
-    }
-
     public void internalSend(InternalMessage internalMessage) {
-//        if (igniteMessaging.clusterGroup().nodes() != null && igniteMessaging.clusterGroup().nodes().size() > 0) {
-//            igniteMessaging.send(internalTopic, internalMessage);
-//        }
+        ProducerRecord<String, InternalMessage> data = new ProducerRecord<>(conf.get("mqttwk.broker.kafka.producer.topic", "mqtt_publish"), internalMessage.getTopic(), internalMessage);
+        kafkaProducer.send(data,
+                new Callback() {
+                    public void onCompletion(RecordMetadata metadata, Exception e) {
+                        if (e != null) {
+                            e.printStackTrace();
+                            LOGGER.error(e.getMessage(), e);
+                        } else {
+                            LOGGER.info("The offset of the record we just sent is: " + metadata.offset());
+                        }
+                    }
+                });
     }
 
     private void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
