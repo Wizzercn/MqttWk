@@ -23,7 +23,7 @@ public class PingReq {
                 new MqttFixedHeader(MqttMessageType.PINGRESP, false, MqttQoS.AT_MOST_ONCE, false, 0), null, null);
         LOGGER.debug("PINGREQ - clientId: {}", (String) channel.getAttribute("clientId"));
         MqttPacket mqttPacket = new MqttPacket();
-        mqttPacket.setMqttFixedHeader(pingRespMessage.fixedHeader());
+        mqttPacket.setMqttMessage(pingRespMessage);
         Tio.send(channel, mqttPacket);
     }
 

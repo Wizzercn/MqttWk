@@ -109,13 +109,7 @@ public class Publish {
                             new MqttPublishVariableHeader(topic, 0), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
                     MqttPacket mqttPacket = new MqttPacket();
-                    mqttPacket.setMqttFixedHeader(publishMessage.fixedHeader());
-                    byte[] bytes1 = Lang.toBytes(publishMessage.variableHeader());
-                    byte[] bytes2 = ByteBufferUtils.readBytes(publishMessage.payload(), publishMessage.payload().remaining());
-                    byte[] bytes = new byte[bytes1.length + bytes2.length];
-                    System.arraycopy(bytes1, 0, bytes, 0, bytes1.length);
-                    System.arraycopy(bytes2, 0, bytes, bytes1.length, bytes2.length);
-                    mqttPacket.setBody(bytes);
+                    mqttPacket.setMqttMessage(publishMessage);
                     Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
                 }
                 if (respQoS == MqttQoS.AT_LEAST_ONCE) {
@@ -128,13 +122,7 @@ public class Publish {
                             .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes);
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
                     MqttPacket mqttPacket = new MqttPacket();
-                    mqttPacket.setMqttFixedHeader(publishMessage.fixedHeader());
-                    byte[] bytes1 = Lang.toBytes(publishMessage.variableHeader());
-                    byte[] bytes2 = ByteBufferUtils.readBytes(publishMessage.payload(), publishMessage.payload().remaining());
-                    byte[] bytes = new byte[bytes1.length + bytes2.length];
-                    System.arraycopy(bytes1, 0, bytes, 0, bytes1.length);
-                    System.arraycopy(bytes2, 0, bytes, bytes1.length, bytes2.length);
-                    mqttPacket.setBody(bytes);
+                    mqttPacket.setMqttMessage(publishMessage);
                     Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
                 }
                 if (respQoS == MqttQoS.EXACTLY_ONCE) {
@@ -147,13 +135,7 @@ public class Publish {
                             .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes);
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
                     MqttPacket mqttPacket = new MqttPacket();
-                    mqttPacket.setMqttFixedHeader(publishMessage.fixedHeader());
-                    byte[] bytes1 = Lang.toBytes(publishMessage.variableHeader());
-                    byte[] bytes2 = ByteBufferUtils.readBytes(publishMessage.payload(), publishMessage.payload().remaining());
-                    byte[] bytes = new byte[bytes1.length + bytes2.length];
-                    System.arraycopy(bytes1, 0, bytes, 0, bytes1.length);
-                    System.arraycopy(bytes2, 0, bytes, bytes1.length, bytes2.length);
-                    mqttPacket.setBody(bytes);
+                    mqttPacket.setMqttMessage(publishMessage);
                     Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
                 }
             }
@@ -165,8 +147,7 @@ public class Publish {
                 new MqttFixedHeader(MqttMessageType.PUBACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                 MqttMessageIdVariableHeader.from(messageId), null);
         MqttPacket mqttPacket = new MqttPacket();
-        mqttPacket.setMqttFixedHeader(pubAckMessage.fixedHeader());
-        mqttPacket.setBody(Lang.toBytes(pubAckMessage.variableHeader()));
+        mqttPacket.setMqttMessage(pubAckMessage);
         Tio.send(channel, mqttPacket);
     }
 
@@ -175,8 +156,7 @@ public class Publish {
                 new MqttFixedHeader(MqttMessageType.PUBREC, false, MqttQoS.AT_MOST_ONCE, false, 0),
                 MqttMessageIdVariableHeader.from(messageId), null);
         MqttPacket mqttPacket = new MqttPacket();
-        mqttPacket.setMqttFixedHeader(pubRecMessage.fixedHeader());
-        mqttPacket.setBody(Lang.toBytes(pubRecMessage.variableHeader()));
+        mqttPacket.setMqttMessage(pubRecMessage);
         Tio.send(channel, mqttPacket);
     }
 

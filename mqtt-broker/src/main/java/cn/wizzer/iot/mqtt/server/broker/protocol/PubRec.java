@@ -41,8 +41,7 @@ public class PubRec {
 			.setMessageId(variableHeader.messageId());
 		dupPubRelMessageStoreService.put((String) channel.getAttribute("clientId"), dupPubRelMessageStore);
 		MqttPacket mqttPacket = new MqttPacket();
-		mqttPacket.setMqttFixedHeader(pubRelMessage.fixedHeader());
-		mqttPacket.setBody(Lang.toBytes(pubRelMessage.variableHeader()));
+		mqttPacket.setMqttMessage(pubRelMessage);
 		Tio.send(channel, mqttPacket);
 	}
 

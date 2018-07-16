@@ -39,8 +39,7 @@ public class UnSubscribe {
                 new MqttFixedHeader(MqttMessageType.UNSUBACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                 MqttMessageIdVariableHeader.from(msg.variableHeader().messageId()), null);
         MqttPacket mqttPacket = new MqttPacket();
-        mqttPacket.setMqttFixedHeader(unsubAckMessage.fixedHeader());
-        mqttPacket.setBody(Lang.toBytes(unsubAckMessage.variableHeader()));
+        mqttPacket.setMqttMessage(unsubAckMessage);
         Tio.send(channel, mqttPacket);
     }
 

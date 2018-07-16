@@ -25,8 +25,7 @@ public class PubRel {
 			MqttMessageIdVariableHeader.from(variableHeader.messageId()), null);
 		LOGGER.debug("PUBREL - clientId: {}, messageId: {}", (String) channel.getAttribute("clientId"), variableHeader.messageId());
 		MqttPacket mqttPacket = new MqttPacket();
-		mqttPacket.setMqttFixedHeader(pubCompMessage.fixedHeader());
-		mqttPacket.setBody(Lang.toBytes(pubCompMessage.variableHeader()));
+		mqttPacket.setMqttMessage(pubCompMessage);
 		Tio.send(channel, mqttPacket);
 	}
 

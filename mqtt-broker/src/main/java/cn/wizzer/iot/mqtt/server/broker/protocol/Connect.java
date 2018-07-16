@@ -61,8 +61,7 @@ public class Connect {
                         new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                         new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION, false), null);
                 MqttPacket mqttPacket = new MqttPacket();
-                mqttPacket.setMqttFixedHeader(connAckMessage.fixedHeader());
-                mqttPacket.setBody(Lang.toBytes(connAckMessage.variableHeader()));
+                mqttPacket.setMqttMessage(connAckMessage);
                 Tio.send(channel, mqttPacket);
                 Tio.close(channel, "");
                 return;
@@ -72,8 +71,7 @@ public class Connect {
                         new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                         new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED, false), null);
                 MqttPacket mqttPacket = new MqttPacket();
-                mqttPacket.setMqttFixedHeader(connAckMessage.fixedHeader());
-                mqttPacket.setBody(Lang.toBytes(connAckMessage.variableHeader()));
+                mqttPacket.setMqttMessage(connAckMessage);
                 Tio.send(channel, mqttPacket);
                 Tio.close(channel, "");
                 return;
@@ -87,8 +85,7 @@ public class Connect {
                     new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                     new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED, false), null);
             MqttPacket mqttPacket = new MqttPacket();
-            mqttPacket.setMqttFixedHeader(connAckMessage.fixedHeader());
-            mqttPacket.setBody(Lang.toBytes(connAckMessage.variableHeader()));
+            mqttPacket.setMqttMessage(connAckMessage);
             Tio.send(channel, mqttPacket);
             Tio.close(channel, "");
             return;
@@ -101,8 +98,7 @@ public class Connect {
                     new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                     new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD, false), null);
             MqttPacket mqttPacket = new MqttPacket();
-            mqttPacket.setMqttFixedHeader(connAckMessage.fixedHeader());
-            mqttPacket.setBody(Lang.toBytes(connAckMessage.variableHeader()));
+            mqttPacket.setMqttMessage(connAckMessage);
             Tio.send(channel, mqttPacket);
             Tio.close(channel, "");
             return;
@@ -142,8 +138,7 @@ public class Connect {
                 new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                 new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_ACCEPTED, sessionPresent), null);
         MqttPacket okRespPacket = new MqttPacket();
-        okRespPacket.setMqttFixedHeader(okResp.fixedHeader());
-        okRespPacket.setBody(Lang.toBytes(okResp.variableHeader()));
+        okRespPacket.setMqttMessage(okResp);
         Tio.send(channel, okRespPacket);
         LOGGER.debug("CONNECT - clientId: {}, cleanSession: {}", msg.payload().clientIdentifier(), msg.variableHeader().isCleanSession());
         // 如果cleanSession为0, 需要重发同一clientId存储的未完成的QoS1和QoS2的DUP消息
@@ -155,13 +150,7 @@ public class Connect {
                         new MqttFixedHeader(MqttMessageType.PUBLISH, true, MqttQoS.valueOf(dupPublishMessageStore.getMqttQoS()), false, 0),
                         new MqttPublishVariableHeader(dupPublishMessageStore.getTopic(), dupPublishMessageStore.getMessageId()), ByteBuffer.wrap(dupPublishMessageStore.getMessageBytes()));
                 MqttPacket publishPacket = new MqttPacket();
-                publishPacket.setMqttFixedHeader(publishMessage.fixedHeader());
-                byte[] bytes1 = Lang.toBytes(publishMessage.variableHeader());
-                byte[] bytes2 = ByteBufferUtils.readBytes(publishMessage.payload(), publishMessage.payload().remaining());
-                byte[] bytes = new byte[bytes1.length + bytes2.length];
-                System.arraycopy(bytes1, 0, bytes, 0, bytes1.length);
-                System.arraycopy(bytes2, 0, bytes, bytes1.length, bytes2.length);
-                publishPacket.setBody(bytes);
+                publishPacket.setMqttMessage(publishMessage);
                 Tio.send(channel, publishPacket);
             });
             dupPubRelMessageStoreList.forEach(dupPubRelMessageStore -> {
@@ -169,8 +158,7 @@ public class Connect {
                         new MqttFixedHeader(MqttMessageType.PUBREL, true, MqttQoS.AT_MOST_ONCE, false, 0),
                         MqttMessageIdVariableHeader.from(dupPubRelMessageStore.getMessageId()), null);
                 MqttPacket pubRelPacket = new MqttPacket();
-                pubRelPacket.setMqttFixedHeader(pubRelMessage.fixedHeader());
-                pubRelPacket.setBody(Lang.toBytes(pubRelMessage.variableHeader()));
+                pubRelPacket.setMqttMessage(pubRelMessage);
                 Tio.send(channel, pubRelPacket);
             });
         }

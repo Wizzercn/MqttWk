@@ -51,11 +51,11 @@ public final class MqttDecoder {
         BAD_MESSAGE,
     }
 
-    private MqttFixedHeader mqttFixedHeader;
-    private Object variableHeader;
-    private int bytesRemainingInVariablePart;
+    private static MqttFixedHeader mqttFixedHeader;
+    private static Object variableHeader;
+    private static int bytesRemainingInVariablePart;
 
-    private final int maxBytesInMessage;
+    private static int maxBytesInMessage=DEFAULT_MAX_BYTES_IN_MESSAGE;
 
     public MqttDecoder() {
         this(DEFAULT_MAX_BYTES_IN_MESSAGE);
@@ -65,7 +65,7 @@ public final class MqttDecoder {
         this.maxBytesInMessage = maxBytesInMessage;
     }
 
-    public void decode(ByteBuffer buffer, ChannelContext channelContext, List<Object> out) throws Exception {
+    public static MqttMessage decode(ByteBuffer buffer, ChannelContext channelContext) throws Exception {
         if (sigalDecoderState == DecoderState.READ_FIXED_HEADER) {
             try {
                 mqttFixedHeader = decodeFixedHeader(buffer);
@@ -73,8 +73,7 @@ public final class MqttDecoder {
                 sigalDecoderState = DecoderState.READ_VARIABLE_HEADER;
                 // fall through
             } catch (Exception cause) {
-                out.add(invalidMessage(cause));
-                return;
+                return invalidMessage(cause);
             }
         }
         if (sigalDecoderState == DecoderState.READ_VARIABLE_HEADER) {
@@ -88,8 +87,7 @@ public final class MqttDecoder {
                 sigalDecoderState = DecoderState.READ_PAYLOAD;
                 // fall through
             } catch (Exception cause) {
-                out.add(invalidMessage(cause));
-                return;
+                return invalidMessage(cause);
             }
         }
         if (sigalDecoderState == DecoderState.READ_PAYLOAD) {
@@ -111,22 +109,20 @@ public final class MqttDecoder {
                         mqttFixedHeader, variableHeader, decodedPayload.value);
                 mqttFixedHeader = null;
                 variableHeader = null;
-                out.add(message);
-                return;
+                return message;
             } catch (Exception cause) {
-                out.add(invalidMessage(cause));
-                return;
+                return invalidMessage(cause);
             }
         }
         if (sigalDecoderState == DecoderState.BAD_MESSAGE) {
             // Keep discarding until disconnection.
 //            buffer.skipBytes(actualReadableBytes());
-            return;
+            return null;
         }
         throw new Error();
     }
 
-    private MqttMessage invalidMessage(Throwable cause) {
+    private static MqttMessage invalidMessage(Throwable cause) {
         sigalDecoderState = DecoderState.BAD_MESSAGE;
         return MqttMessageFactory.newInvalidMessage(cause);
     }
