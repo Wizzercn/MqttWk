@@ -13,7 +13,7 @@ import org.nutz.mvc.annotation.Modules;
 /**
  * Created by wizzer on 2018
  */
-@IocBean(create = "init", depose = "depose")
+@IocBean
 @Modules(packages = "cn.wizzer.iot")
 public class MainLauncher {
     private static final Log log = Logs.get();
@@ -23,17 +23,11 @@ public class MainLauncher {
     private PropertiesProxy conf;
     @Inject
     private BrokerServer brokerServer;
+
     public static void main(String[] args) throws Exception {
         NbApp nb = new NbApp().setArgs(args).setPrintProcDoc(true);
         nb.setMainPackage("cn.wizzer.iot");
         nb.run();
     }
 
-    public void init() {
-
-    }
-
-    public void depose() {
-
-    }
 }

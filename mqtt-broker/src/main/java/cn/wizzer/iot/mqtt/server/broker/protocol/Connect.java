@@ -6,6 +6,7 @@ package cn.wizzer.iot.mqtt.server.broker.protocol;
 
 import cn.hutool.core.util.StrUtil;
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
+import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.auth.IAuthService;
 import cn.wizzer.iot.mqtt.server.common.message.DupPubRelMessageStore;
 import cn.wizzer.iot.mqtt.server.common.message.DupPublishMessageStore;
@@ -43,12 +44,15 @@ public class Connect {
 
     private IAuthService authService;
 
-    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService) {
+    private TioService tioService;
+
+    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService,TioService tioService) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.dupPublishMessageStoreService = dupPublishMessageStoreService;
         this.dupPubRelMessageStoreService = dupPubRelMessageStoreService;
         this.authService = authService;
+        this.tioService=tioService;
     }
 
     public void processConnect(ChannelContext channel, MqttConnectMessage msg) {
@@ -106,7 +110,7 @@ public class Connect {
         // 如果会话中已存储这个新连接的clientId, 就关闭之前该clientId的连接
         if (sessionStoreService.containsKey(msg.payload().clientIdentifier())) {
             SessionStore sessionStore = sessionStoreService.get(msg.payload().clientIdentifier());
-            ChannelContext previous = sessionStore.getChannel();
+            ChannelContext previous = tioService.getChannel(sessionStore.getChannelId());
             Boolean cleanSession = sessionStore.isCleanSession();
             if (cleanSession) {
                 sessionStoreService.remove(msg.payload().clientIdentifier());
@@ -117,7 +121,7 @@ public class Connect {
             Tio.close(previous, "");
         }
         // 处理遗嘱信息
-        SessionStore sessionStore = new SessionStore(msg.payload().clientIdentifier(), channel, msg.variableHeader().isCleanSession(), null);
+        SessionStore sessionStore = new SessionStore(msg.payload().clientIdentifier(), channel.getId(), msg.variableHeader().isCleanSession(), null);
         if (msg.variableHeader().isWillFlag()) {
             MqttPublishMessage willMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
                     new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(msg.variableHeader().willQos()), msg.variableHeader().isWillRetain(), 0),

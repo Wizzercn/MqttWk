@@ -2,6 +2,7 @@ package cn.wizzer.iot.mqtt.server.store.cache;
 
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import org.nutz.integration.jedis.RedisService;
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Lang;
@@ -15,29 +16,33 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @IocBean
 public class SubscribeNotWildcardCache {
+    private final static String CACHE_PRE = "mqttwk:subnotwildcard:";
     @Inject
     private RedisService redisService;
+    @Inject
+    private PropertiesProxy conf;
 
     public ConcurrentHashMap<String, SubscribeStore> put(String clientId, ConcurrentHashMap<String, SubscribeStore> map) {
-        redisService.set(Lang.toBytes("mqtt:subnotwildcard:" + clientId), Lang.toBytes(map));
+        redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(map));
+        redisService.expire((CACHE_PRE + clientId).getBytes(), conf.getInt("mqttwk.broker.keep-alive", 60) + 1);
         return map;
     }
 
     public ConcurrentHashMap<String, SubscribeStore> get(String clientId) {
-        return Lang.fromBytes(redisService.get(Lang.toBytes("mqtt:subnotwildcard:" + clientId)), ConcurrentHashMap.class);
+        return Lang.fromBytes(redisService.get((CACHE_PRE + clientId).getBytes()), ConcurrentHashMap.class);
     }
 
     public boolean containsKey(String clientId) {
-        return !redisService.keys(Lang.toBytes("mqtt:subnotwildcard:" + clientId)).isEmpty();
+        return !redisService.keys((CACHE_PRE + clientId).getBytes()).isEmpty();
     }
 
     public boolean remove(String clientId) {
-        return redisService.del(Lang.toBytes("mqtt:subnotwildcard:" + clientId)) > 0;
+        return redisService.del((CACHE_PRE + clientId).getBytes()) > 0;
     }
 
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
-        redisService.keys(Lang.toBytes("mqtt:subnotwildcard:*")).forEach(
+        redisService.keys((CACHE_PRE + "*").getBytes()).forEach(
                 entry -> {
                     map.put(new String(entry), Lang.fromBytes(redisService.get(entry), ConcurrentHashMap.class));
                 }

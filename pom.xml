@@ -15,7 +15,6 @@
         <module>mqtt-broker</module>
         <module>mqtt-store</module>
         <module>mqtt-zoo</module>
-        <module>mqtt-zoo</module>
     </modules>
     <properties>
         <mqttwk.version>1.0-SNAPSHOT</mqttwk.version>

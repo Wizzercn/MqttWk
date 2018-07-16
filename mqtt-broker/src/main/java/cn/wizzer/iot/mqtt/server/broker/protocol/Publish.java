@@ -7,17 +7,16 @@ package cn.wizzer.iot.mqtt.server.broker.protocol;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalCommunication;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
+import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.message.*;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.tio.codec.*;
-import org.nutz.lang.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
 import org.tio.core.Tio;
-import org.tio.core.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -41,13 +40,16 @@ public class Publish {
 
     private InternalCommunication internalCommunication;
 
-    public Publish(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IMessageIdService messageIdService, IRetainMessageStoreService retainMessageStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, InternalCommunication internalCommunication) {
+    private TioService tioService;
+
+    public Publish(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IMessageIdService messageIdService, IRetainMessageStoreService retainMessageStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, InternalCommunication internalCommunication,TioService tioService) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.messageIdService = messageIdService;
         this.retainMessageStoreService = retainMessageStoreService;
         this.dupPublishMessageStoreService = dupPublishMessageStoreService;
         this.internalCommunication = internalCommunication;
+        this.tioService=tioService;
     }
 
     public void processPublish(ChannelContext channel, MqttPublishMessage msg) {
@@ -110,7 +112,7 @@ public class Publish {
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
+                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
                 }
                 if (respQoS == MqttQoS.AT_LEAST_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -123,7 +125,7 @@ public class Publish {
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
+                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
                 }
                 if (respQoS == MqttQoS.EXACTLY_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -136,7 +138,7 @@ public class Publish {
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
+                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
                 }
             }
         });

@@ -6,7 +6,6 @@ package cn.wizzer.iot.mqtt.server.common.session;
 
 
 import cn.wizzer.iot.mqtt.tio.codec.MqttPublishMessage;
-import org.tio.core.ChannelContext;
 
 import java.io.Serializable;
 
@@ -14,57 +13,56 @@ import java.io.Serializable;
  * 会话存储
  */
 public class SessionStore implements Serializable {
+    private static final long serialVersionUID = -1L;
 
-	private static final long serialVersionUID = 5209539791996944490L;
+    private String clientId;
 
-	private String clientId;
+    private String channelId;
 
-	private ChannelContext channel;
+    private boolean cleanSession;
 
-	private boolean cleanSession;
+    private MqttPublishMessage willMessage;
 
-	private MqttPublishMessage willMessage;
+    public SessionStore(String clientId, String channelId, boolean cleanSession, MqttPublishMessage willMessage) {
+        this.clientId = clientId;
+        this.channelId = channelId;
+        this.cleanSession = cleanSession;
+        this.willMessage = willMessage;
+    }
 
-	public SessionStore(String clientId, ChannelContext channel, boolean cleanSession, MqttPublishMessage willMessage) {
-		this.clientId = clientId;
-		this.channel = channel;
-		this.cleanSession = cleanSession;
-		this.willMessage = willMessage;
-	}
+    public String getClientId() {
+        return clientId;
+    }
 
-	public String getClientId() {
-		return clientId;
-	}
+    public SessionStore setClientId(String clientId) {
+        this.clientId = clientId;
+        return this;
+    }
 
-	public SessionStore setClientId(String clientId) {
-		this.clientId = clientId;
-		return this;
-	}
+    public String getChannelId() {
+        return channelId;
+    }
 
-	public ChannelContext getChannel() {
-		return channel;
-	}
+    public SessionStore setChannelId(String channelId) {
+        this.channelId = channelId;
+        return this;
+    }
 
-	public SessionStore setChannel(ChannelContext channel) {
-		this.channel = channel;
-		return this;
-	}
+    public boolean isCleanSession() {
+        return cleanSession;
+    }
 
-	public boolean isCleanSession() {
-		return cleanSession;
-	}
+    public SessionStore setCleanSession(boolean cleanSession) {
+        this.cleanSession = cleanSession;
+        return this;
+    }
 
-	public SessionStore setCleanSession(boolean cleanSession) {
-		this.cleanSession = cleanSession;
-		return this;
-	}
+    public MqttPublishMessage getWillMessage() {
+        return willMessage;
+    }
 
-	public MqttPublishMessage getWillMessage() {
-		return willMessage;
-	}
-
-	public SessionStore setWillMessage(MqttPublishMessage willMessage) {
-		this.willMessage = willMessage;
-		return this;
-	}
+    public SessionStore setWillMessage(MqttPublishMessage willMessage) {
+        this.willMessage = willMessage;
+        return this;
+    }
 }

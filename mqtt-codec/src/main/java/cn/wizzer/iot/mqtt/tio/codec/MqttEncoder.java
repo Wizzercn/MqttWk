@@ -19,10 +19,8 @@ package cn.wizzer.iot.mqtt.tio.codec;
 
 import cn.wizzer.iot.mqtt.tio.exception.DecoderException;
 import org.nutz.lang.Encoding;
-import org.tio.core.ChannelContext;
 
 import java.nio.ByteBuffer;
-import java.util.List;
 
 import static cn.wizzer.iot.mqtt.tio.codec.MqttCodecUtil.isValidClientId;
 
@@ -41,10 +39,6 @@ public final class MqttEncoder {
     private MqttEncoder() {
     }
 
-    protected void encode(ChannelContext ctx, MqttMessage msg, List<Object> out) throws Exception {
-        out.add(doEncode(msg));
-    }
-
     /**
      * This is the main encoding method.
      * It's only visible for testing.
@@ -52,7 +46,7 @@ public final class MqttEncoder {
      * @param message MQTT message to encode
      * @return ByteBuf with encoded bytes
      */
-    static ByteBuffer doEncode(MqttMessage message) {
+    public static ByteBuffer doEncode(MqttMessage message) {
 
         switch (message.fixedHeader().messageType()) {
             case CONNECT:
@@ -196,10 +190,10 @@ public final class MqttEncoder {
     private static ByteBuffer encodeConnAckMessage(
             MqttConnAckMessage message) {
         ByteBuffer buf = ByteBuffer.allocate(4);
-        buf.putInt(getFixedHeaderByte1(message.fixedHeader()));
-        buf.putInt(2);
-        buf.putInt(message.variableHeader().isSessionPresent() ? 0x01 : 0x00);
-        buf.putInt(message.variableHeader().connectReturnCode().byteValue());
+        buf.put((byte) (getFixedHeaderByte1(message.fixedHeader())));
+        buf.put((byte) 2);
+        buf.put((byte) (message.variableHeader().isSessionPresent() ? 0x01 : 0x00));
+        buf.put((byte) (message.variableHeader().connectReturnCode().byteValue()));
         return buf;
     }
 

@@ -5,6 +5,7 @@
 package cn.wizzer.iot.mqtt.server.broker.internal;
 
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
+import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.message.IMessageIdService;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
@@ -17,11 +18,8 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tio.core.Tio;
-import org.tio.core.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -47,6 +45,9 @@ public class InternalCommunication {
 
     @Inject
     private IMessageIdService messageIdService;
+
+    @Inject
+    private TioService tioService;
 
     public void internalSend(InternalMessage internalMessage) {
         ProducerRecord<String, InternalMessage> data = new ProducerRecord<>(conf.get("mqttwk.broker.kafka.producer.topic", "mqtt_publish"), internalMessage.getTopic(), internalMessage);
@@ -76,7 +77,7 @@ public class InternalCommunication {
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
+                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
                 }
                 if (respQoS == MqttQoS.AT_LEAST_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -86,7 +87,7 @@ public class InternalCommunication {
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
+                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
                 }
                 if (respQoS == MqttQoS.EXACTLY_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -96,7 +97,7 @@ public class InternalCommunication {
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    Tio.send(sessionStoreService.get(subscribeStore.getClientId()).getChannel(), mqttPacket);
+                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
                 }
             }
         });

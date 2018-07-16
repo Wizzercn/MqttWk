@@ -8,54 +8,36 @@ import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.handler.BrokerHandler;
 import cn.wizzer.iot.mqtt.server.broker.listener.MqttServerListener;
 import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
-import org.nutz.boot.AppContext;
+import org.nutz.boot.starter.ServerFace;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
-import org.tio.core.GroupContext;
-import org.tio.core.exception.AioDecodeException;
-import org.tio.core.intf.Packet;
 import org.tio.core.ssl.SslConfig;
 import org.tio.server.ServerGroupContext;
 import org.tio.server.TioServer;
-import org.tio.server.intf.ServerAioHandler;
-import org.tio.server.intf.ServerAioListener;
 
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.security.KeyStore;
 
 /**
  * Netty启动Broker
  */
-@IocBean(create = "start", depose = "stop")
-public class BrokerServer {
-
+@IocBean
+public class BrokerServer implements ServerFace {
     private static final Logger LOGGER = LoggerFactory.getLogger(BrokerServer.class);
-
     @Inject
     private BrokerProperties brokerProperties;
-
-    @Inject
-    private ProtocolProcess protocolProcess;
-
-    protected TioServer tioServer;
     @Inject("refer:$ioc")
     private Ioc ioc;
 
     private SslConfig sslConfig;
 
-    private ChannelContext channel;
-
-    private ChannelContext websocketChannel;
-
     public void start() throws Exception {
         LOGGER.info("Initializing {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("keystore/server.jks");
-        sslConfig = SslConfig.forServer(inputStream, null,brokerProperties.getSslPassword());
+        sslConfig = SslConfig.forServer(inputStream, null, brokerProperties.getSslPassword());
         mqttServer();
 //		websocketServer();
 //		LOGGER.info("MQTT Broker {} is up and running. Open SSLPort: {} WebSocketSSLPort: {}", "[" + brokerProperties.getId() + "]", brokerProperties.getSslPort(), brokerProperties.getWebsocketSslPort());
@@ -84,14 +66,13 @@ public class BrokerServer {
         return serverGroupContext;
     }
 
-    @IocBean
-    public TioServer getAioServer(@Inject ServerGroupContext serverGroupContext) {
+    @IocBean(name = "tioServer")
+    public TioServer getTioServer(@Inject ServerGroupContext serverGroupContext) {
         return new TioServer(serverGroupContext);
     }
 
     private void mqttServer() throws Exception {
-        tioServer = ioc.getByType(TioServer.class);
-        tioServer.start(brokerProperties.getSslHost(), brokerProperties.getSslPort());
+        ioc.getByType(TioServer.class).start(brokerProperties.getSslHost(), brokerProperties.getSslPort());
     }
 
     private void websocketServer() throws Exception {

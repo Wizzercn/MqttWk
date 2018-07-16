@@ -7,6 +7,7 @@ package cn.wizzer.iot.mqtt.server.store.session;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import org.nutz.integration.jedis.RedisService;
+import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Lang;
@@ -16,29 +17,30 @@ import org.nutz.lang.Lang;
  */
 @IocBean
 public class SessionStoreService implements ISessionStoreService {
-
+    private final static String CACHE_PRE = "mqttwk:session:";
     @Inject
     private RedisService redisService;
+    @Inject
+    private PropertiesProxy conf;
 
     @Override
     public void put(String clientId, SessionStore sessionStore) {
-        System.out.println("redisService:::"+redisService);
-        System.out.println("sessionStore:::"+sessionStore);
-        redisService.set(Lang.toBytes("mqttwk:session:" + clientId), Lang.toBytes(sessionStore));
+        redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(sessionStore));
+        redisService.expire((CACHE_PRE + clientId).getBytes(), conf.getInt("mqttwk.broker.keep-alive", 60) + 1);
     }
 
     @Override
     public SessionStore get(String clientId) {
-        return Lang.fromBytes(redisService.get(Lang.toBytes("mqttwk:session:" + clientId)), SessionStore.class);
+        return Lang.fromBytes(redisService.get((CACHE_PRE + clientId).getBytes()), SessionStore.class);
     }
 
     @Override
     public boolean containsKey(String clientId) {
-        return redisService.get(Lang.toBytes("mqttwk:session:" + clientId)) != null;
+        return redisService.get((CACHE_PRE + clientId).getBytes()) != null;
     }
 
     @Override
     public void remove(String clientId) {
-        redisService.del(Lang.toBytes("mqttwk:session:" + clientId));
+        redisService.del((CACHE_PRE + clientId).getBytes());
     }
 }

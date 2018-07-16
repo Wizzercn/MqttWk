@@ -2,6 +2,7 @@ package cn.wizzer.iot.mqtt.server.broker.handler;
 
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
 import cn.wizzer.iot.mqtt.tio.codec.MqttDecoder;
+import cn.wizzer.iot.mqtt.tio.codec.MqttEncoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttMessage;
 import org.nutz.lang.Lang;
 import org.tio.core.ChannelContext;
@@ -50,12 +51,12 @@ public abstract class MqttAbsAioHandler implements AioHandler {
     public ByteBuffer encode(Packet packet, GroupContext groupContext, ChannelContext channelContext) {
         MqttPacket mqttPacket = (MqttPacket) packet;
         //总长度是消息头的长度+消息体的长度
-        int allLen = MqttPacket.HEADER_LENGHT + mqttPacket.getMqttMessage().fixedHeader().remainingLength();
-
-        ByteBuffer buffer = ByteBuffer.allocate(allLen);
-        buffer.order(groupContext.getByteOrder());
+//        int allLen = MqttPacket.HEADER_LENGHT + mqttPacket.getMqttMessage().fixedHeader().remainingLength();
+//
+//        ByteBuffer buffer = ByteBuffer.allocate(allLen);
+//        buffer.order(groupContext.getByteOrder());
         //写入消息体
-        buffer.put(Lang.toBytes(mqttPacket.getMqttMessage()));
+        ByteBuffer buffer=MqttEncoder.doEncode(mqttPacket.getMqttMessage());
         return buffer;
     }
 }
