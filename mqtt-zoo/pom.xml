@@ -10,6 +10,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>mqtt-zoo</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>mqtt-test-kafka</module>
+    </modules>
 
 
 </project>

@@ -4,6 +4,7 @@
 
 package cn.wizzer.iot.mqtt.server.broker.internal;
 
+import cn.hutool.core.util.HexUtil;
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
 import cn.wizzer.iot.mqtt.server.broker.service.TioService;
@@ -49,21 +50,6 @@ public class InternalCommunication {
 
     @Inject
     private TioService tioService;
-
-    public void internalSend(InternalMessage internalMessage) {
-        ProducerRecord<String, String> data = new ProducerRecord<>(brokerProperties.getProducerTopic(), internalMessage.getTopic(), Json.toJson(internalMessage));
-        kafkaProducer.send(data,
-                new Callback() {
-                    public void onCompletion(RecordMetadata metadata, Exception e) {
-                        if (e != null) {
-                            e.printStackTrace();
-                            LOGGER.error(e.getMessage(), e);
-                        } else {
-                            LOGGER.info("The offset of the record we just sent is: " + metadata.offset());
-                        }
-                    }
-                });
-    }
 
     private void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
         List<SubscribeStore> subscribeStores = subscribeStoreService.search(topic);

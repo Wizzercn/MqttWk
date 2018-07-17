@@ -7,6 +7,7 @@ package cn.wizzer.iot.mqtt.server.broker.protocol;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalCommunication;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
+import cn.wizzer.iot.mqtt.server.broker.service.KafkaService;
 import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.message.*;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
@@ -42,14 +43,17 @@ public class Publish {
 
     private TioService tioService;
 
-    public Publish(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IMessageIdService messageIdService, IRetainMessageStoreService retainMessageStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, InternalCommunication internalCommunication,TioService tioService) {
+    private KafkaService kafkaService;
+
+    public Publish(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IMessageIdService messageIdService, IRetainMessageStoreService retainMessageStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, InternalCommunication internalCommunication, TioService tioService, KafkaService kafkaService) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.messageIdService = messageIdService;
         this.retainMessageStoreService = retainMessageStoreService;
         this.dupPublishMessageStoreService = dupPublishMessageStoreService;
         this.internalCommunication = internalCommunication;
-        this.tioService=tioService;
+        this.tioService = tioService;
+        this.kafkaService = kafkaService;
     }
 
     public void processPublish(ChannelContext channel, MqttPublishMessage msg) {
@@ -60,7 +64,7 @@ public class Publish {
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
                     .setDup(false).setRetain(false);
-            internalCommunication.internalSend(internalMessage);
+            kafkaService.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
         }
         // QoS=1
@@ -70,7 +74,7 @@ public class Publish {
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
                     .setDup(false).setRetain(false);
-            internalCommunication.internalSend(internalMessage);
+            kafkaService.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
             this.sendPubAckMessage(channel, msg.variableHeader().packetId());
         }
@@ -81,7 +85,7 @@ public class Publish {
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
                     .setDup(false).setRetain(false);
-            internalCommunication.internalSend(internalMessage);
+            kafkaService.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
             this.sendPubRecMessage(channel, msg.variableHeader().packetId());
         }
