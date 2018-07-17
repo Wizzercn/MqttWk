@@ -40,7 +40,7 @@ public class KafkaLauncher {
         //kafka消费消息,接收MQTT发来的消息
         kafkaConsumer.subscribe(Arrays.asList(conf.get("mqttwk.broker.kafka.producer.topic")));
         while (true) {
-            ConsumerRecords<String, String> records = kafkaConsumer.poll(1000);
+            ConsumerRecords<String, String> records = kafkaConsumer.poll(500);
             log.debug("records:::" + Json.toJson(records));
             for (ConsumerRecord<String, String> record : records) {
                 log.debugf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
