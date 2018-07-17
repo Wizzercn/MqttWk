@@ -29,6 +29,7 @@ MqttWk
   ├── mqtt-broker -- MQTT服务器功能的核心实现
   ├── mqtt-common -- 公共类及其他模块使用的服务接口及对象
   ├── mqtt-store -- MQTT服务器会话信息, 主题信息等内容的redis缓存及kafka转发机制
+  ├── mqtt-zoo -- 教程文档或文件
 ```
 
 #### 功能说明
