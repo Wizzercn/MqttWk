@@ -1,5 +1,9 @@
 package cn.wizzer.iot.mqtt.server.broker.listener;
 
+import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
+import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
+import cn.wizzer.iot.mqtt.server.store.session.SessionStoreService;
+import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -13,7 +17,10 @@ import org.tio.server.intf.ServerAioListener;
 @IocBean
 public class MqttServerListener implements ServerAioListener {
     private final static Log log = Logs.get();
-
+    @Inject
+    private SessionStoreService sessionStoreService;
+    @Inject
+    private ProtocolProcess protocolProcess;
     /**
      * 建链后触发本方法，注：建链不一定成功，需要关注参数isConnected
      *
@@ -62,7 +69,15 @@ public class MqttServerListener implements ServerAioListener {
      */
     @Override
     public void onBeforeClose(ChannelContext channelContext, Throwable throwable, String remark, boolean isRemove) {
-//        log.debug("连接关闭前触发onBeforeClose");
+        log.debug("连接关闭前触发onBeforeClose");
+        String clientId = (String) channelContext.getAttribute("clientId");
+        // 发送遗嘱消息
+        if (this.sessionStoreService.containsKey(clientId)) {
+            SessionStore sessionStore = this.sessionStoreService.get(clientId);
+            if (sessionStore.getWillMessage() != null) {
+                this.protocolProcess.publish().processPublish(channelContext, sessionStore.getWillMessage());
+            }
+        }
     }
 
     @Override

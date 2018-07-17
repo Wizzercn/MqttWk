@@ -18,8 +18,10 @@ package cn.wizzer.iot.mqtt.tio.codec;
 
 
 import cn.wizzer.iot.mqtt.tio.exception.DecoderException;
+import org.nutz.json.Json;
 import org.nutz.lang.Encoding;
-import org.tio.core.ChannelContext;
+import org.nutz.log.Log;
+import org.nutz.log.Logs;
 import org.tio.core.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;
@@ -35,7 +37,7 @@ import static cn.wizzer.iot.mqtt.tio.codec.MqttCodecUtil.*;
  * the MQTT protocol specification v3.1</a>
  */
 public final class MqttDecoder {
-
+    private final static Log log = Logs.get();
     private static final int DEFAULT_MAX_BYTES_IN_MESSAGE = 8092;
     private static DecoderState sigalDecoderState = DecoderState.READ_FIXED_HEADER;
 
@@ -51,22 +53,13 @@ public final class MqttDecoder {
         BAD_MESSAGE,
     }
 
-    private MqttFixedHeader mqttFixedHeader;
-    private Object variableHeader;
-    private int bytesRemainingInVariablePart;
 
-    private int maxBytesInMessage=DEFAULT_MAX_BYTES_IN_MESSAGE;
+    private static int bytesRemainingInVariablePart;
+    private static MqttFixedHeader mqttFixedHeader;
+    private static Object variableHeader;
 
-    public MqttDecoder() {
-        this(DEFAULT_MAX_BYTES_IN_MESSAGE);
-    }
-
-    public MqttDecoder(int maxBytesInMessage) {
-        this.maxBytesInMessage = maxBytesInMessage;
-    }
-
-    public MqttMessage decode(ByteBuffer buffer, ChannelContext channelContext) throws Exception {
-        System.out.println("channelContext:::"+channelContext);
+    public static MqttMessage decode(ByteBuffer buffer) throws Exception {
+        log.debug("channelContext  buffer:::" + Json.toJson(buffer));
         if (sigalDecoderState == DecoderState.READ_FIXED_HEADER) {
             try {
                 mqttFixedHeader = decodeFixedHeader(buffer);
@@ -79,7 +72,7 @@ public final class MqttDecoder {
         }
         if (sigalDecoderState == DecoderState.READ_VARIABLE_HEADER) {
             try {
-                if (bytesRemainingInVariablePart > maxBytesInMessage) {
+                if (bytesRemainingInVariablePart > DEFAULT_MAX_BYTES_IN_MESSAGE) {
                     throw new DecoderException("too large message: " + bytesRemainingInVariablePart + " bytes");
                 }
                 final Result<?> decodedVariableHeader = decodeVariableHeader(buffer, mqttFixedHeader);
@@ -99,6 +92,7 @@ public final class MqttDecoder {
                                 mqttFixedHeader.messageType(),
                                 bytesRemainingInVariablePart,
                                 variableHeader);
+
                 bytesRemainingInVariablePart -= decodedPayload.numberOfBytesConsumed;
                 if (bytesRemainingInVariablePart != 0) {
                     throw new DecoderException(
@@ -108,16 +102,18 @@ public final class MqttDecoder {
                 sigalDecoderState = DecoderState.READ_FIXED_HEADER;
                 MqttMessage message = MqttMessageFactory.newMessage(
                         mqttFixedHeader, variableHeader, decodedPayload.value);
-                mqttFixedHeader = null;
-                variableHeader = null;
                 return message;
             } catch (Exception cause) {
+                cause.printStackTrace();
                 return invalidMessage(cause);
             }
         }
         if (sigalDecoderState == DecoderState.BAD_MESSAGE) {
             // Keep discarding until disconnection.
 //            buffer.skipBytes(actualReadableBytes());
+            log.debug("sigalDecoderState buffer xxxx:::::" + Json.toJson(buffer));
+//            buffer.position(buffer.limit());
+            buffer.clear();
             return null;
         }
         throw new Error();
@@ -134,7 +130,7 @@ public final class MqttDecoder {
      * @param buffer the buffer to decode from
      * @return the fixed header
      */
-    private static MqttFixedHeader decodeFixedHeader(ByteBuffer buffer) {
+    public static MqttFixedHeader decodeFixedHeader(ByteBuffer buffer) {
         short b1 = (short) ByteBufferUtils.readUB1(buffer);
 
         MqttMessageType messageType = MqttMessageType.valueOf(b1 >> 4);
@@ -301,6 +297,7 @@ public final class MqttDecoder {
             MqttMessageType messageType,
             int bytesRemainingInVariablePart,
             Object variableHeader) {
+        log.debug("messageType::::" + messageType);
         switch (messageType) {
             case CONNECT:
                 return decodeConnectionPayload(buffer, (MqttConnectVariableHeader) variableHeader);
@@ -411,8 +408,8 @@ public final class MqttDecoder {
     }
 
     private static Result<ByteBuffer> decodePublishPayload(ByteBuffer buffer, int bytesRemainingInVariablePart) {
-        //ByteBuffer b = buffer.readRetainedSlice(bytesRemainingInVariablePart);
-        ByteBuffer b = ByteBufferUtils.copy(buffer, buffer.position(), bytesRemainingInVariablePart);
+        ByteBuffer b = ByteBufferUtils.copy(buffer, buffer.position(), buffer.position() + bytesRemainingInVariablePart);
+        buffer.position(buffer.position() + bytesRemainingInVariablePart);
         return new Result<ByteBuffer>(b, bytesRemainingInVariablePart);
     }
 

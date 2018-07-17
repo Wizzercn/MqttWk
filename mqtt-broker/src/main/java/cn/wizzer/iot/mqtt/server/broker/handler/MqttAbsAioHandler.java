@@ -21,7 +21,8 @@ import java.nio.ByteBuffer;
  * Created by wizzer on 2018
  */
 public abstract class MqttAbsAioHandler implements AioHandler {
-    private final static Log log= Logs.get();
+    private final static Log log = Logs.get();
+
     /**
      * 解码：把接收到的ByteBuffer，解码成应用可以识别的业务消息包
      * 消息头：MqttFixedHeader
@@ -34,8 +35,8 @@ public abstract class MqttAbsAioHandler implements AioHandler {
         }
         //解析固定头部内容
         try {
-            MqttMessage mqttMessage = new MqttDecoder().decode(buffer, channelContext);
-            log.debug("get mqttMessage::"+ Json.toJson(mqttMessage));
+            MqttMessage mqttMessage = MqttDecoder.decode(buffer);
+            log.debug("get mqttMessage::" + Json.toJson(mqttMessage));
             if (mqttMessage != null) {
                 MqttPacket mqttPacket = new MqttPacket();
                 mqttPacket.setMqttMessage(mqttMessage);
@@ -43,6 +44,7 @@ public abstract class MqttAbsAioHandler implements AioHandler {
             }
             return null;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -55,17 +57,11 @@ public abstract class MqttAbsAioHandler implements AioHandler {
     @Override
     public ByteBuffer encode(Packet packet, GroupContext groupContext, ChannelContext channelContext) {
         MqttPacket mqttPacket = (MqttPacket) packet;
-        log.debug("send mqttPacket::"+ Json.toJson(mqttPacket));
+        log.debug("send mqttPacket::" + Json.toJson(mqttPacket));
         //总长度是消息头的长度+消息体的长度
-//        int allLen = MqttPacket.HEADER_LENGHT + mqttPacket.getMqttMessage().fixedHeader().remainingLength();
-//
-//        ByteBuffer buffer = ByteBuffer.allocate(allLen);
-//        buffer.order(groupContext.getByteOrder());
         //写入消息体
-        ByteBuffer buffer=MqttEncoder.doEncode(mqttPacket.getMqttMessage());
-//        buffer.order(groupContext.getByteOrder());
+        ByteBuffer buffer = MqttEncoder.doEncode(mqttPacket.getMqttMessage());
         buffer.flip();
-        log.debug("send buffer::"+ Json.toJson(buffer));
         return buffer;
     }
 }

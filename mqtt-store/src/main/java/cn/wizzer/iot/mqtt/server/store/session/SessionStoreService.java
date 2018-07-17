@@ -10,7 +10,6 @@ import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.json.Json;
 import org.nutz.lang.Lang;
 
 /**
@@ -27,8 +26,9 @@ public class SessionStoreService implements ISessionStoreService {
     @Override
     public void put(String clientId, SessionStore sessionStore) {
         redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(sessionStore));
-        redisService.expire((CACHE_PRE + clientId).getBytes(), conf.getInt("mqttwk.broker.keep-alive", 60) *3);
     }
+
+
 
     @Override
     public SessionStore get(String clientId) {

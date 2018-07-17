@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 public class InternalMessage implements Serializable {
 
-	private static final long serialVersionUID = 3631755468947273083L;
+	private static final long serialVersionUID = -1L;
 
 	private String topic;
 

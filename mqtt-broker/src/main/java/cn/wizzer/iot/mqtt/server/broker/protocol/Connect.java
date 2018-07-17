@@ -16,14 +16,11 @@ import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.tio.codec.*;
-import org.nutz.json.Json;
 import org.nutz.lang.Encoding;
-import org.nutz.lang.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
 import org.tio.core.Tio;
-import org.tio.core.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -47,13 +44,13 @@ public class Connect {
 
     private TioService tioService;
 
-    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService,TioService tioService) {
+    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService, TioService tioService) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.dupPublishMessageStoreService = dupPublishMessageStoreService;
         this.dupPubRelMessageStoreService = dupPubRelMessageStoreService;
         this.authService = authService;
-        this.tioService=tioService;
+        this.tioService = tioService;
     }
 
     public void processConnect(ChannelContext channel, MqttConnectMessage msg) {
@@ -132,7 +129,7 @@ public class Connect {
         // 处理连接心跳包
         if (msg.variableHeader().keepAliveTimeSeconds() > 0) {
             int idleTime = Math.round(msg.variableHeader().keepAliveTimeSeconds() * 1.5f);
-            channel.getGroupContext().setHeartbeatTimeout(idleTime);
+            channel.getGroupContext().setHeartbeatTimeout(idleTime * 1000);
         }
         // 至此存储会话信息及返回接受客户端连接
         sessionStoreService.put(msg.payload().clientIdentifier(), sessionStore);
@@ -144,7 +141,7 @@ public class Connect {
                 new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_ACCEPTED, sessionPresent), null);
         MqttPacket okRespPacket = new MqttPacket();
         okRespPacket.setMqttMessage(okResp);
-        LOGGER.debug("okRespPacket channel:::"+channel);
+        LOGGER.debug("okRespPacket channel:::" + channel);
         Tio.send(channel, okRespPacket);
         LOGGER.debug("CONNECT - clientId: {}, cleanSession: {}", msg.payload().clientIdentifier(), msg.variableHeader().isCleanSession());
         // 如果cleanSession为0, 需要重发同一clientId存储的未完成的QoS1和QoS2的DUP消息
