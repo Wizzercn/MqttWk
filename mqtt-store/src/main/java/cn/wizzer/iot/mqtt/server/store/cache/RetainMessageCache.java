@@ -23,7 +23,7 @@ public class RetainMessageCache {
 
     public RetainMessageStore put(String topic, RetainMessageStore obj) {
         redisService.set((CACHE_PRE + topic).getBytes(), Lang.toBytes(obj));
-        redisService.expire((CACHE_PRE + topic).getBytes(), conf.getInt("mqttwk.broker.keep-alive", 60) *3);
+        redisService.expire((CACHE_PRE + topic).getBytes(), conf.getInt("mqttwk.broker.cache-timeout", 500));
         return obj;
     }
 

@@ -56,6 +56,9 @@ public class StoreStarter {
     @PropDoc(group = "broker", value = "分发策略", defaultValue = "cn.wizzer.iot.mqtt.server.store.kafka.SimplePartitioner")
     public static final String PROP_KAFKA_PARTITIONERCLASS = PRE + "kafka.partitioner.class";
 
+    @PropDoc(group = "broker", value = "消息缓存时间(单位:秒)", defaultValue = "300")
+    public static final String PROP_CACHETIME = PRE + "cache-timeout";
+
     public Properties getProperties() {
         Properties properties = new Properties();
         for (String key : conf.keySet()) {

@@ -22,7 +22,7 @@ public class DupPubRelMessageCache {
 
     public ConcurrentHashMap<Integer, DupPubRelMessageStore> put(String clientId, ConcurrentHashMap<Integer, DupPubRelMessageStore> map) {
         redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(map));
-        redisService.expire((CACHE_PRE + clientId).getBytes(), conf.getInt("mqttwk.broker.keep-alive", 60) *3);
+        redisService.expire((CACHE_PRE + clientId).getBytes(), conf.getInt("mqttwk.broker.cache-timeout", 500));
         return map;
     }
 
