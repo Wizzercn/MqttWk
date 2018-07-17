@@ -2,6 +2,7 @@ package cn.wizzer.iot.mqtt.server.broker;
 
 import cn.wizzer.iot.mqtt.server.broker.server.BrokerServer;
 import org.nutz.boot.NbApp;
+import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
@@ -21,6 +22,8 @@ public class MainLauncher {
     private Ioc ioc;
     @Inject
     private PropertiesProxy conf;
+    @Inject
+    private RedisService redisService;
     @Inject
     private BrokerServer brokerServer;
 

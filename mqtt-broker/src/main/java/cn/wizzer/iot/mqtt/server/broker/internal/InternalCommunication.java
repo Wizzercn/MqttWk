@@ -18,6 +18,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,7 @@ public class InternalCommunication {
     private TioService tioService;
 
     public void internalSend(InternalMessage internalMessage) {
-        ProducerRecord<String, InternalMessage> data = new ProducerRecord<>(conf.get("mqttwk.broker.kafka.producer.topic", "mqtt_publish"), internalMessage.getTopic(), internalMessage);
+        ProducerRecord<String, String> data = new ProducerRecord<>(conf.get("mqttwk.broker.kafka.producer.topic", "mqtt_publish"), internalMessage.getTopic(), Json.toJson(internalMessage));
         kafkaProducer.send(data,
                 new Callback() {
                     public void onCompletion(RecordMetadata metadata, Exception e) {

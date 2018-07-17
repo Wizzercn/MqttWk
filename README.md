@@ -52,7 +52,7 @@ MqttWk
 
 #### 集群使用
 - 多机环境集群:
-  - `mqttwk.broker.kafka.bootstrap.servers=192.168.1.101:9092,192.168.1.102:9092`
+  - `mqttwk.broker.kafka.bootstrap.servers=192.168.1.101:9092,192.168.1.102:9093`
   - `redis.mode=cluster` 
   - `redis.nodes=192.168.1.103:16379,192.168.1.104:26379`
 - 单机环境集群: 

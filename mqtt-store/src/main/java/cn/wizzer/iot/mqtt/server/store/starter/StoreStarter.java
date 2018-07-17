@@ -63,20 +63,24 @@ public class StoreStarter {
     public static final String PROP_KAFKA_CONSUMERTOPIC = PRE + "kafka.consumer.topic";
 
     //以下部分只是为了打印propDoc
-    @PropDoc(group = "broker", value = "SSL服务启动的IP", defaultValue = "127.0.0.1")
-    public static final String PROP_SSLHOST = PRE + "ssl-host";
+    @PropDoc(group = "broker", value = "启动的IP", defaultValue = "127.0.0.1")
+    public static final String PROP_HOST = PRE + "host";
 
-    @PropDoc(group = "broker", value = "SSL端口号, 默认8885端口", type = "int", defaultValue = "8885")
-    public static final String PROP_SSLPORT = PRE + "ssl-port";
+    @PropDoc(group = "broker", value = "端口号, 默认8885端口", type = "int", defaultValue = "8885")
+    public static final String PROP_PORT = PRE + "port";
 
-    @PropDoc(group = "broker", value = "WebSocket SSL端口号, 默认9995端口", type = "int", defaultValue = "9995")
-    public static final String PROP_WEBSOCKETSSLPORT = PRE + "websocket-ssl-port";
+    @PropDoc(group = "broker", value = "是否启用SSL验证", type = "boolean", defaultValue = "true")
+    public static final String PROP_SSLENABLED = PRE + "ssl-enabled";
+
+    @PropDoc(group = "broker", value = "SSL密钥文件密码")
+    public static final String PROP_SSLPASSWORD = PRE + "ssl-password";
+
+    @PropDoc(group = "broker", value = "WebSocket 端口号, 默认9995端口", type = "int", defaultValue = "9995")
+    public static final String PROP_WEBSOCKETPORT = PRE + "websocket-port";
 
     @PropDoc(group = "broker", value = "WebSocket Path值, 默认值 /mqtt", defaultValue = "/mqtt")
     public static final String PROP_WEBSOCKETPATH = PRE + "websocket-path";
 
-    @PropDoc(group = "broker", value = "SSL密钥文件密码")
-    public static final String PROP_SSLPASSWORD = PRE + "ssl-password";
 
     @PropDoc(group = "broker", value = "心跳时间(秒), 默认60秒, 该值可被客户端连接时相应配置覆盖", type = "int", defaultValue = "60")
     public static final String PROP_KEEPALIVE = PRE + "keep-alive";

@@ -24,7 +24,7 @@ public class MqttServerListener implements ServerAioListener {
      */
     @Override
     public void onAfterConnected(ChannelContext channelContext, boolean isConnected, boolean isReconnect) throws Exception {
-        log.debug("建链后触发onAfterConnected");
+//        log.debug("建链后触发onAfterConnected");
     }
 
     /**
@@ -35,7 +35,7 @@ public class MqttServerListener implements ServerAioListener {
      * @author tanyaowu
      */
     public void onAfterReceived(ChannelContext channelContext, Packet packet, int packetSize) throws Exception {
-        log.debug("解码成功后触发onAfterReceived");
+//        log.debug("解码成功后触发onAfterReceived");
     }
 
     /**
@@ -48,7 +48,7 @@ public class MqttServerListener implements ServerAioListener {
      */
     @Override
     public void onAfterSent(ChannelContext channelContext, Packet packet, boolean isSentSuccess) throws Exception {
-        log.debug("消息包发送之后触发onAfterSent");
+//        log.debug("消息包发送之后触发onAfterSent");
     }
 
     /**
@@ -62,7 +62,7 @@ public class MqttServerListener implements ServerAioListener {
      */
     @Override
     public void onBeforeClose(ChannelContext channelContext, Throwable throwable, String remark, boolean isRemove) {
-        log.debug("连接关闭前触发onBeforeClose");
+//        log.debug("连接关闭前触发onBeforeClose");
     }
 
     @Override

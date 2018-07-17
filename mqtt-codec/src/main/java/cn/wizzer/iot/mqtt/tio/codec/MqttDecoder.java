@@ -51,11 +51,11 @@ public final class MqttDecoder {
         BAD_MESSAGE,
     }
 
-    private static MqttFixedHeader mqttFixedHeader;
-    private static Object variableHeader;
-    private static int bytesRemainingInVariablePart;
+    private MqttFixedHeader mqttFixedHeader;
+    private Object variableHeader;
+    private int bytesRemainingInVariablePart;
 
-    private static int maxBytesInMessage=DEFAULT_MAX_BYTES_IN_MESSAGE;
+    private int maxBytesInMessage=DEFAULT_MAX_BYTES_IN_MESSAGE;
 
     public MqttDecoder() {
         this(DEFAULT_MAX_BYTES_IN_MESSAGE);
@@ -65,7 +65,8 @@ public final class MqttDecoder {
         this.maxBytesInMessage = maxBytesInMessage;
     }
 
-    public static MqttMessage decode(ByteBuffer buffer, ChannelContext channelContext) throws Exception {
+    public MqttMessage decode(ByteBuffer buffer, ChannelContext channelContext) throws Exception {
+        System.out.println("channelContext:::"+channelContext);
         if (sigalDecoderState == DecoderState.READ_FIXED_HEADER) {
             try {
                 mqttFixedHeader = decodeFixedHeader(buffer);

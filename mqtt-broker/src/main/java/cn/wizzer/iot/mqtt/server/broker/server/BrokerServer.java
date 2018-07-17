@@ -7,14 +7,12 @@ package cn.wizzer.iot.mqtt.server.broker.server;
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.handler.BrokerHandler;
 import cn.wizzer.iot.mqtt.server.broker.listener.MqttServerListener;
-import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
 import org.nutz.boot.starter.ServerFace;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tio.core.ChannelContext;
 import org.tio.core.ssl.SslConfig;
 import org.tio.server.ServerGroupContext;
 import org.tio.server.TioServer;
@@ -62,7 +60,8 @@ public class BrokerServer implements ServerFace {
         ServerGroupContext serverGroupContext = new ServerGroupContext(ioc.get(BrokerHandler.class), ioc.get(MqttServerListener.class));
         serverGroupContext.setName(brokerProperties.getId());
         serverGroupContext.setHeartbeatTimeout(brokerProperties.getKeepAlive());
-        serverGroupContext.setSslConfig(sslConfig);
+        if (brokerProperties.getSslEnabled())
+            serverGroupContext.setSslConfig(sslConfig);
         return serverGroupContext;
     }
 
@@ -72,7 +71,7 @@ public class BrokerServer implements ServerFace {
     }
 
     private void mqttServer() throws Exception {
-        ioc.getByType(TioServer.class).start(brokerProperties.getSslHost(), brokerProperties.getSslPort());
+        ioc.getByType(TioServer.class).start(brokerProperties.getHost(), brokerProperties.getPort());
     }
 
     private void websocketServer() throws Exception {

@@ -4,7 +4,10 @@ import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
 import cn.wizzer.iot.mqtt.tio.codec.MqttDecoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttEncoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttMessage;
+import org.nutz.json.Json;
 import org.nutz.lang.Lang;
+import org.nutz.log.Log;
+import org.nutz.log.Logs;
 import org.tio.core.ChannelContext;
 import org.tio.core.GroupContext;
 import org.tio.core.exception.AioDecodeException;
@@ -18,6 +21,7 @@ import java.nio.ByteBuffer;
  * Created by wizzer on 2018
  */
 public abstract class MqttAbsAioHandler implements AioHandler {
+    private final static Log log= Logs.get();
     /**
      * 解码：把接收到的ByteBuffer，解码成应用可以识别的业务消息包
      * 消息头：MqttFixedHeader
@@ -30,7 +34,8 @@ public abstract class MqttAbsAioHandler implements AioHandler {
         }
         //解析固定头部内容
         try {
-            MqttMessage mqttMessage = MqttDecoder.decode(buffer, channelContext);
+            MqttMessage mqttMessage = new MqttDecoder().decode(buffer, channelContext);
+            log.debug("get mqttMessage::"+ Json.toJson(mqttMessage));
             if (mqttMessage != null) {
                 MqttPacket mqttPacket = new MqttPacket();
                 mqttPacket.setMqttMessage(mqttMessage);
@@ -50,6 +55,7 @@ public abstract class MqttAbsAioHandler implements AioHandler {
     @Override
     public ByteBuffer encode(Packet packet, GroupContext groupContext, ChannelContext channelContext) {
         MqttPacket mqttPacket = (MqttPacket) packet;
+        log.debug("send mqttPacket::"+ Json.toJson(mqttPacket));
         //总长度是消息头的长度+消息体的长度
 //        int allLen = MqttPacket.HEADER_LENGHT + mqttPacket.getMqttMessage().fixedHeader().remainingLength();
 //
@@ -57,6 +63,9 @@ public abstract class MqttAbsAioHandler implements AioHandler {
 //        buffer.order(groupContext.getByteOrder());
         //写入消息体
         ByteBuffer buffer=MqttEncoder.doEncode(mqttPacket.getMqttMessage());
+//        buffer.order(groupContext.getByteOrder());
+        buffer.flip();
+        log.debug("send buffer::"+ Json.toJson(buffer));
         return buffer;
     }
 }
