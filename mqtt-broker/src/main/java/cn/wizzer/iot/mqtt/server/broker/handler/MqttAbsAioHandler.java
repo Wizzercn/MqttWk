@@ -5,7 +5,6 @@ import cn.wizzer.iot.mqtt.tio.codec.MqttDecoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttEncoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttMessage;
 import org.nutz.json.Json;
-import org.nutz.lang.Lang;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.tio.core.ChannelContext;
@@ -25,8 +24,6 @@ public abstract class MqttAbsAioHandler implements AioHandler {
 
     /**
      * 解码：把接收到的ByteBuffer，解码成应用可以识别的业务消息包
-     * 消息头：MqttFixedHeader
-     * 消息体：byte[]
      */
     @Override
     public MqttPacket decode(ByteBuffer buffer, int limit, int position, int readableLength, ChannelContext channelContext) throws AioDecodeException {
@@ -37,7 +34,7 @@ public abstract class MqttAbsAioHandler implements AioHandler {
         try {
             MqttMessage mqttMessage = MqttDecoder.decode(buffer);
             log.debug("get mqttMessage::" + Json.toJson(mqttMessage));
-            if (mqttMessage != null) {
+            if (mqttMessage != null && "SUCCESS".equals(mqttMessage.decoderResult())) {
                 MqttPacket mqttPacket = new MqttPacket();
                 mqttPacket.setMqttMessage(mqttMessage);
                 return mqttPacket;
@@ -58,7 +55,6 @@ public abstract class MqttAbsAioHandler implements AioHandler {
     public ByteBuffer encode(Packet packet, GroupContext groupContext, ChannelContext channelContext) {
         MqttPacket mqttPacket = (MqttPacket) packet;
         log.debug("send mqttPacket::" + Json.toJson(mqttPacket));
-        //总长度是消息头的长度+消息体的长度
         //写入消息体
         ByteBuffer buffer = MqttEncoder.doEncode(mqttPacket.getMqttMessage());
         buffer.flip();

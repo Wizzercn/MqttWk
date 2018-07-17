@@ -5,7 +5,6 @@ import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
 import cn.wizzer.iot.mqtt.tio.codec.*;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.json.Json;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.tio.core.ChannelContext;
@@ -17,16 +16,14 @@ import org.tio.server.intf.ServerAioHandler;
  */
 @IocBean
 public class BrokerHandler extends MqttAbsAioHandler implements ServerAioHandler {
-    private final static Log log= Logs.get();
+    private final static Log log = Logs.get();
     @Inject
     private ProtocolProcess protocolProcess;
 
     @Override
     public void handler(Packet packet, ChannelContext channelContext) throws Exception {
-        log.debug("borkerHandler packet:::"+ Json.toJson(packet));
-        log.debug("borkerHandler channelContext:::"+ channelContext);
         MqttPacket mqttPacket = (MqttPacket) packet;
-        if("UNFINISHED".equals(mqttPacket.getMqttMessage().decoderResult()))
+        if ("UNFINISHED".equals(mqttPacket.getMqttMessage().decoderResult()))
             return;
         switch (mqttPacket.getMqttMessage().fixedHeader().messageType()) {
             case CONNECT:
