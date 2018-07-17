@@ -67,7 +67,19 @@ public class BrokerProperties {
     private int keepAlive;
     @PropDoc(group = "broker", value = "心跳时间(秒), 默认60秒, 该值可被客户端连接时相应配置覆盖", type = "int", defaultValue = "60")
     public static final String PROP_KEEPALIVE = PRE + "keep-alive";
+    /**
+     * 转发kafka主题
+     */
+    private String producerTopic;
+    @PropDoc(group = "broker", value = "kafka转发topic", defaultValue = "mqtt_publish")
+    public static final String PROP_KAFKA_PRODUCERTOPIC = PRE + "kafka.producer.topic";
 
+    /**
+     * 接收kafka主题
+     */
+    private String consumerTopic;
+    @PropDoc(group = "broker", value = "kafka订阅topic", defaultValue = "mqtt_subscribe")
+    public static final String PROP_KAFKA_CONSUMERTOPIC = PRE + "kafka.consumer.topic";
 
     public void init() {
         this.id = conf.get(_id, "mqttwk");
@@ -78,6 +90,9 @@ public class BrokerProperties {
         this.sslEnabled = conf.getBoolean(PROP_SSLENABLED, true);
         this.sslPassword = conf.get(PROP_SSLPASSWORD);
         this.keepAlive = conf.getInt(PROP_KEEPALIVE, 60);
+        this.producerTopic = conf.get(PROP_KAFKA_PRODUCERTOPIC, "mqtt_publish");
+        this.consumerTopic = conf.get(PROP_KAFKA_CONSUMERTOPIC, "mqtt_subscribe");
+
     }
 
     public String getId() {
@@ -152,4 +167,21 @@ public class BrokerProperties {
         return this;
     }
 
+    public String getProducerTopic() {
+        return producerTopic;
+    }
+
+    public BrokerProperties setProducerTopic(String producerTopic) {
+        this.producerTopic = producerTopic;
+        return this;
+    }
+
+    public String getConsumerTopic() {
+        return consumerTopic;
+    }
+
+    public BrokerProperties setConsumerTopic(String consumerTopic) {
+        this.consumerTopic = consumerTopic;
+        return this;
+    }
 }

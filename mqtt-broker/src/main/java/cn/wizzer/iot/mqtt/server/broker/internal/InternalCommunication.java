@@ -4,6 +4,7 @@
 
 package cn.wizzer.iot.mqtt.server.broker.internal;
 
+import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
 import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.message.IMessageIdService;
@@ -15,7 +16,6 @@ import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.json.Json;
@@ -33,7 +33,7 @@ public class InternalCommunication {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InternalCommunication.class);
     @Inject
-    private PropertiesProxy conf;
+    private BrokerProperties brokerProperties;
 
     @Inject
     private KafkaProducer kafkaProducer;
@@ -51,7 +51,7 @@ public class InternalCommunication {
     private TioService tioService;
 
     public void internalSend(InternalMessage internalMessage) {
-        ProducerRecord<String, String> data = new ProducerRecord<>(conf.get("mqttwk.broker.kafka.producer.topic", "mqtt_publish"), internalMessage.getTopic(), Json.toJson(internalMessage));
+        ProducerRecord<String, String> data = new ProducerRecord<>(brokerProperties.getProducerTopic(), internalMessage.getTopic(), Json.toJson(internalMessage));
         kafkaProducer.send(data,
                 new Callback() {
                     public void onCompletion(RecordMetadata metadata, Exception e) {

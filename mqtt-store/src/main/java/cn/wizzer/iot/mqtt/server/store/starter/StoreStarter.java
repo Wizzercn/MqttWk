@@ -56,35 +56,6 @@ public class StoreStarter {
     @PropDoc(group = "broker", value = "分发策略", defaultValue = "cn.wizzer.iot.mqtt.server.store.kafka.SimplePartitioner")
     public static final String PROP_KAFKA_PARTITIONERCLASS = PRE + "kafka.partitioner.class";
 
-    @PropDoc(group = "broker", value = "kafka转发topic", defaultValue = "mqtt_publish")
-    public static final String PROP_KAFKA_PRODUCERTOPIC = PRE + "kafka.producer.topic";
-
-    @PropDoc(group = "broker", value = "kafka订阅topic", defaultValue = "mqtt_subscribe")
-    public static final String PROP_KAFKA_CONSUMERTOPIC = PRE + "kafka.consumer.topic";
-
-    //以下部分只是为了打印propDoc
-    @PropDoc(group = "broker", value = "启动的IP", defaultValue = "127.0.0.1")
-    public static final String PROP_HOST = PRE + "host";
-
-    @PropDoc(group = "broker", value = "端口号, 默认8885端口", type = "int", defaultValue = "8885")
-    public static final String PROP_PORT = PRE + "port";
-
-    @PropDoc(group = "broker", value = "是否启用SSL验证", type = "boolean", defaultValue = "true")
-    public static final String PROP_SSLENABLED = PRE + "ssl-enabled";
-
-    @PropDoc(group = "broker", value = "SSL密钥文件密码")
-    public static final String PROP_SSLPASSWORD = PRE + "ssl-password";
-
-    @PropDoc(group = "broker", value = "WebSocket 端口号, 默认9995端口", type = "int", defaultValue = "9995")
-    public static final String PROP_WEBSOCKETPORT = PRE + "websocket-port";
-
-    @PropDoc(group = "broker", value = "WebSocket Path值, 默认值 /mqtt", defaultValue = "/mqtt")
-    public static final String PROP_WEBSOCKETPATH = PRE + "websocket-path";
-
-
-    @PropDoc(group = "broker", value = "心跳时间(秒), 默认60秒, 该值可被客户端连接时相应配置覆盖", type = "int", defaultValue = "60")
-    public static final String PROP_KEEPALIVE = PRE + "keep-alive";
-
     public Properties getProperties() {
         Properties properties = new Properties();
         for (String key : conf.keySet()) {
