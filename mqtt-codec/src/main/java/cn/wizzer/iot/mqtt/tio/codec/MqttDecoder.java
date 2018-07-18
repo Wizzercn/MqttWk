@@ -59,7 +59,6 @@ public final class MqttDecoder {
     private static Object variableHeader;
 
     public static MqttMessage decode(ByteBuffer buffer) throws Exception {
-        log.debug("channelContext  buffer:::" + Json.toJson(buffer));
         if (sigalDecoderState == DecoderState.READ_FIXED_HEADER) {
             try {
                 mqttFixedHeader = decodeFixedHeader(buffer);

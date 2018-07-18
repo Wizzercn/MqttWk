@@ -43,7 +43,7 @@ public class RetainMessageCache {
         Map<String, RetainMessageStore> map = new HashMap<>();
         redisService.keys((CACHE_PRE + "*").getBytes()).forEach(
                 entry -> {
-                    map.put(new String(entry), Lang.fromBytes(redisService.get(entry), RetainMessageStore.class));
+                    map.put(new String(entry).substring(CACHE_PRE.length()), Lang.fromBytes(redisService.get(entry), RetainMessageStore.class));
                 }
         );
         return map;

@@ -43,7 +43,7 @@ public class SubscribeWildcardCache {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
         redisService.keys((CACHE_PRE + "*").getBytes()).forEach(
                 entry -> {
-                    map.put(new String(entry), Lang.fromBytes(redisService.get(entry), ConcurrentHashMap.class));
+                    map.put(new String(entry).substring(CACHE_PRE.length()), Lang.fromBytes(redisService.get(entry), ConcurrentHashMap.class));
                 }
         );
         return map;

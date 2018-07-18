@@ -33,7 +33,6 @@ public abstract class MqttAbsAioHandler implements AioHandler {
         //解析固定头部内容
         try {
             MqttMessage mqttMessage = MqttDecoder.decode(buffer);
-            log.debug("get mqttMessage::" + Json.toJson(mqttMessage));
             if (mqttMessage != null && "SUCCESS".equals(mqttMessage.decoderResult())) {
                 MqttPacket mqttPacket = new MqttPacket();
                 mqttPacket.setMqttMessage(mqttMessage);
@@ -54,7 +53,6 @@ public abstract class MqttAbsAioHandler implements AioHandler {
     @Override
     public ByteBuffer encode(Packet packet, GroupContext groupContext, ChannelContext channelContext) {
         MqttPacket mqttPacket = (MqttPacket) packet;
-        log.debug("send mqttPacket::" + Json.toJson(mqttPacket));
         //写入消息体
         ByteBuffer buffer = MqttEncoder.doEncode(mqttPacket.getMqttMessage());
         buffer.flip();
