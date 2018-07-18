@@ -1,7 +1,6 @@
 package cn.wizzer.iot.mqtt.server.broker;
 
 import cn.wizzer.iot.mqtt.server.broker.server.BrokerServer;
-import cn.wizzer.iot.mqtt.server.broker.service.KafkaService;
 import org.nutz.boot.NbApp;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.Ioc;
@@ -15,7 +14,7 @@ import org.nutz.mvc.annotation.Modules;
 /**
  * Created by wizzer on 2018
  */
-@IocBean(create = "init")
+@IocBean
 @Modules(packages = "cn.wizzer.iot")
 public class MainLauncher {
     private static final Log log = Logs.get();
@@ -27,16 +26,10 @@ public class MainLauncher {
     private RedisService redisService;
     @Inject
     private BrokerServer brokerServer;
-    @Inject
-    private KafkaService kafkaService;
 
     public static void main(String[] args) throws Exception {
         NbApp nb = new NbApp().setArgs(args).setPrintProcDoc(true);
         nb.setMainPackage("cn.wizzer.iot");
         nb.run();
-    }
-
-    public void init(){
-        kafkaService.consumerMessage();
     }
 }

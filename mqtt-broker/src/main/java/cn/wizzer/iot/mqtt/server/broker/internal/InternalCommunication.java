@@ -4,22 +4,19 @@
 
 package cn.wizzer.iot.mqtt.server.broker.internal;
 
-import cn.hutool.core.util.HexUtil;
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
+import cn.wizzer.iot.mqtt.server.broker.service.KafkaService;
 import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.message.IMessageIdService;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.tio.codec.*;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.nutz.aop.interceptor.async.Async;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +34,10 @@ public class InternalCommunication {
     private BrokerProperties brokerProperties;
 
     @Inject
-    private KafkaProducer kafkaProducer;
+    private KafkaService kafkaService;
+
+    @Inject
+    private KafkaConsumer kafkaConsumer;
 
     @Inject
     private ISessionStoreService sessionStoreService;
@@ -50,6 +50,16 @@ public class InternalCommunication {
 
     @Inject
     private TioService tioService;
+
+    @Async
+    public void internalSend(InternalMessage internalMessage) {
+        try {
+            this.sendPublishMessage(internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
+            kafkaService.send(internalMessage);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
     private void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
         List<SubscribeStore> subscribeStores = subscribeStoreService.search(topic);

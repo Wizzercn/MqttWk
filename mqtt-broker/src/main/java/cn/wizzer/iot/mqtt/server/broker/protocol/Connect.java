@@ -116,7 +116,8 @@ public class Connect {
                 dupPublishMessageStoreService.removeByClient(msg.payload().clientIdentifier());
                 dupPubRelMessageStoreService.removeByClient(msg.payload().clientIdentifier());
             }
-            Tio.close(previous, "");
+            if (previous != null)
+                Tio.close(previous, "");
         }
         // 处理遗嘱信息
         SessionStore sessionStore = new SessionStore(msg.payload().clientIdentifier(), channel.getId(), msg.variableHeader().isCleanSession(), null);

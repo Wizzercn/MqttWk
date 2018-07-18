@@ -9,6 +9,7 @@ import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.json.Json;
+import org.nutz.lang.Lang;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.annotation.Modules;
@@ -36,7 +37,7 @@ public class KafkaLauncher {
     }
 
     public void init() {
-        producerSend.send();
+//        producerSend.send();
         //kafka消费消息,接收MQTT发来的消息
         kafkaConsumer.subscribe(Arrays.asList(conf.get("mqttwk.broker.kafka.producer.topic")));
         while (true) {

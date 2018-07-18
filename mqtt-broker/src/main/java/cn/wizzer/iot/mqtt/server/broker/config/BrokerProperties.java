@@ -96,9 +96,9 @@ public class BrokerProperties {
         this.sslEnabled = conf.getBoolean(PROP_SSLENABLED, true);
         this.sslPassword = conf.get(PROP_SSLPASSWORD);
         this.keepAlive = conf.getInt(PROP_KEEPALIVE, 60);
-        this.consumerPoll = conf.getInt(PROP_KAFKA_CONSUMERPOLL, 500);
         this.producerTopic = conf.get(PROP_KAFKA_PRODUCERTOPIC, "mqtt_publish");
         this.consumerTopic = conf.get(PROP_KAFKA_CONSUMERTOPIC, "mqtt_subscribe");
+        this.consumerPoll = conf.getInt(PROP_KAFKA_CONSUMERPOLL, 500);
 
     }
 

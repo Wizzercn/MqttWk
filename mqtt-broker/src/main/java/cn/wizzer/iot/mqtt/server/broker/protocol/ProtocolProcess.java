@@ -5,7 +5,6 @@
 package cn.wizzer.iot.mqtt.server.broker.protocol;
 
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalCommunication;
-import cn.wizzer.iot.mqtt.server.broker.service.KafkaService;
 import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.auth.IAuthService;
 import cn.wizzer.iot.mqtt.server.common.message.IDupPubRelMessageStoreService;
@@ -50,9 +49,6 @@ public class ProtocolProcess {
     @Inject
     private TioService tioService;
 
-    @Inject
-    private KafkaService kafkaService;
-
     private Connect connect;
 
     private Subscribe subscribe;
@@ -96,7 +92,7 @@ public class ProtocolProcess {
 
     public Publish publish() {
         if (publish == null) {
-            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication, tioService,kafkaService);
+            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication, tioService);
         }
         return publish;
     }

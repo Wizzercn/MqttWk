@@ -7,7 +7,6 @@ package cn.wizzer.iot.mqtt.server.broker.protocol;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalCommunication;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
-import cn.wizzer.iot.mqtt.server.broker.service.KafkaService;
 import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.message.*;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
@@ -43,9 +42,7 @@ public class Publish {
 
     private TioService tioService;
 
-    private KafkaService kafkaService;
-
-    public Publish(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IMessageIdService messageIdService, IRetainMessageStoreService retainMessageStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, InternalCommunication internalCommunication, TioService tioService, KafkaService kafkaService) {
+    public Publish(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IMessageIdService messageIdService, IRetainMessageStoreService retainMessageStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, InternalCommunication internalCommunication, TioService tioService) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.messageIdService = messageIdService;
@@ -53,7 +50,6 @@ public class Publish {
         this.dupPublishMessageStoreService = dupPublishMessageStoreService;
         this.internalCommunication = internalCommunication;
         this.tioService = tioService;
-        this.kafkaService = kafkaService;
     }
 
     public void processPublish(ChannelContext channel, MqttPublishMessage msg) {
@@ -64,7 +60,7 @@ public class Publish {
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
                     .setDup(false).setRetain(false);
-            kafkaService.internalSend(internalMessage);
+            internalCommunication.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
         }
         // QoS=1
@@ -74,7 +70,7 @@ public class Publish {
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
                     .setDup(false).setRetain(false);
-            kafkaService.internalSend(internalMessage);
+            internalCommunication.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
             this.sendPubAckMessage(channel, msg.variableHeader().packetId());
         }
@@ -85,7 +81,7 @@ public class Publish {
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
                     .setDup(false).setRetain(false);
-            kafkaService.internalSend(internalMessage);
+            internalCommunication.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
             this.sendPubRecMessage(channel, msg.variableHeader().packetId());
         }
@@ -109,6 +105,7 @@ public class Publish {
             if (sessionStoreService.containsKey(subscribeStore.getClientId())) {
                 // 订阅者收到MQTT消息的QoS级别, 最终取决于发布消息的QoS和主题订阅的QoS
                 MqttQoS respQoS = mqttQoS.value() > subscribeStore.getMqttQoS() ? MqttQoS.valueOf(subscribeStore.getMqttQoS()) : mqttQoS;
+                LOGGER.debug("respQoS:::::"+respQoS);
                 if (respQoS == MqttQoS.AT_MOST_ONCE) {
                     MqttPublishMessage publishMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
