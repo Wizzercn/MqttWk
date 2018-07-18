@@ -10,7 +10,6 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ public class KafkaService {
     private BrokerProperties brokerProperties;
 
     @Async
-    public void send(InternalMessage internalMessage) throws Exception{
+    public void send(InternalMessage internalMessage) throws Exception {
         //消息体转换为Hex字符串进行转发
         ProducerRecord<String, String> data = new ProducerRecord<>(brokerProperties.getProducerTopic(), internalMessage.getTopic(), HexUtil.encodeHexStr(internalMessage.getMessageBytes()));
         kafkaProducer.send(data,

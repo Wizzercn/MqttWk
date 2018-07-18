@@ -74,18 +74,6 @@ public class BrokerProperties {
     @PropDoc(group = "broker", value = "kafka转发topic", defaultValue = "mqtt_publish")
     public static final String PROP_KAFKA_PRODUCERTOPIC = PRE + "kafka.producer.topic";
 
-    /**
-     * 接收kafka主题
-     */
-    private String consumerTopic;
-    @PropDoc(group = "broker", value = "kafka订阅topic", defaultValue = "mqtt_subscribe")
-    public static final String PROP_KAFKA_CONSUMERTOPIC = PRE + "kafka.consumer.topic";
-    /**
-     * 接收kafka主题
-     */
-    private int consumerPoll;
-    @PropDoc(group = "broker", value = "kafka消费者轮循时间(毫秒), 默认500", type = "int", defaultValue = "500")
-    public static final String PROP_KAFKA_CONSUMERPOLL = PRE + "kafka.consumer.poll-time";
 
     public void init() {
         this.id = conf.get(_id, "mqttwk");
@@ -97,8 +85,6 @@ public class BrokerProperties {
         this.sslPassword = conf.get(PROP_SSLPASSWORD);
         this.keepAlive = conf.getInt(PROP_KEEPALIVE, 60);
         this.producerTopic = conf.get(PROP_KAFKA_PRODUCERTOPIC, "mqtt_publish");
-        this.consumerTopic = conf.get(PROP_KAFKA_CONSUMERTOPIC, "mqtt_subscribe");
-        this.consumerPoll = conf.getInt(PROP_KAFKA_CONSUMERPOLL, 500);
 
     }
 
@@ -183,21 +169,4 @@ public class BrokerProperties {
         return this;
     }
 
-    public String getConsumerTopic() {
-        return consumerTopic;
-    }
-
-    public BrokerProperties setConsumerTopic(String consumerTopic) {
-        this.consumerTopic = consumerTopic;
-        return this;
-    }
-
-    public int getConsumerpoll() {
-        return consumerPoll;
-    }
-
-    public BrokerProperties setConsumerpoll(int consumerPoll) {
-        this.consumerPoll = consumerPoll;
-        return this;
-    }
 }

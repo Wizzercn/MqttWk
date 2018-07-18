@@ -14,6 +14,7 @@ import org.nutz.log.Logs;
 import org.nutz.mvc.annotation.Modules;
 
 import java.util.Arrays;
+import java.util.Properties;
 
 /**
  * Created by wizzer on 2018
@@ -24,8 +25,6 @@ public class KafkaLauncher {
     private static final Log log = Logs.get();
     @Inject
     private PropertiesProxy conf;
-    @Inject
-    private KafkaConsumer kafkaConsumer;
 
     public static void main(String[] args) throws Exception {
         NbApp nb = new NbApp().setArgs(args).setPrintProcDoc(true);
@@ -33,7 +32,18 @@ public class KafkaLauncher {
         nb.run();
     }
 
+    public Properties getProperties() {
+        Properties properties = new Properties();
+        for (String key : conf.keySet()) {
+            if (key.startsWith("mqttwk.broker.kafka.")) {
+                properties.put(key.substring("mqttwk.broker.kafka.".length()), conf.get(key));
+            }
+        }
+        return properties;
+    }
+
     public void init() {
+        KafkaConsumer kafkaConsumer=new KafkaConsumer(getProperties());
         //kafka消费消息,接收MQTT发来的消息
         kafkaConsumer.subscribe(Arrays.asList(conf.get("mqttwk.broker.kafka.producer.topic")));
         while (true) {

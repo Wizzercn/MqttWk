@@ -1,6 +1,5 @@
 package cn.wizzer.iot.mqtt.server.store.starter;
 
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.nutz.boot.annotation.PropDoc;
 import org.nutz.ioc.impl.PropertiesProxy;
@@ -17,7 +16,6 @@ public class StoreStarter {
     @Inject
     protected PropertiesProxy conf;
     protected KafkaProducer kafkaProducer;
-    protected KafkaConsumer kafkaConsumer;
     protected static final String PRE = "mqttwk.broker.";
 
     @PropDoc(group = "broker", value = "实例名称", need = true, defaultValue = "mqttwk")
@@ -47,12 +45,6 @@ public class StoreStarter {
     @PropDoc(group = "broker", value = "value序列化方法", defaultValue = "org.apache.kafka.common.serialization.StringSerializer")
     public static final String PROP_KAFKA_VALUESERIALIZER = PRE + "kafka.value.serializer";
 
-    @PropDoc(group = "broker", value = "key反序列化方法", defaultValue = "org.apache.kafka.common.serialization.StringSerializer")
-    public static final String PROP_KAFKA_KEYDESERIALIZER = PRE + "kafka.key.deserializer";
-
-    @PropDoc(group = "broker", value = "value反序列化方法", defaultValue = "org.apache.kafka.common.serialization.StringSerializer")
-    public static final String PROP_KAFKA_VALUEDESERIALIZER = PRE + "kafka.value.deserializer";
-
     @PropDoc(group = "broker", value = "分发策略", defaultValue = "cn.wizzer.iot.mqtt.server.store.kafka.SimplePartitioner")
     public static final String PROP_KAFKA_PARTITIONERCLASS = PRE + "kafka.partitioner.class";
 
@@ -71,22 +63,13 @@ public class StoreStarter {
         return this.kafkaProducer;
     }
 
-    @IocBean
-    public KafkaConsumer kafkaConsumer() {
-        return this.kafkaConsumer;
-    }
-
     public void init() throws Exception {
         this.kafkaProducer = new KafkaProducer(getProperties());
-        this.kafkaConsumer = new KafkaConsumer(getProperties());
     }
 
     public void close() throws Exception {
         if (this.kafkaProducer != null) {
             this.kafkaProducer.close();
-        }
-        if (this.kafkaConsumer != null) {
-            this.kafkaConsumer.close();
         }
     }
 }
