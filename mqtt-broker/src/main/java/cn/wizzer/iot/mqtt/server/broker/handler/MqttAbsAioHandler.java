@@ -4,8 +4,8 @@ import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
 import cn.wizzer.iot.mqtt.tio.codec.MqttDecoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttEncoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttMessage;
-import org.nutz.log.Log;
-import org.nutz.log.Logs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
 import org.tio.core.GroupContext;
 import org.tio.core.exception.AioDecodeException;
@@ -19,7 +19,8 @@ import java.nio.ByteBuffer;
  * Created by wizzer on 2018
  */
 public abstract class MqttAbsAioHandler implements AioHandler {
-    private final static Log log = Logs.get();
+    private static Logger LOGGER = LoggerFactory.getLogger(MqttAbsAioHandler.class);
+
 
     /**
      * 解码：把接收到的ByteBuffer，解码成应用可以识别的业务消息包

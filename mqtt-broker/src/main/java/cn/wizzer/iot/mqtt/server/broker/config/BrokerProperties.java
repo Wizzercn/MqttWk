@@ -44,11 +44,11 @@ public class BrokerProperties {
     @PropDoc(group = "broker", value = "WebSocket 端口号, 默认9995端口", type = "int", defaultValue = "9995")
     public static final String PROP_WEBSOCKETPORT = PRE + "websocket-port";
     /**
-     * WebSocket Path值, 默认值 /mqtt
+     * WebSocket 是否启用
      */
-    private String websocketPath;
-    @PropDoc(group = "broker", value = "WebSocket Path值, 默认值 /mqtt", defaultValue = "/mqtt")
-    public static final String PROP_WEBSOCKETPATH = PRE + "websocket-path";
+    private boolean websocketEnabled;
+    @PropDoc(group = "broker", value = "WebSocket 是否启用", type = "boolean", defaultValue = "false")
+    public static final String PROP_WEBSOCKEENABLED = PRE + "websocket-enabled";
     /**
      * SSL是否启用
      */
@@ -80,7 +80,7 @@ public class BrokerProperties {
         this.host = conf.get(PROP_HOST, "127.0.0.1");
         this.port = conf.getInt(PROP_PORT, 8885);
         this.websocketPort = conf.getInt(PROP_WEBSOCKETPORT, 9995);
-        this.websocketPath = conf.get(PROP_WEBSOCKETPATH, "/mqtt");
+        this.websocketEnabled = conf.getBoolean(PROP_WEBSOCKEENABLED, false);
         this.sslEnabled = conf.getBoolean(PROP_SSLENABLED, true);
         this.sslPassword = conf.get(PROP_SSLPASSWORD);
         this.keepAlive = conf.getInt(PROP_KEEPALIVE, 60);
@@ -124,12 +124,12 @@ public class BrokerProperties {
         return this;
     }
 
-    public String getWebsocketPath() {
-        return websocketPath;
+    public boolean getWebsockeenabled() {
+        return websocketEnabled;
     }
 
-    public BrokerProperties setWebsocketPath(String websocketPath) {
-        this.websocketPath = websocketPath;
+    public BrokerProperties setWebsocketEnabled(boolean websocketEnabled) {
+        this.websocketEnabled = websocketEnabled;
         return this;
     }
 

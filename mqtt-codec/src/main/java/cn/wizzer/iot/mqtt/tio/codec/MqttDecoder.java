@@ -110,7 +110,6 @@ public final class MqttDecoder {
         if (sigalDecoderState == DecoderState.BAD_MESSAGE) {
             // Keep discarding until disconnection.
 //            buffer.skipBytes(actualReadableBytes());
-            log.debug("sigalDecoderState buffer xxxx:::::" + Json.toJson(buffer));
 //            buffer.position(buffer.limit());
             buffer.clear();
             return null;
@@ -296,7 +295,6 @@ public final class MqttDecoder {
             MqttMessageType messageType,
             int bytesRemainingInVariablePart,
             Object variableHeader) {
-        log.debug("messageType::::" + messageType);
         switch (messageType) {
             case CONNECT:
                 return decodeConnectionPayload(buffer, (MqttConnectVariableHeader) variableHeader);

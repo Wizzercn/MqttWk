@@ -36,6 +36,16 @@
             <version>${tio.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.t-io</groupId>
+            <artifactId>tio-websocket-common</artifactId>
+            <version>${tio.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.t-io</groupId>
+            <artifactId>tio-websocket-server</artifactId>
+            <version>${tio.version}</version>
+        </dependency>
+        <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-crypto</artifactId>
             <version>${hutool.version}</version>

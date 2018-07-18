@@ -14,13 +14,51 @@ import org.tio.server.intf.ServerAioHandler;
 /**
  * Created by wizzer on 2018
  */
-@IocBean
-public class BrokerHandler extends MqttAbsAioHandler implements ServerAioHandler {
-    private static Logger LOGGER = LoggerFactory.getLogger(BrokerHandler.class);
-
+@IocBean(create = "init")
+public class WsBrokerHandler extends WsAbsAioHandler implements ServerAioHandler {
+    private static Logger log = LoggerFactory.getLogger(WsBrokerHandler.class);
     @Inject
     private ProtocolProcess protocolProcess;
+    @Inject
+    private WsMsgHandler wsMsgHandler;
 
+    public void init() {
+        super.setWsMsgHandler(this.wsMsgHandler);
+    }
+
+    //    @Override
+//    public void handler(Packet packet, ChannelContext channelContext) throws Exception {
+//
+//        WsRequest wsRequest = (WsRequest) packet;
+//
+//        if (wsRequest.isHandShake()) {
+//            WsSessionContext wsSessionContext = (WsSessionContext) channelContext.getAttribute();
+//            HttpRequest request = wsSessionContext.getHandshakeRequestPacket();
+//            HttpResponse httpResponse = wsSessionContext.getHandshakeResponsePacket();
+//            HttpResponse r = wsMsgHandler.handshake(request, httpResponse, channelContext);
+//            if (r == null) {
+//                Tio.remove(channelContext, "业务层不同意握手");
+//                return;
+//            }
+//            wsSessionContext.setHandshakeResponsePacket(r);
+//
+//            WsResponse wsResponse = new WsResponse();
+//            wsResponse.setHandShake(true);
+//            Tio.send(channelContext, wsResponse);
+//            wsSessionContext.setHandshaked(true);
+//
+//            wsMsgHandler.onAfterHandshaked(request, httpResponse, channelContext);
+//            return;
+//        }
+//
+//        WsResponse wsResponse = h(wsRequest, wsRequest.getBody(), wsRequest.getWsOpcode(), channelContext);
+//
+//        if (wsResponse != null) {
+//            Tio.send(channelContext, wsResponse);
+//        }
+//
+//        return;
+//    }
     @Override
     public void handler(Packet packet, ChannelContext channelContext) throws Exception {
         MqttPacket mqttPacket = (MqttPacket) packet;

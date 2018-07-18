@@ -5,8 +5,8 @@ import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import cn.wizzer.iot.mqtt.server.store.session.SessionStoreService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.log.Log;
-import org.nutz.log.Logs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
 import org.tio.core.intf.Packet;
 import org.tio.server.intf.ServerAioListener;
@@ -16,11 +16,12 @@ import org.tio.server.intf.ServerAioListener;
  */
 @IocBean
 public class MqttServerListener implements ServerAioListener {
-    private final static Log log = Logs.get();
+    private static Logger LOGGER = LoggerFactory.getLogger(MqttServerListener.class);
     @Inject
     private SessionStoreService sessionStoreService;
     @Inject
     private ProtocolProcess protocolProcess;
+
     /**
      * 建链后触发本方法，注：建链不一定成功，需要关注参数isConnected
      *
@@ -69,7 +70,7 @@ public class MqttServerListener implements ServerAioListener {
      */
     @Override
     public void onBeforeClose(ChannelContext channelContext, Throwable throwable, String remark, boolean isRemove) {
-        log.debug("连接关闭前触发onBeforeClose");
+        LOGGER.debug("连接关闭前触发onBeforeClose");
         String clientId = (String) channelContext.getAttribute("clientId");
         // 发送遗嘱消息
         if (this.sessionStoreService.containsKey(clientId)) {
