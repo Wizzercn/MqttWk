@@ -296,7 +296,7 @@ public final class MqttEncoder {
 
         int variableHeaderBufferSize = 2 + topicNameBytes.length +
                 (mqttFixedHeader.qosLevel().value() > 0 ? 2 : 0);
-        int payloadBufferSize = payload.getInt();
+        int payloadBufferSize = payload.remaining();
         int variablePartSize = variableHeaderBufferSize + payloadBufferSize;
         int fixedHeaderBufferSize = 1 + getVariableLengthInt(variablePartSize);
         ByteBuffer buf = ByteBuffer.allocate(fixedHeaderBufferSize + variablePartSize);
