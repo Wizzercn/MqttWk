@@ -19,7 +19,7 @@
         <mqttwk.version>1.0-SNAPSHOT</mqttwk.version>
         <nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
         <tio.version>3.1.2.v20180712-RELEASE</tio.version>
-        <hutool.version>4.1.1</hutool.version>
+        <hutool.version>4.1.2</hutool.version>
         <ignite.version>2.5.0</ignite.version>
         <kafka_2.12.version>1.1.0</kafka_2.12.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -2,6 +2,7 @@ package cn.wizzer.iot.mqtt.server.broker.handler;
 
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
+import cn.wizzer.iot.mqtt.tio.codec.*;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.slf4j.Logger;
@@ -14,6 +15,8 @@ import org.tio.websocket.common.WsRequest;
 import org.tio.websocket.common.WsSessionContext;
 import org.tio.websocket.server.handler.IWsMsgHandler;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by wizzer on 2018
  */
@@ -24,13 +27,14 @@ public class WsMsgHandler implements IWsMsgHandler {
     private BrokerProperties brokerProperties;
     @Inject
     private ProtocolProcess protocolProcess;
+
     /**
      * 握手时走这个方法，业务可以在这里获取cookie，request参数等
      */
     @Override
     public HttpResponse handshake(HttpRequest request, HttpResponse httpResponse, ChannelContext channelContext) throws Exception {
         String clientip = request.getClientIp();
-        LOGGER.info("收到来自{}的ws握手包\r\n{}", clientip, request.toString());
+        LOGGER.debug("收到来自{}的ws握手包\r\n{}", clientip, request.toString());
         return httpResponse;
     }
 
@@ -43,16 +47,7 @@ public class WsMsgHandler implements IWsMsgHandler {
      */
     @Override
     public void onAfterHandshaked(HttpRequest httpRequest, HttpResponse httpResponse, ChannelContext channelContext) throws Exception {
-        //绑定到群组，后面会有群发
-        LOGGER.debug("111");
-//        Tio.bindGroup(channelContext, brokerProperties.getId());
-//        int count = Tio.getAllChannelContexts(channelContext.groupContext).getObj().size();
-//
-//        String msg = channelContext.getClientNode().toString() + " 进来了，现在共有【" + count + "】人在线";
-//        //用tio-websocket，服务器发送到客户端的Packet都是WsResponse
-//        WsResponse wsResponse = WsResponse.fromText(msg, Encoding.UTF8);
-//        //群发
-//        Tio.sendToGroup(channelContext.groupContext, brokerProperties.getId(), wsResponse);
+
     }
 
     /**
@@ -60,7 +55,52 @@ public class WsMsgHandler implements IWsMsgHandler {
      */
     @Override
     public Object onBytes(WsRequest wsRequest, byte[] bytes, ChannelContext channelContext) throws Exception {
-        LOGGER.debug("bytes:::"+new String(bytes));
+        MqttMessage mqttMessage = MqttDecoder.decode(ByteBuffer.wrap(bytes));
+        //不使用ws或wss协议连这个端口会null
+        if (mqttMessage == null || "UNFINISHED".equals(mqttMessage.decoderResult()))
+            return null;
+        switch (mqttMessage.fixedHeader().messageType()) {
+            case CONNECT:
+                protocolProcess.connect().processConnect(channelContext, (MqttConnectMessage) mqttMessage);
+                break;
+            case CONNACK:
+                break;
+            case PUBLISH:
+                protocolProcess.publish().processPublish(channelContext, (MqttPublishMessage) mqttMessage);
+                break;
+            case PUBACK:
+                protocolProcess.pubAck().processPubAck(channelContext, (MqttMessageIdVariableHeader) mqttMessage.variableHeader());
+                break;
+            case PUBREC:
+                protocolProcess.pubRec().processPubRec(channelContext, (MqttMessageIdVariableHeader) mqttMessage.variableHeader());
+                break;
+            case PUBREL:
+                protocolProcess.pubRel().processPubRel(channelContext, (MqttMessageIdVariableHeader) mqttMessage.variableHeader());
+                break;
+            case PUBCOMP:
+                protocolProcess.pubComp().processPubComp(channelContext, (MqttMessageIdVariableHeader) mqttMessage.variableHeader());
+                break;
+            case SUBSCRIBE:
+                protocolProcess.subscribe().processSubscribe(channelContext, (MqttSubscribeMessage) mqttMessage);
+                break;
+            case SUBACK:
+                break;
+            case UNSUBSCRIBE:
+                protocolProcess.unSubscribe().processUnSubscribe(channelContext, (MqttUnsubscribeMessage) mqttMessage);
+                break;
+            case UNSUBACK:
+                break;
+            case PINGREQ:
+                protocolProcess.pingReq().processPingReq(channelContext, mqttMessage);
+                break;
+            case PINGRESP:
+                break;
+            case DISCONNECT:
+                protocolProcess.disConnect().processDisConnect(channelContext, mqttMessage);
+                break;
+            default:
+                break;
+        }
         return null;
     }
 
@@ -83,20 +123,6 @@ public class WsMsgHandler implements IWsMsgHandler {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("握手包:{}", httpRequest);
         }
-
-        LOGGER.debug("收到ws消息:{}", text);
-//
-//        if (Objects.equals("心跳内容", text)) {
-//            return null;
-//        }
-//
-//        String msg = channelContext.getClientNode().toString() + " 说：" + text;
-//        //用tio-websocket，服务器发送到客户端的Packet都是WsResponse
-//        WsResponse wsResponse = WsResponse.fromText(msg, Encoding.UTF8);
-//        //群发
-//        Tio.sendToGroup(channelContext.groupContext, brokerProperties.getId(), wsResponse);
-
-        //返回值是要发送给客户端的内容，一般都是返回null
         return null;
     }
 

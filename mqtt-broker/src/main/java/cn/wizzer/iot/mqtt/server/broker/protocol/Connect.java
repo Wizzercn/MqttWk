@@ -5,6 +5,7 @@
 package cn.wizzer.iot.mqtt.server.broker.protocol;
 
 import cn.hutool.core.util.StrUtil;
+import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
 import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.auth.IAuthService;
@@ -44,13 +45,16 @@ public class Connect {
 
     private TioService tioService;
 
-    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService, TioService tioService) {
+    private BrokerProperties brokerProperties;
+
+    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService, TioService tioService, BrokerProperties brokerProperties) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.dupPublishMessageStoreService = dupPublishMessageStoreService;
         this.dupPubRelMessageStoreService = dupPubRelMessageStoreService;
         this.authService = authService;
         this.tioService = tioService;
+        this.brokerProperties = brokerProperties;
     }
 
     public void processConnect(ChannelContext channel, MqttConnectMessage msg) {
@@ -92,18 +96,20 @@ public class Connect {
             Tio.close(channel, "");
             return;
         }
-        // 用户名和密码验证, 这里要求客户端连接时必须提供用户名和密码, 不管是否设置用户名标志和密码标志为1, 此处没有参考标准协议实现
-        String username = msg.payload().userName();
-        String password = msg.payload().passwordInBytes() == null ? null : new String(msg.payload().passwordInBytes(), Encoding.CHARSET_UTF8);
-        if (!authService.checkValid(username, password)) {
-            MqttConnAckMessage connAckMessage = (MqttConnAckMessage) MqttMessageFactory.newMessage(
-                    new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
-                    new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD, false), null);
-            MqttPacket mqttPacket = new MqttPacket();
-            mqttPacket.setMqttMessage(connAckMessage);
-            Tio.send(channel, mqttPacket);
-            Tio.close(channel, "");
-            return;
+        //如果服务端强制要求进行用户名及密码验证
+        if(brokerProperties.getMqttPasswordMust()) {
+            String username = msg.payload().userName();
+            String password = msg.payload().passwordInBytes() == null ? null : new String(msg.payload().passwordInBytes(), Encoding.CHARSET_UTF8);
+            if (!authService.checkValid(username, password)) {
+                MqttConnAckMessage connAckMessage = (MqttConnAckMessage) MqttMessageFactory.newMessage(
+                        new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
+                        new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_REFUSED_BAD_USER_NAME_OR_PASSWORD, false), null);
+                MqttPacket mqttPacket = new MqttPacket();
+                mqttPacket.setMqttMessage(connAckMessage);
+                Tio.send(channel, mqttPacket);
+                Tio.close(channel, "");
+                return;
+            }
         }
         // 如果会话中已存储这个新连接的clientId, 就关闭之前该clientId的连接
         if (sessionStoreService.containsKey(msg.payload().clientIdentifier())) {
@@ -142,7 +148,6 @@ public class Connect {
                 new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_ACCEPTED, sessionPresent), null);
         MqttPacket okRespPacket = new MqttPacket();
         okRespPacket.setMqttMessage(okResp);
-        LOGGER.debug("okRespPacket channel:::" + channel);
         Tio.send(channel, okRespPacket);
         LOGGER.debug("CONNECT - clientId: {}, cleanSession: {}", msg.payload().clientIdentifier(), msg.variableHeader().isCleanSession());
         // 如果cleanSession为0, 需要重发同一clientId存储的未完成的QoS1和QoS2的DUP消息

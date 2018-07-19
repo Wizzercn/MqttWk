@@ -4,6 +4,7 @@
 
 package cn.wizzer.iot.mqtt.server.broker.protocol;
 
+import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalCommunication;
 import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.auth.IAuthService;
@@ -49,6 +50,9 @@ public class ProtocolProcess {
     @Inject
     private TioService tioService;
 
+    @Inject
+    private BrokerProperties brokerProperties;
+
     private Connect connect;
 
     private Subscribe subscribe;
@@ -71,7 +75,7 @@ public class ProtocolProcess {
 
     public Connect connect() {
         if (connect == null) {
-            connect = new Connect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService, authService, tioService);
+            connect = new Connect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService, authService, tioService, brokerProperties);
         }
         return connect;
     }

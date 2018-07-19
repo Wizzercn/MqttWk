@@ -1,0 +1,69 @@
+<HTML>
+<HEAD>
+    <TITLE> Wizzer.cn </TITLE>
+</HEAD>
+
+<BODY>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+<input type="button" value="start" onclick="doStart()">
+<script>
+    var hostname = '127.0.0.1',
+        port = 9995,
+        clientId = 'pc-web',
+        timeout = 5,
+        keepAlive = 50,
+        cleanSession = false,
+        ssl = false,
+        userName = 'demo',
+        password = '8F3B8DE2FDC8BD3D792BE77EAC412010971765E5BDD6C499ADCEE840CE441BDEF17E30684BD95CA708F55022222CC6161D0D23C2DFCB12F8AC998F59E7213393';
+    client = new Paho.MQTT.Client(hostname, port, clientId);
+    //建立客户端实例
+    var options = {
+        invocationContext: {
+            host: hostname,
+            port: port,
+            path: client.path,
+            clientId: clientId
+        },
+        timeout: timeout,
+        keepAliveInterval: keepAlive,
+        cleanSession: cleanSession,
+        useSSL: ssl,
+        userName: userName,
+        password: password,
+        onSuccess: onConnect,
+        onFailure: function (e) {
+            console.log(e);
+        }
+    };
+
+    function onConnect() {
+        console.log("onConnected");
+        client.subscribe("/topic_back");//订阅主题
+
+        //发送消息
+        message = new Paho.MQTT.Message("hello");
+        message.destinationName = "/topic";
+        client.send(message);
+    }
+
+    client.onConnectionLost = onConnectionLost;//注册连接断开处理事件
+    client.onMessageArrived = onMessageArrived;//注册消息接收处理事件
+    function onConnectionLost(responseObject) {
+        if (responseObject.errorCode !== 0) {
+            console.log("onConnectionLost:" + responseObject.errorMessage);
+            console.log("连接已断开");
+        }
+    }
+
+    function onMessageArrived(message) {
+        console.log("收到消息:" + message.payloadString);
+    }
+
+    function doStart() {
+
+        client.connect(options);
+    }
+</script>
+</BODY>
+</HTML>

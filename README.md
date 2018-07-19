@@ -28,6 +28,8 @@ MqttWk
   ├── mqtt-common -- 公共类及其他模块使用的服务接口及对象
   ├── mqtt-store -- MQTT服务器会话信息, 主题信息等内容的redis缓存及kafka转发机制
   ├── mqtt-zoo -- 教程文档或文件
+    ├── mqtt-test-kafka -- kafka消费者接收消息
+    ├── mqtt-test-websocket -- websocket通信测试示例
 ```
 
 #### 功能说明
@@ -35,10 +37,10 @@ MqttWk
 2. 完整的QoS服务质量等级实现
 3. 遗嘱消息, 保留消息及消息分发重试
 4. 心跳机制
-5. 连接认证(强制开启)
-5. SSL方式连接(支持非SSL连接)
+5. MQTT连接认证(可选择是否开启)
+5. SSL方式连接(可选择是否开启)
 6. 主题过滤(支持单主题订阅如 /mqtt/test --不可以/结尾, 通配符订阅 /mqtt/# --以/#结尾)
-7. Websocket支持
+7. Websocket支持(可选择是否开启)
 8. 集群功能
 
 #### 快速开始

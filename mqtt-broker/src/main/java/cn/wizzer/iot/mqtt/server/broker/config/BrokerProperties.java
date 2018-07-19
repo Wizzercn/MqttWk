@@ -73,7 +73,12 @@ public class BrokerProperties {
     private String producerTopic;
     @PropDoc(group = "broker", value = "kafka转发topic", defaultValue = "mqtt_publish")
     public static final String PROP_KAFKA_PRODUCERTOPIC = PRE + "kafka.producer.topic";
-
+    /**
+     * MQTT.Connect消息必须通过用户名密码验证
+     */
+    private boolean mqttPasswordMust;
+    @PropDoc(group = "broker", value = "Connect消息必须通过用户名密码验证, 默认true", type = "boolean", defaultValue = "true")
+    public static final String PROP_MQTTPASSWORDMUST = PRE + "mqtt-password-must";
 
     public void init() {
         this.id = conf.get(_id, "mqttwk");
@@ -85,7 +90,7 @@ public class BrokerProperties {
         this.sslPassword = conf.get(PROP_SSLPASSWORD);
         this.keepAlive = conf.getInt(PROP_KEEPALIVE, 60);
         this.producerTopic = conf.get(PROP_KAFKA_PRODUCERTOPIC, "mqtt_publish");
-
+        this.mqttPasswordMust = conf.getBoolean(PROP_MQTTPASSWORDMUST, true);
     }
 
     public String getId() {
@@ -169,4 +174,12 @@ public class BrokerProperties {
         return this;
     }
 
+    public boolean getMqttPasswordMust() {
+        return sslEnabled;
+    }
+
+    public BrokerProperties setMqttPasswordMust(boolean mqttPasswordMust) {
+        this.mqttPasswordMust = mqttPasswordMust;
+        return this;
+    }
 }
