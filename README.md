@@ -41,7 +41,7 @@ MqttWk
 5. SSL方式连接(可选择是否开启)
 6. 主题过滤(支持单主题订阅如 /mqtt/test --不可以/结尾, 通配符订阅 /mqtt/# --以/#结尾)
 7. Websocket支持(可选择是否开启)
-8. 集群功能
+8. 集群功能(可选择是否开启)
 
 #### 快速开始
 - [下载已打包好的可运行的jar文件](https://gitee.com/wizzer/MqttWk/releases)
@@ -54,10 +54,12 @@ MqttWk
 
 #### 集群使用
 - 多机环境集群:
+  - `mqttwk.broker.cluster-on=true`
   - `mqttwk.broker.kafka.bootstrap.servers=192.168.1.101:9092,192.168.1.102:9093`
   - `redis.mode=cluster` 
   - `redis.nodes=192.168.1.103:16379,192.168.1.104:26379`
 - 单机环境集群: 
+  - `mqttwk.broker.cluster-on=true`
   - `mqttwk.broker.kafka.bootstrap.servers=127.0.0.1:9092,127.0.0.1:9093`
   - `redis.mode=normal`
   - `redis.host=127.0.0.1`
