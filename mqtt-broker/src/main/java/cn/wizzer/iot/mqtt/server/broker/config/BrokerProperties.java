@@ -38,6 +38,12 @@ public class BrokerProperties {
     @PropDoc(group = "broker", value = "端口号, 默认8885端口", type = "int", defaultValue = "8885")
     public static final String PROP_PORT = PRE + "port";
     /**
+     * t-io是否开启集群
+     */
+    private boolean clusterEnabled;
+    @PropDoc(group = "broker", value = "是否开启集群模式, 默认false", type = "boolean", defaultValue = "false")
+    public static final String PROP_CLUSTERON = PRE + "cluster-on";
+    /**
      * WebSocket SSL端口号, 默认9995端口
      */
     private int websocketPort;
@@ -80,6 +86,7 @@ public class BrokerProperties {
     @PropDoc(group = "broker", value = "Connect消息必须通过用户名密码验证, 默认true", type = "boolean", defaultValue = "true")
     public static final String PROP_MQTTPASSWORDMUST = PRE + "mqtt-password-must";
 
+
     public void init() {
         this.id = conf.get(_id, "mqttwk");
         this.host = conf.get(PROP_HOST, "127.0.0.1");
@@ -91,6 +98,7 @@ public class BrokerProperties {
         this.keepAlive = conf.getInt(PROP_KEEPALIVE, 60);
         this.producerTopic = conf.get(PROP_KAFKA_PRODUCERTOPIC, "mqtt_publish");
         this.mqttPasswordMust = conf.getBoolean(PROP_MQTTPASSWORDMUST, true);
+        this.clusterEnabled = conf.getBoolean(PROP_CLUSTERON, false);
     }
 
     public String getId() {
@@ -117,6 +125,15 @@ public class BrokerProperties {
 
     public BrokerProperties setPort(int port) {
         this.port = port;
+        return this;
+    }
+
+    public boolean getClusterEnabled() {
+        return clusterEnabled;
+    }
+
+    public BrokerProperties setClusterEnabled(boolean clusterEnabled) {
+        this.clusterEnabled = clusterEnabled;
         return this;
     }
 

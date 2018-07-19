@@ -17,15 +17,12 @@ public class SessionStore implements Serializable {
 
     private String clientId;
 
-    private String channelId;
-
     private boolean cleanSession;
 
     private MqttPublishMessage willMessage;
 
-    public SessionStore(String clientId, String channelId, boolean cleanSession, MqttPublishMessage willMessage) {
+    public SessionStore(String clientId, boolean cleanSession, MqttPublishMessage willMessage) {
         this.clientId = clientId;
-        this.channelId = channelId;
         this.cleanSession = cleanSession;
         this.willMessage = willMessage;
     }
@@ -36,15 +33,6 @@ public class SessionStore implements Serializable {
 
     public SessionStore setClientId(String clientId) {
         this.clientId = clientId;
-        return this;
-    }
-
-    public String getChannelId() {
-        return channelId;
-    }
-
-    public SessionStore setChannelId(String channelId) {
-        this.channelId = channelId;
         return this;
     }
 

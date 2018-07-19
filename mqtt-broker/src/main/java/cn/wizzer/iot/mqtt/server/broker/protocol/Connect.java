@@ -97,7 +97,7 @@ public class Connect {
             return;
         }
         //如果服务端强制要求进行用户名及密码验证
-        if(brokerProperties.getMqttPasswordMust()) {
+        if (brokerProperties.getMqttPasswordMust()) {
             String username = msg.payload().userName();
             String password = msg.payload().passwordInBytes() == null ? null : new String(msg.payload().passwordInBytes(), Encoding.CHARSET_UTF8);
             if (!authService.checkValid(username, password)) {
@@ -114,7 +114,7 @@ public class Connect {
         // 如果会话中已存储这个新连接的clientId, 就关闭之前该clientId的连接
         if (sessionStoreService.containsKey(msg.payload().clientIdentifier())) {
             SessionStore sessionStore = sessionStoreService.get(msg.payload().clientIdentifier());
-            ChannelContext previous = tioService.getChannel(sessionStore.getChannelId());
+            ChannelContext previous = tioService.getChannel(sessionStore.getClientId());
             Boolean cleanSession = sessionStore.isCleanSession();
             if (cleanSession) {
                 sessionStoreService.remove(msg.payload().clientIdentifier());
@@ -126,7 +126,7 @@ public class Connect {
                 Tio.close(previous, "");
         }
         // 处理遗嘱信息
-        SessionStore sessionStore = new SessionStore(msg.payload().clientIdentifier(), channel.getId(), msg.variableHeader().isCleanSession(), null);
+        SessionStore sessionStore = new SessionStore(msg.payload().clientIdentifier(), msg.variableHeader().isCleanSession(), null);
         if (msg.variableHeader().isWillFlag()) {
             MqttPublishMessage willMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
                     new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(msg.variableHeader().willQos()), msg.variableHeader().isWillRetain(), 0),
@@ -140,7 +140,8 @@ public class Connect {
         }
         // 至此存储会话信息及返回接受客户端连接
         sessionStoreService.put(msg.payload().clientIdentifier(), sessionStore);
-        // 将clientId存储到channel的map中
+        // 绑定业务号
+        Tio.bindBsId(channel, msg.payload().clientIdentifier());
         channel.setAttribute("clientId", msg.payload().clientIdentifier());
         Boolean sessionPresent = sessionStoreService.containsKey(msg.payload().clientIdentifier()) && !msg.variableHeader().isCleanSession();
         MqttConnAckMessage okResp = (MqttConnAckMessage) MqttMessageFactory.newMessage(

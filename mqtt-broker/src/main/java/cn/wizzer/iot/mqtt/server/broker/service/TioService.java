@@ -19,28 +19,24 @@ public class TioService {
     @Inject("refer:$ioc")
     private Ioc ioc;
 
-    public void send(String channelId, Packet packet) {
+    public void send(String clientId, Packet packet) {
         try {
-            ChannelContext channel = Tio.getChannelContextById(ioc.get(ServerGroupContext.class, "serverGroupContext"), channelId);
-            if (channel != null)
-                Tio.send(channel, packet);
-            ChannelContext wsChannel = Tio.getChannelContextById(ioc.get(ServerGroupContext.class, "wsServerGroupContext"), channelId);
-            if (wsChannel != null)
-                Tio.send(wsChannel, packet);
+            Tio.sendToBsId(ioc.get(ServerGroupContext.class, "serverGroupContext"), clientId, packet);
+            Tio.sendToBsId(ioc.get(ServerGroupContext.class, "wsServerGroupContext"), clientId, packet);
         } catch (Exception e) {
-            LOGGER.warn("Tio send Packet to channelId {} is fail.", "[" + channelId + "]");
+            LOGGER.warn("Tio send Packet to clientId {} is fail.", "[" + clientId + "]");
         }
     }
 
-    public ChannelContext getChannel(String channelId) {
+    public ChannelContext getChannel(String clientId) {
         try {
-            ChannelContext channel = Tio.getChannelContextById(ioc.get(ServerGroupContext.class, "serverGroupContext"), channelId);
+            ChannelContext channel = Tio.getChannelContextByBsId(ioc.get(ServerGroupContext.class, "serverGroupContext"), clientId);
             if (channel == null) {
-                channel = Tio.getChannelContextById(ioc.get(ServerGroupContext.class, "wsServerGroupContext"), channelId);
+                channel = Tio.getChannelContextByBsId(ioc.get(ServerGroupContext.class, "wsServerGroupContext"), clientId);
             }
             return channel;
         } catch (Exception e) {
-            LOGGER.warn("Tio get ChannelContext by channelId {} is fail.", "[" + channelId + "]");
+            LOGGER.warn("Tio get ChannelContext by clientId {} is fail.", "[" + clientId + "]");
         }
         return null;
     }

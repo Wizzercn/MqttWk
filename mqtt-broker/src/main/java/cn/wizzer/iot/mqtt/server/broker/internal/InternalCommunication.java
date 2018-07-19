@@ -4,6 +4,7 @@
 
 package cn.wizzer.iot.mqtt.server.broker.internal;
 
+import cn.wizzer.iot.mqtt.server.broker.cluster.RedisCluster;
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.service.KafkaService;
 import org.nutz.ioc.loader.annotation.Inject;
@@ -21,10 +22,13 @@ public class InternalCommunication {
     private BrokerProperties brokerProperties;
     @Inject
     private KafkaService kafkaService;
+    @Inject
+    private RedisCluster redisCluster;
 
     public void internalSend(InternalMessage internalMessage) {
         try {
-            kafkaService.send(internalMessage);//内部是异步调用
+            kafkaService.send(internalMessage);//kafka消息转发
+            redisCluster.sendMessage(internalMessage);//集群内部通信
         } catch (Exception e) {
             e.printStackTrace();
         }

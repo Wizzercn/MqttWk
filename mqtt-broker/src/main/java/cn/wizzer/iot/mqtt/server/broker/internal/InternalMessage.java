@@ -11,60 +11,72 @@ import java.io.Serializable;
  */
 public class InternalMessage implements Serializable {
 
-	private static final long serialVersionUID = -1L;
+    private static final long serialVersionUID = -1L;
 
-	private String topic;
+    //当前频道clientId
+    private String clientId;
 
-	private int mqttQoS;
+    private String topic;
 
-	private byte[] messageBytes;
+    private int mqttQoS;
 
-	private boolean retain;
+    private byte[] messageBytes;
 
-	private boolean dup;
+    private boolean retain;
 
-	public String getTopic() {
-		return topic;
-	}
+    private boolean dup;
 
-	public InternalMessage setTopic(String topic) {
-		this.topic = topic;
-		return this;
-	}
+    public String getClientId() {
+        return clientId;
+    }
 
-	public int getMqttQoS() {
-		return mqttQoS;
-	}
+    public InternalMessage setClientId(String clientId) {
+        this.clientId = clientId;
+        return this;
+    }
 
-	public InternalMessage setMqttQoS(int mqttQoS) {
-		this.mqttQoS = mqttQoS;
-		return this;
-	}
+    public String getTopic() {
+        return topic;
+    }
 
-	public byte[] getMessageBytes() {
-		return messageBytes;
-	}
+    public InternalMessage setTopic(String topic) {
+        this.topic = topic;
+        return this;
+    }
 
-	public InternalMessage setMessageBytes(byte[] messageBytes) {
-		this.messageBytes = messageBytes;
-		return this;
-	}
+    public int getMqttQoS() {
+        return mqttQoS;
+    }
 
-	public boolean isRetain() {
-		return retain;
-	}
+    public InternalMessage setMqttQoS(int mqttQoS) {
+        this.mqttQoS = mqttQoS;
+        return this;
+    }
 
-	public InternalMessage setRetain(boolean retain) {
-		this.retain = retain;
-		return this;
-	}
+    public byte[] getMessageBytes() {
+        return messageBytes;
+    }
 
-	public boolean isDup() {
-		return dup;
-	}
+    public InternalMessage setMessageBytes(byte[] messageBytes) {
+        this.messageBytes = messageBytes;
+        return this;
+    }
 
-	public InternalMessage setDup(boolean dup) {
-		this.dup = dup;
-		return this;
-	}
+    public boolean isRetain() {
+        return retain;
+    }
+
+    public InternalMessage setRetain(boolean retain) {
+        this.retain = retain;
+        return this;
+    }
+
+    public boolean isDup() {
+        return dup;
+    }
+
+    public InternalMessage setDup(boolean dup) {
+        this.dup = dup;
+        return this;
+    }
 }

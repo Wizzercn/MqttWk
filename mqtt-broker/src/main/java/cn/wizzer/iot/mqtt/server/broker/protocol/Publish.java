@@ -59,7 +59,7 @@ public class Publish {
             msg.payload().get(messageBytes, 0, msg.payload().remaining());
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
-                    .setDup(false).setRetain(false);
+                    .setDup(false).setRetain(false).setClientId((String) channel.getAttribute("clientId"));
             internalCommunication.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
         }
@@ -69,7 +69,7 @@ public class Publish {
             msg.payload().get(messageBytes, 0, msg.payload().remaining());
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
-                    .setDup(false).setRetain(false);
+                    .setDup(false).setRetain(false).setClientId((String) channel.getAttribute("clientId"));
             internalCommunication.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
             this.sendPubAckMessage(channel, msg.variableHeader().packetId());
@@ -80,7 +80,7 @@ public class Publish {
             msg.payload().get(messageBytes, 0, msg.payload().remaining());
             InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
                     .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
-                    .setDup(false).setRetain(false);
+                    .setDup(false).setRetain(false).setClientId((String) channel.getAttribute("clientId"));
             internalCommunication.internalSend(internalMessage);
             this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
             this.sendPubRecMessage(channel, msg.variableHeader().packetId());
@@ -112,7 +112,7 @@ public class Publish {
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
+                    tioService.send(subscribeStore.getClientId(), mqttPacket);
                 }
                 if (respQoS == MqttQoS.AT_LEAST_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -125,7 +125,7 @@ public class Publish {
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
+                    tioService.send(subscribeStore.getClientId(), mqttPacket);
                 }
                 if (respQoS == MqttQoS.EXACTLY_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -138,7 +138,7 @@ public class Publish {
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
-                    tioService.send(sessionStoreService.get(subscribeStore.getClientId()).getChannelId(), mqttPacket);
+                    tioService.send(subscribeStore.getClientId(), mqttPacket);
                 }
             }
         });

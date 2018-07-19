@@ -72,6 +72,7 @@ MqttWk
 
 #### 生产环境部署
 - 多机环境集群
+- 负载均衡: 富人用 L4 Switch,穷人用 Linux HAProxy
 
 #### 示例截图
 ![示例截图](mqtt-zoo/test.png)
