@@ -70,11 +70,5 @@ MqttWk
 - 服务端证书存储在`mqtt-broker`的`resources/keystore/server.jks`
 - 用户可以制作自己的证书, 但存储位置和文件名必须使用上述描述的位置及文件名
 
-#### 生成环境部署
-- 生成环境部署建议使用`keepalived+nginx+mqtt-broker`方式
-- 使用nginx的tcp和websocket反向代理mqtt-broker集群实现负载均衡
-- 使用keepalived实现nginx的高可用    
-![输入图片说明](https://images.gitee.com/uploads/images/2018/0712/112559_e5f8401d_1081719.png "1.png")
-- `mqtt-broker`模块中包含`Dockerfile`文件可以直接生成镜像
-- 需要注意: 基于集群的实现机制, 在通过`docker run`部署容器时,需要添加--net=host参数
-- `docker run --name=mqtt-broker-service --net=host --restart=always --env-file=/home/rancher/mqtt-broker/env.list -v /home/rancher/mqtt-broker/config/:/opt/mqtt-broker/config/ -v /home/rancher/mqtt-broker/persistence/:/opt/mqtt-broker/persistence/ -d mqtt-broker:1.0`
+#### 生产环境部署
+- t-io 集群(研究中)
