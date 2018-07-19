@@ -6,7 +6,13 @@
 
 <BODY>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
-<input type="button" value="start" onclick="doStart()">
+F12打开控制台
+<br>
+<br>
+<input type="button" value="0. start and subscribe topic /topic_back " onclick="doStart()">
+<br>
+<br>
+<input type="button" value="1. send message to topic /topic/mqttwk " onclick="sendMessage()">
 <script>
     var hostname = '127.0.0.1',
         port = 9995,
@@ -17,7 +23,7 @@
         ssl = false,
         userName = 'demo',
         password = '8F3B8DE2FDC8BD3D792BE77EAC412010971765E5BDD6C499ADCEE840CE441BDEF17E30684BD95CA708F55022222CC6161D0D23C2DFCB12F8AC998F59E7213393';
-    client = new Paho.MQTT.Client(hostname, port, clientId);
+    var client = new Paho.MQTT.Client(hostname, port, clientId);
     //建立客户端实例
     var options = {
         invocationContext: {
@@ -44,7 +50,7 @@
 
         //发送消息
         message = new Paho.MQTT.Message("hello");
-        message.destinationName = "/topic";
+        message.destinationName = "/topic/mqttwk";
         client.send(message);
     }
 
@@ -64,6 +70,14 @@
     function doStart() {
 
         client.connect(options);
+    }
+    var i=0;
+    function sendMessage() {
+        var msg="welcome to wizzer.cn :::"+i++;
+        message = new Paho.MQTT.Message(msg);
+        message.destinationName = "/topic/mqttwk";
+        client.send(message);
+        console.log("发送消息:" + msg);
     }
 </script>
 </BODY>
