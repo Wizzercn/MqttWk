@@ -88,7 +88,7 @@ public class WsBrokerHandler extends WsAbsAioHandler implements ServerAioHandler
             wsResponse = processRetObj(retObj, methodName, channelContext);
             return wsResponse;
         } else if (opcode == Opcode.PING || opcode == Opcode.PONG) {
-            log.info("收到" + opcode);
+            log.debug("收到" + opcode);
             return null;
         } else if (opcode == Opcode.CLOSE) {
             Object retObj = wsMsgHandler.onClose(websocketPacket, bytes, channelContext);

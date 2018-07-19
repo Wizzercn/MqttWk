@@ -22,9 +22,11 @@ public class TioService {
     public void send(String channelId, Packet packet) {
         try {
             ChannelContext channel = Tio.getChannelContextById(ioc.get(ServerGroupContext.class, "serverGroupContext"), channelId);
-            Tio.send(channel, packet);
+            if (channel != null)
+                Tio.send(channel, packet);
             ChannelContext wsChannel = Tio.getChannelContextById(ioc.get(ServerGroupContext.class, "wsServerGroupContext"), channelId);
-            Tio.send(wsChannel, packet);
+            if (wsChannel != null)
+                Tio.send(wsChannel, packet);
         } catch (Exception e) {
             LOGGER.warn("Tio send Packet to channelId {} is fail.", "[" + channelId + "]");
         }

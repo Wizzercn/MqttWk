@@ -104,6 +104,7 @@ public abstract class WsAbsAioHandler implements AioHandler {
             respHeaders.put(HeaderName.Connection, HeaderValue.Connection.Upgrade);
             respHeaders.put(HeaderName.Upgrade, HeaderValue.Upgrade.WebSocket);
             respHeaders.put(HeaderName.Sec_WebSocket_Accept, HeaderValue.from(acceptKey));
+            //以下是不规范的写法,看以后怎么改
             respHeaders.put(HeaderName.from("Sec-WebSocket-Protocol"), HeaderValue.from(headers.get("sec-websocket-protocol")));
             respHeaders.put(HeaderName.from("Sec-WebSocket-Version"), HeaderValue.from(headers.get("sec-websocket-version")));
             respHeaders.put(HeaderName.from("Sec-WebSocket-Key"), HeaderValue.from(headers.get("sec-websocket-key")));
