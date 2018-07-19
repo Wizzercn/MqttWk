@@ -10,6 +10,7 @@ import cn.wizzer.iot.mqtt.server.store.message.MessageIdService;
 import cn.wizzer.iot.mqtt.server.store.session.SessionStoreService;
 import cn.wizzer.iot.mqtt.server.store.subscribe.SubscribeStoreService;
 import cn.wizzer.iot.mqtt.tio.codec.*;
+import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.pubsub.PubSub;
 import org.nutz.integration.jedis.pubsub.PubSubService;
 import org.nutz.ioc.loader.annotation.Inject;
@@ -51,6 +52,7 @@ public class RedisCluster implements PubSub {
         this.sendPublishMessage(internalMessage.getClientId(), internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
     }
 
+    @Async
     public void sendMessage(InternalMessage internalMessage) {
         if (brokerProperties.getClusterEnabled()) {
             pubSubService.fire(CLUSTER_TOPIC, HexUtil.encodeHexStr(Lang.toBytes(internalMessage)));
