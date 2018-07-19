@@ -74,4 +74,4 @@ MqttWk
 - 多机环境集群
 
 #### 示例截图
-[示例截图](mqtt-zoo/test.png)
+![示例截图](mqtt-zoo/test.png)
