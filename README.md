@@ -44,7 +44,9 @@ MqttWk
 8. 集群功能(可选择是否开启)
 
 #### 快速开始
-- [下载已打包好的可运行的jar文件](https://gitee.com/wizzer/MqttWk/releases)
+- 项目根目录执行  `mvn install` 
+- mqtt-broker 下执行 `mvn clean package nutzboot:shade` 进行打包
+- `java -jar XXX.jar -Dnutz.profiles.active=prod` [此时加载application-prod.properties配置文件]
 - 运行jar文件(如果需要修改配置项,可以在application.properties修改)
 - 打开mqtt-spy客户端, 填写相应配置[下载](https://github.com/eclipse/paho.mqtt-spy/wiki/Downloads)
 - 连接端口:8885, websocket 端口: 9995 websocket path: /mqtt
