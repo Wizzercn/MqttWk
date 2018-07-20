@@ -75,12 +75,10 @@ public class Subscribe {
     private boolean validTopicFilter(List<MqttTopicSubscription> topicSubscriptions) {
         for (MqttTopicSubscription topicSubscription : topicSubscriptions) {
             String topicFilter = topicSubscription.topicName();
-            // 以#或+符号开头的、以/符号结尾的及不存在/符号的订阅按非法订阅处理, 这里没有参考标准协议
-            if (StrUtil.startWith(topicFilter, '#') || StrUtil.startWith(topicFilter, '+') || StrUtil.endWith(topicFilter, '/') || !StrUtil.contains(topicFilter, '/'))
+            // 以#或+符号开头的、以/符号结尾的订阅按非法订阅处理, 这里没有参考标准协议
+            if (StrUtil.startWith(topicFilter, '+') || StrUtil.endWith(topicFilter, '/'))
                 return false;
             if (StrUtil.contains(topicFilter, '#')) {
-                // 不是以/#字符串结尾的订阅按非法订阅处理
-                if (!StrUtil.endWith(topicFilter, "/#")) return false;
                 // 如果出现多个#符号的订阅按非法订阅处理
                 if (StrUtil.count(topicFilter, '#') > 1) return false;
             }
