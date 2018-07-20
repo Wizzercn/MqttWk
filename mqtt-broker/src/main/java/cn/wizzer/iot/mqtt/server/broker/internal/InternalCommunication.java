@@ -26,12 +26,8 @@ public class InternalCommunication {
     private RedisCluster redisCluster;
 
     public void internalSend(InternalMessage internalMessage) {
-        try {
-            kafkaService.send(internalMessage);//kafka消息转发
-            redisCluster.sendMessage(internalMessage);//集群内部通信
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        kafkaService.send(internalMessage);//kafka消息转发
+        redisCluster.sendMessage(internalMessage);//集群内部通信
     }
 
 

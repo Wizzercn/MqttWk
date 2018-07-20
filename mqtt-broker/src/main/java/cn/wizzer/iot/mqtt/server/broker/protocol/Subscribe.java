@@ -67,6 +67,7 @@ public class Subscribe {
                 this.sendRetainMessage(channel, topicFilter, mqttQoS);
             });
         } else {
+            LOGGER.debug("SUBSCRIBE - topic: 请勿以 / 结尾,可以以 /# 结尾");
             Tio.close(channel, "");
         }
     }

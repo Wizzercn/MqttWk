@@ -25,20 +25,24 @@ public class KafkaService {
     private BrokerProperties brokerProperties;
 
     @Async
-    public void send(InternalMessage internalMessage) throws Exception {
-        //消息体转换为Hex字符串进行转发
-        ProducerRecord<String, String> data = new ProducerRecord<>(brokerProperties.getProducerTopic(), internalMessage.getTopic(), HexUtil.encodeHexStr(internalMessage.getMessageBytes()));
-        kafkaProducer.send(data,
-                new Callback() {
-                    public void onCompletion(RecordMetadata metadata, Exception e) {
-                        if (e != null) {
-                            e.printStackTrace();
-                            LOGGER.error(e.getMessage(), e);
-                        } else {
-                            LOGGER.info("The offset of the record we just sent is: " + metadata.offset());
+    public void send(InternalMessage internalMessage){
+        try {
+            //消息体转换为Hex字符串进行转发
+            ProducerRecord<String, String> data = new ProducerRecord<>(brokerProperties.getProducerTopic(), internalMessage.getTopic(), HexUtil.encodeHexStr(internalMessage.getMessageBytes()));
+            kafkaProducer.send(data,
+                    new Callback() {
+                        public void onCompletion(RecordMetadata metadata, Exception e) {
+                            if (e != null) {
+                                e.printStackTrace();
+                                LOGGER.error(e.getMessage(), e);
+                            } else {
+                                LOGGER.info("The offset of the record we just sent is: " + metadata.offset());
+                            }
                         }
-                    }
-                });
+                    });
+        }catch (Exception e){
+            LOGGER.error("kafka没有连接成功..");
+        }
     }
 
 }
