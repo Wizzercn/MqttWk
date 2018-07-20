@@ -47,9 +47,8 @@ MqttWk
 - 项目根目录执行  `mvn install` 
 - mqtt-broker 下执行 `mvn clean package nutzboot:shade` 进行打包
 - `java -jar XXX.jar -Dnutz.profiles.active=prod` [此时加载application-prod.properties配置文件]
-- 运行jar文件(如果需要修改配置项,可以在application.properties修改)
 - 打开mqtt-spy客户端, 填写相应配置[下载](https://github.com/eclipse/paho.mqtt-spy/wiki/Downloads)
-- 连接端口:8885, websocket 端口: 9995 websocket path: /mqtt
+- 连接端口:8885, websocket 端口: 9995 websocket
 - 连接使用的用户名: demo
 - 连接使用的密码: 8F3B8DE2FDC8BD3D792BE77EAC412010971765E5BDD6C499ADCEE840CE441BDEF17E30684BD95CA708F55022222CC6161D0D23C2DFCB12F8AC998F59E7213393
 - 连接使用的证书在 `mqtt-zoo`\keystore\server.cer
