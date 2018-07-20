@@ -18,10 +18,7 @@ package cn.wizzer.iot.mqtt.tio.codec;
 
 
 import cn.wizzer.iot.mqtt.tio.exception.DecoderException;
-import org.nutz.json.Json;
 import org.nutz.lang.Encoding;
-import org.nutz.log.Log;
-import org.nutz.log.Logs;
 import org.tio.core.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;
@@ -37,88 +34,53 @@ import static cn.wizzer.iot.mqtt.tio.codec.MqttCodecUtil.*;
  * the MQTT protocol specification v3.1</a>
  */
 public final class MqttDecoder {
-    private final static Log log = Logs.get();
     private static final int DEFAULT_MAX_BYTES_IN_MESSAGE = 8092;
-    private static DecoderState sigalDecoderState = DecoderState.READ_FIXED_HEADER;
-
-    /**
-     * States of the decoder.
-     * We start at READ_FIXED_HEADER, followed by
-     * READ_VARIABLE_HEADER and finally READ_PAYLOAD.
-     */
-    enum DecoderState {
-        READ_FIXED_HEADER,
-        READ_VARIABLE_HEADER,
-        READ_PAYLOAD,
-        BAD_MESSAGE,
-    }
-
-
-    private static int bytesRemainingInVariablePart;
-    private static MqttFixedHeader mqttFixedHeader;
-    private static Object variableHeader;
 
     public static MqttMessage decode(ByteBuffer buffer) throws Exception {
-        if (sigalDecoderState == DecoderState.READ_FIXED_HEADER) {
-            try {
-                mqttFixedHeader = decodeFixedHeader(buffer);
-                bytesRemainingInVariablePart = mqttFixedHeader.remainingLength();
-                sigalDecoderState = DecoderState.READ_VARIABLE_HEADER;
-                // fall through
-            } catch (Exception cause) {
-                return invalidMessage(cause);
+        int bytesRemainingInVariablePart = 0;
+        MqttFixedHeader mqttFixedHeader = null;
+        Object variableHeader = null;
+        try {
+            mqttFixedHeader = decodeFixedHeader(buffer);
+            bytesRemainingInVariablePart = mqttFixedHeader.remainingLength();
+            // fall through
+        } catch (Exception cause) {
+            return invalidMessage(cause);
+        }
+        try {
+            if (bytesRemainingInVariablePart > DEFAULT_MAX_BYTES_IN_MESSAGE) {
+                throw new DecoderException("too large message: " + bytesRemainingInVariablePart + " bytes");
             }
+            final Result<?> decodedVariableHeader = decodeVariableHeader(buffer, mqttFixedHeader);
+            variableHeader = decodedVariableHeader.value;
+            bytesRemainingInVariablePart -= decodedVariableHeader.numberOfBytesConsumed;
+            // fall through
+        } catch (Exception cause) {
+            return invalidMessage(cause);
         }
-        if (sigalDecoderState == DecoderState.READ_VARIABLE_HEADER) {
-            try {
-                if (bytesRemainingInVariablePart > DEFAULT_MAX_BYTES_IN_MESSAGE) {
-                    throw new DecoderException("too large message: " + bytesRemainingInVariablePart + " bytes");
-                }
-                final Result<?> decodedVariableHeader = decodeVariableHeader(buffer, mqttFixedHeader);
-                variableHeader = decodedVariableHeader.value;
-                bytesRemainingInVariablePart -= decodedVariableHeader.numberOfBytesConsumed;
-                sigalDecoderState = DecoderState.READ_PAYLOAD;
-                // fall through
-            } catch (Exception cause) {
-                return invalidMessage(cause);
+        try {
+            final Result<?> decodedPayload =
+                    decodePayload(
+                            buffer,
+                            mqttFixedHeader.messageType(),
+                            bytesRemainingInVariablePart,
+                            variableHeader);
+            bytesRemainingInVariablePart -= decodedPayload.numberOfBytesConsumed;
+            if (bytesRemainingInVariablePart != 0) {
+                throw new DecoderException(
+                        "non-zero remaining payload bytes: " +
+                                bytesRemainingInVariablePart + " (" + mqttFixedHeader.messageType() + ')');
             }
+            MqttMessage message = MqttMessageFactory.newMessage(
+                    mqttFixedHeader, variableHeader, decodedPayload.value);
+            return message;
+        } catch (Exception cause) {
+            cause.printStackTrace();
+            return invalidMessage(cause);
         }
-        if (sigalDecoderState == DecoderState.READ_PAYLOAD) {
-            try {
-                final Result<?> decodedPayload =
-                        decodePayload(
-                                buffer,
-                                mqttFixedHeader.messageType(),
-                                bytesRemainingInVariablePart,
-                                variableHeader);
-
-                bytesRemainingInVariablePart -= decodedPayload.numberOfBytesConsumed;
-                if (bytesRemainingInVariablePart != 0) {
-                    throw new DecoderException(
-                            "non-zero remaining payload bytes: " +
-                                    bytesRemainingInVariablePart + " (" + mqttFixedHeader.messageType() + ')');
-                }
-                sigalDecoderState = DecoderState.READ_FIXED_HEADER;
-                MqttMessage message = MqttMessageFactory.newMessage(
-                        mqttFixedHeader, variableHeader, decodedPayload.value);
-                return message;
-            } catch (Exception cause) {
-                cause.printStackTrace();
-                return invalidMessage(cause);
-            }
-        }
-        if (sigalDecoderState == DecoderState.BAD_MESSAGE) {
-            // Keep discarding until disconnection.
-//            buffer.skipBytes(actualReadableBytes());
-//            buffer.position(buffer.limit());
-            buffer.clear();
-            return null;
-        }
-        throw new Error();
     }
 
     private static MqttMessage invalidMessage(Throwable cause) {
-        sigalDecoderState = DecoderState.BAD_MESSAGE;
         return MqttMessageFactory.newInvalidMessage(cause);
     }
 

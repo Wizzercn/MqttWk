@@ -4,6 +4,7 @@ import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
 import cn.wizzer.iot.mqtt.tio.codec.MqttDecoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttEncoder;
 import cn.wizzer.iot.mqtt.tio.codec.MqttMessage;
+import org.nutz.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
@@ -11,6 +12,7 @@ import org.tio.core.GroupContext;
 import org.tio.core.exception.AioDecodeException;
 import org.tio.core.intf.AioHandler;
 import org.tio.core.intf.Packet;
+import org.tio.core.utils.ByteBufferUtils;
 
 import java.nio.ByteBuffer;
 
@@ -30,7 +32,7 @@ public abstract class MqttAbsAioHandler implements AioHandler {
         if (readableLength < MqttPacket.HEADER_LENGHT) {
             return null;
         }
-        //解析固定头部内容
+        //解析内容
         try {
             MqttMessage mqttMessage = MqttDecoder.decode(buffer);
             if (mqttMessage != null && "SUCCESS".equals(mqttMessage.decoderResult())) {
