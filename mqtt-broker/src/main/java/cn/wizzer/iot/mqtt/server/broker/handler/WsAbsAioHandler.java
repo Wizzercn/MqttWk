@@ -108,6 +108,7 @@ public abstract class WsAbsAioHandler implements AioHandler {
             respHeaders.put(HeaderName.from("Sec-WebSocket-Protocol"), HeaderValue.from(headers.get("sec-websocket-protocol")));
             respHeaders.put(HeaderName.from("Sec-WebSocket-Version"), HeaderValue.from(headers.get("sec-websocket-version")));
             respHeaders.put(HeaderName.from("Sec-WebSocket-Key"), HeaderValue.from(headers.get("sec-websocket-key")));
+            respHeaders.put(HeaderName.from("X-Powered-By"), HeaderValue.from("MqttWk <wizzer.cn>"));
             httpResponse.addHeaders(respHeaders);
             return httpResponse;
         }
