@@ -54,9 +54,7 @@ public class RedisCluster implements PubSub {
 
     @Async
     public void sendMessage(InternalMessage internalMessage) {
-        if (brokerProperties.getClusterEnabled()) {
-            pubSubService.fire(CLUSTER_TOPIC, HexUtil.encodeHexStr(Lang.toBytes(internalMessage)));
-        }
+        pubSubService.fire(CLUSTER_TOPIC, HexUtil.encodeHexStr(Lang.toBytes(internalMessage)));
     }
 
     private void sendPublishMessage(String clientId, String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {

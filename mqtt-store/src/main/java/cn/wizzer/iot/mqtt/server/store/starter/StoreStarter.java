@@ -21,6 +21,9 @@ public class StoreStarter {
     @PropDoc(group = "broker", value = "实例名称", need = true, defaultValue = "mqttwk")
     public static final String PROP_INSTANCENAME = PRE + "id";
 
+    @PropDoc(group = "broker", value = "是否启用kafka消息转发", need = true, defaultValue = "false")
+    public static final String PROP_KAFKA_BROKER_ENABLED = PRE + "kafka.broker-enabled";
+
     @PropDoc(group = "broker", value = "kafka地址 127.0.0.1:9092,127.0.0.1:9093", need = true, defaultValue = "127.0.0.1:9092")
     public static final String PROP_KAFKA_SERVERS = PRE + "kafka.bootstrap.servers";
 
@@ -64,7 +67,9 @@ public class StoreStarter {
     }
 
     public void init() throws Exception {
-        this.kafkaProducer = new KafkaProducer(getProperties());
+        if (conf.getBoolean(PROP_KAFKA_BROKER_ENABLED, false)) {
+            this.kafkaProducer = new KafkaProducer(getProperties());
+        }
     }
 
     public void close() throws Exception {

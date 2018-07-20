@@ -42,11 +42,12 @@ MqttWk
 6. 主题过滤(支持单主题订阅如 /mqtt/test --不可以/结尾, 通配符订阅 /mqtt/# --以/#结尾)
 7. Websocket支持(可选择是否开启)
 8. 集群功能(可选择是否开启)
+9. Kafka消息转发功能(可选择是否开启)
 
 #### 快速开始
 - 项目根目录执行  `mvn install` 
 - mqtt-broker 下执行 `mvn clean package nutzboot:shade` 进行打包
-- `java -jar XXX.jar -Dnutz.profiles.active=prod` [此时加载application-prod.properties配置文件]
+- `java -jar mqtt-broker-xxx.jar -Dnutz.profiles.active=prod` [此时加载application-prod.properties配置文件]
 - 打开mqtt-spy客户端, 填写相应配置[下载](https://github.com/eclipse/paho.mqtt-spy/wiki/Downloads)
 - 连接端口:8885, websocket 端口: 9995 websocket
 - 连接使用的用户名: demo

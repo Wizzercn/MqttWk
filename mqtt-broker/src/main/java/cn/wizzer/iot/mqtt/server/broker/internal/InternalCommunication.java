@@ -26,8 +26,14 @@ public class InternalCommunication {
     private RedisCluster redisCluster;
 
     public void internalSend(InternalMessage internalMessage) {
-        kafkaService.send(internalMessage);//kafka消息转发
-        redisCluster.sendMessage(internalMessage);//集群内部通信
+        //如果开启kafka消息转发
+        if (brokerProperties.getKafkaBrokerEnabled()) {
+            kafkaService.send(internalMessage);
+        }
+        //如果开启集群功能
+        if (brokerProperties.getClusterEnabled()) {
+            redisCluster.sendMessage(internalMessage);
+        }
     }
 
 

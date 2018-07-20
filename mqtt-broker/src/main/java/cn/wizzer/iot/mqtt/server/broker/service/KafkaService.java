@@ -25,7 +25,8 @@ public class KafkaService {
     private BrokerProperties brokerProperties;
 
     @Async
-    public void send(InternalMessage internalMessage){
+    @SuppressWarnings("unchecked")
+    public void send(InternalMessage internalMessage) {
         try {
             //消息体转换为Hex字符串进行转发
             ProducerRecord<String, String> data = new ProducerRecord<>(brokerProperties.getProducerTopic(), internalMessage.getTopic(), HexUtil.encodeHexStr(internalMessage.getMessageBytes()));
@@ -40,7 +41,7 @@ public class KafkaService {
                             }
                         }
                     });
-        }catch (Exception e){
+        } catch (Exception e) {
             LOGGER.error("kafka没有连接成功..");
         }
     }
