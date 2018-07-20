@@ -46,12 +46,12 @@ public class KafkaLauncher {
         KafkaConsumer kafkaConsumer=new KafkaConsumer(getProperties());
         //kafka消费消息,接收MQTT发来的消息
         kafkaConsumer.subscribe(Arrays.asList(conf.get("mqttwk.broker.kafka.producer.topic")));
+        int sum=0;
         while (true) {
             ConsumerRecords<String, String> records = kafkaConsumer.poll(500);
-            log.debug("records:::" + Json.toJson(records));
             for (ConsumerRecord<String, String> record : records) {
-                log.debugf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
-                log.debug(new String(HexUtil.decodeHex(record.value())));
+                log.debugf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), new String(HexUtil.decodeHex(record.value())));
+                log.debugf("总计收到 %s条",++sum);
             }
         }
 
