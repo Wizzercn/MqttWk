@@ -69,7 +69,7 @@ public class Connect {
                 MqttPacket mqttPacket = new MqttPacket();
                 mqttPacket.setMqttMessage(connAckMessage);
                 Tio.send(channel, mqttPacket);
-                Tio.close(channel, "");
+                Tio.close(channel, "不支持的协议版本");
                 return;
             } else if (cause instanceof MqttIdentifierRejectedException) {
                 // 不合格的clientId
@@ -79,10 +79,10 @@ public class Connect {
                 MqttPacket mqttPacket = new MqttPacket();
                 mqttPacket.setMqttMessage(connAckMessage);
                 Tio.send(channel, mqttPacket);
-                Tio.close(channel, "");
+                Tio.close(channel, "不合格的clientId");
                 return;
             }
-            Tio.close(channel, "");
+            Tio.close(channel, "其他解析错误");
             return;
         }
         // clientId为空或null的情况, 这里要求客户端必须提供clientId, 不管cleanSession是否为1, 此处没有参考标准协议实现

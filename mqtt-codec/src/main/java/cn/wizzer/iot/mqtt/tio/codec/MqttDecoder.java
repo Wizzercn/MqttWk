@@ -27,7 +27,6 @@ import java.util.List;
 
 import static cn.wizzer.iot.mqtt.tio.codec.MqttCodecUtil.*;
 
-
 /**
  * Decodes Mqtt messages from bytes, following
  * <a href="http://public.dhe.ibm.com/software/dw/webservices/ws-mqtt/mqtt-v3r1.html">
@@ -36,7 +35,7 @@ import static cn.wizzer.iot.mqtt.tio.codec.MqttCodecUtil.*;
 public final class MqttDecoder {
     private static final int DEFAULT_MAX_BYTES_IN_MESSAGE = 8092;
 
-    public static MqttMessage decode(ByteBuffer buffer) throws Exception {
+    public static MqttMessage decode(ByteBuffer buffer) {
         int bytesRemainingInVariablePart = 0;
         MqttFixedHeader mqttFixedHeader = null;
         Object variableHeader = null;
