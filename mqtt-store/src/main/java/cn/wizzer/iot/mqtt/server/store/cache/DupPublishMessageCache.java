@@ -1,12 +1,12 @@
 package cn.wizzer.iot.mqtt.server.store.cache;
 
 import cn.wizzer.iot.mqtt.server.common.message.DupPublishMessageStore;
-import org.nutz.integration.jedis.JedisAgent;
+import org.nutz.aop.interceptor.async.Async;
+import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Lang;
-import redis.clients.jedis.Jedis;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,32 +17,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DupPublishMessageCache {
     private final static String CACHE_PRE = "mqttwk:publish:";
     @Inject
-    private JedisAgent jedisAgent;
+    private RedisService redisService;
     @Inject
     private PropertiesProxy conf;
 
     public ConcurrentHashMap<Integer, DupPublishMessageStore> put(String clientId, ConcurrentHashMap<Integer, DupPublishMessageStore> map) {
-        try (Jedis jedis = jedisAgent.getResource()) {
-            jedis.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(map));
-            return map;
-        }
+        redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(map));
+        return map;
     }
 
     public ConcurrentHashMap<Integer, DupPublishMessageStore> get(String clientId) {
-        try (Jedis jedis = jedisAgent.getResource()) {
-            return Lang.fromBytes(jedis.get((CACHE_PRE + clientId).getBytes()), ConcurrentHashMap.class);
-        }
+        return Lang.fromBytes(redisService.get((CACHE_PRE + clientId).getBytes()), ConcurrentHashMap.class);
+
     }
 
     public boolean containsKey(String clientId) {
-        try (Jedis jedis = jedisAgent.getResource()) {
-            return !jedis.keys((CACHE_PRE + clientId).getBytes()).isEmpty();
-        }
+        return !redisService.keys((CACHE_PRE + clientId).getBytes()).isEmpty();
     }
 
+    @Async
     public boolean remove(String clientId) {
-        try (Jedis jedis = jedisAgent.getResource()) {
-            return jedis.del((CACHE_PRE + clientId).getBytes()) > 0;
-        }
+        return redisService.del((CACHE_PRE + clientId).getBytes()) > 0;
     }
 }
