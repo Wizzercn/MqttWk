@@ -32,7 +32,10 @@ public class SessionStoreService implements ISessionStoreService {
 
     @Override
     public SessionStore get(String clientId) {
-        return Lang.fromBytes(redisService.get((CACHE_PRE + clientId).getBytes()), SessionStore.class);
+        byte[] obj = redisService.get((CACHE_PRE + clientId).getBytes());
+        if (obj != null)
+            return Lang.fromBytes(obj, SessionStore.class);
+        return null;
     }
 
     @Override

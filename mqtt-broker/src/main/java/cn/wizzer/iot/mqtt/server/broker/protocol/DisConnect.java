@@ -41,7 +41,7 @@ public class DisConnect {
     public void processDisConnect(ChannelContext channel, MqttMessage msg) {
         String clientId = (String) channel.getAttribute("clientId");
         SessionStore sessionStore = sessionStoreService.get(clientId);
-        if (sessionStore.isCleanSession()) {
+        if (sessionStore != null && sessionStore.isCleanSession()) {
             subscribeStoreService.removeForClient(clientId);
             dupPublishMessageStoreService.removeByClient(clientId);
             dupPubRelMessageStoreService.removeByClient(clientId);

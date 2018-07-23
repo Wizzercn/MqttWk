@@ -70,14 +70,12 @@ public class MqttServerListener implements ServerAioListener {
      */
     @Override
     public void onBeforeClose(ChannelContext channelContext, Throwable throwable, String remark, boolean isRemove) {
-        LOGGER.debug("连接关闭前触发onBeforeClose");
+//        LOGGER.debug("连接关闭前触发onBeforeClose");
         String clientId = (String) channelContext.getAttribute("clientId");
         // 发送遗嘱消息
-        if (this.sessionStoreService.containsKey(clientId)) {
-            SessionStore sessionStore = this.sessionStoreService.get(clientId);
-            if (sessionStore.getWillMessage() != null) {
-                this.protocolProcess.publish().processPublish(channelContext, sessionStore.getWillMessage());
-            }
+        SessionStore sessionStore = this.sessionStoreService.get(clientId);
+        if (sessionStore != null && sessionStore.getWillMessage() != null) {
+            this.protocolProcess.publish().processPublish(channelContext, sessionStore.getWillMessage());
         }
     }
 
