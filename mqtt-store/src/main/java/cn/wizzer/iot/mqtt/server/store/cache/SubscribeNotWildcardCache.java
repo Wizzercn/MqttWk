@@ -7,8 +7,7 @@ import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -40,15 +39,32 @@ public class SubscribeNotWildcardCache {
 
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
-        redisService.keys(CACHE_PRE + "*").forEach(
-                entry -> {
-                    ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-                    redisService.hgetAll(entry).forEach((k, v) -> {
-                        map1.put(k, JSONObject.parseObject(redisService.hget(entry, k), SubscribeStore.class));
-                    });
-                    map.put(entry.substring(CACHE_PRE.length()), map1);
-                }
-        );
+        Set<String> set=redisService.keys(CACHE_PRE + "*");
+        if(set!=null&&!set.isEmpty()) {
+            set.forEach(
+                    entry -> {
+                        ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
+                        Map<String,String> map2=redisService.hgetAll(entry);
+                        if(map2!=null&&!map2.isEmpty()) {
+                            map2.forEach((k, v) -> {
+                                map1.put(k, JSONObject.parseObject(redisService.hget(entry, k), SubscribeStore.class));
+                            });
+                            map.put(entry.substring(CACHE_PRE.length()), map1);
+                        }
+                    }
+            );
+        }
         return map;
+    }
+
+    public List<SubscribeStore> all(String topic) {
+        List<SubscribeStore> list = new ArrayList<>();
+        Map<String, String> map = redisService.hgetAll(topic);
+        if (map != null && !map.isEmpty()) {
+            map.forEach((k, v) -> {
+                list.add(JSONObject.parseObject(v, SubscribeStore.class));
+            });
+        }
+        return list;
     }
 }

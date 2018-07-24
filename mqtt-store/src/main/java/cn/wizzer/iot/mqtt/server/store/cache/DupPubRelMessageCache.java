@@ -8,6 +8,7 @@ import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,9 +29,12 @@ public class DupPubRelMessageCache {
 
     public ConcurrentHashMap<Integer, DupPubRelMessageStore> get(String clientId) {
         ConcurrentHashMap<Integer, DupPubRelMessageStore> map = new ConcurrentHashMap<>();
-        redisService.hgetAll(CACHE_PRE + clientId).forEach((k, v) -> {
-            map.put(Integer.valueOf(k), JSONObject.parseObject(v, DupPubRelMessageStore.class));
-        });
+        Map<String, String> map1 = redisService.hgetAll(CACHE_PRE + clientId);
+        if (map1 != null && !map1.isEmpty()) {
+            map1.forEach((k, v) -> {
+                map.put(Integer.valueOf(k), JSONObject.parseObject(v, DupPubRelMessageStore.class));
+            });
+        }
         return map;
     }
 

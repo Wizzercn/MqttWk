@@ -10,6 +10,7 @@ import org.nutz.ioc.loader.annotation.IocBean;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by wizzer on 2018
@@ -42,11 +43,14 @@ public class RetainMessageCache {
 
     public Map<String, RetainMessageStore> all() {
         Map<String, RetainMessageStore> map = new HashMap<>();
-        redisService.keys(CACHE_PRE + "*").forEach(
-                entry -> {
-                    map.put(entry.substring(CACHE_PRE.length()), JSONObject.parseObject(redisService.get(entry), RetainMessageStore.class));
-                }
-        );
+        Set<String> set=redisService.keys(CACHE_PRE + "*");
+        if(set!=null&&!set.isEmpty()) {
+            set.forEach(
+                    entry -> {
+                        map.put(entry.substring(CACHE_PRE.length()), JSONObject.parseObject(redisService.get(entry), RetainMessageStore.class));
+                    }
+            );
+        }
         return map;
     }
 }

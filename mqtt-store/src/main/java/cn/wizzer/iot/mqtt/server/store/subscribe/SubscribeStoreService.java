@@ -9,6 +9,7 @@ import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.server.store.cache.SubscribeNotWildcardCache;
 import cn.wizzer.iot.mqtt.server.store.cache.SubscribeWildcardCache;
+import org.nutz.aop.interceptor.async.Async;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 
@@ -47,7 +48,9 @@ public class SubscribeStoreService implements ISubscribeStoreService {
     }
 
     @Override
+    @Async
     public void removeForClient(String clientId) {
+        long a = System.currentTimeMillis();
         subscribeNotWildcardCache.all().forEach((entry, map) -> {
             if (map.containsKey(clientId)) {
                 subscribeNotWildcardCache.remove(entry, clientId);
@@ -58,22 +61,22 @@ public class SubscribeStoreService implements ISubscribeStoreService {
                 subscribeWildcardCache.remove(entry, clientId);
             }
         });
+        System.out.println("subscribeStores removeForClient::" + (System.currentTimeMillis() - a) + "ms");
     }
 
     @Override
     public List<SubscribeStore> search(String topic) {
+        long a = System.currentTimeMillis();
         List<SubscribeStore> subscribeStores = new ArrayList<SubscribeStore>();
-        subscribeNotWildcardCache.all().forEach((topicFilter, map) -> {
-            if (topic.equals(topicFilter)) {
-                Collection<SubscribeStore> collection = map.values();
-                List<SubscribeStore> list = new ArrayList<SubscribeStore>(collection);
-                subscribeStores.addAll(list);
-            }
-        });
+        List<SubscribeStore> list = subscribeNotWildcardCache.all(topic);
+        if (list.size() > 0) {
+            subscribeStores.addAll(list);
+        }
+        System.out.println("subscribeStores search1::" + (System.currentTimeMillis() - a) + "ms");
         subscribeWildcardCache.all().forEach((topicFilter, map) -> {
             if (StrUtil.split(topic, '/').size() >= StrUtil.split(topicFilter, '/').size()) {
-                List<String> splitTopics = StrUtil.split(topic, '/');
-                List<String> spliteTopicFilters = StrUtil.split(topicFilter, '/');
+                List<String> splitTopics = StrUtil.split(topic, '/');//a
+                List<String> spliteTopicFilters = StrUtil.split(topicFilter, '/');//#
                 String newTopicFilter = "";
                 for (int i = 0; i < spliteTopicFilters.size(); i++) {
                     String value = spliteTopicFilters.get(i);
@@ -89,11 +92,12 @@ public class SubscribeStoreService implements ISubscribeStoreService {
                 newTopicFilter = StrUtil.removeSuffix(newTopicFilter, "/");
                 if (topicFilter.equals(newTopicFilter)) {
                     Collection<SubscribeStore> collection = map.values();
-                    List<SubscribeStore> list = new ArrayList<SubscribeStore>(collection);
-                    subscribeStores.addAll(list);
+                    List<SubscribeStore> list2 = new ArrayList<SubscribeStore>(collection);
+                    subscribeStores.addAll(list2);
                 }
             }
         });
+        System.out.println("subscribeStores search2::" + (System.currentTimeMillis() - a) + "ms");
         return subscribeStores;
     }
 
