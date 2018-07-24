@@ -15,7 +15,6 @@ import org.nutz.ioc.loader.annotation.IocBean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 订阅存储服务
@@ -32,44 +31,18 @@ public class SubscribeStoreService implements ISubscribeStoreService {
     @Override
     public void put(String topicFilter, SubscribeStore subscribeStore) {
         if (StrUtil.contains(topicFilter, '#') || StrUtil.contains(topicFilter, '+')) {
-            ConcurrentHashMap<String, SubscribeStore> map =
-                    subscribeWildcardCache.containsKey(topicFilter) ? subscribeWildcardCache.get(topicFilter) : new ConcurrentHashMap<String, SubscribeStore>();
-            map.put(subscribeStore.getClientId(), subscribeStore);
-            subscribeWildcardCache.put(topicFilter, map);
+            subscribeWildcardCache.put(topicFilter, subscribeStore.getClientId(), subscribeStore);
         } else {
-            ConcurrentHashMap<String, SubscribeStore> map =
-                    subscribeNotWildcardCache.containsKey(topicFilter) ? subscribeNotWildcardCache.get(topicFilter) : new ConcurrentHashMap<String, SubscribeStore>();
-            map.put(subscribeStore.getClientId(), subscribeStore);
-            subscribeNotWildcardCache.put(topicFilter, map);
+            subscribeNotWildcardCache.put(topicFilter, subscribeStore.getClientId(), subscribeStore);
         }
     }
 
     @Override
     public void remove(String topicFilter, String clientId) {
         if (StrUtil.contains(topicFilter, '#') || StrUtil.contains(topicFilter, '+')) {
-            if (subscribeWildcardCache.containsKey(topicFilter)) {
-                ConcurrentHashMap<String, SubscribeStore> map = subscribeWildcardCache.get(topicFilter);
-                if (map.containsKey(clientId)) {
-                    map.remove(clientId);
-                    if (map.size() > 0) {
-                        subscribeWildcardCache.put(topicFilter, map);
-                    } else {
-                        subscribeWildcardCache.remove(topicFilter);
-                    }
-                }
-            }
+            subscribeWildcardCache.remove(topicFilter, clientId);
         } else {
-            if (subscribeNotWildcardCache.containsKey(topicFilter)) {
-                ConcurrentHashMap<String, SubscribeStore> map = subscribeNotWildcardCache.get(topicFilter);
-                if (map.containsKey(clientId)) {
-                    map.remove(clientId);
-                    if (map.size() > 0) {
-                        subscribeNotWildcardCache.put(topicFilter, map);
-                    } else {
-                        subscribeNotWildcardCache.remove(topicFilter);
-                    }
-                }
-            }
+            subscribeNotWildcardCache.remove(topicFilter, clientId);
         }
     }
 
@@ -77,22 +50,12 @@ public class SubscribeStoreService implements ISubscribeStoreService {
     public void removeForClient(String clientId) {
         subscribeNotWildcardCache.all().forEach((entry, map) -> {
             if (map.containsKey(clientId)) {
-                map.remove(clientId);
-                if (map.size() > 0) {
-                    subscribeNotWildcardCache.put(entry, map);
-                } else {
-                    subscribeNotWildcardCache.remove(entry);
-                }
+                subscribeNotWildcardCache.remove(entry, clientId);
             }
         });
         subscribeWildcardCache.all().forEach((entry, map) -> {
             if (map.containsKey(clientId)) {
-                map.remove(clientId);
-                if (map.size() > 0) {
-                    subscribeWildcardCache.put(entry, map);
-                } else {
-                    subscribeWildcardCache.remove(entry);
-                }
+                subscribeWildcardCache.remove(entry, clientId);
             }
         });
     }
@@ -100,12 +63,13 @@ public class SubscribeStoreService implements ISubscribeStoreService {
     @Override
     public List<SubscribeStore> search(String topic) {
         List<SubscribeStore> subscribeStores = new ArrayList<SubscribeStore>();
-        if (subscribeNotWildcardCache.containsKey(topic)) {
-            ConcurrentHashMap<String, SubscribeStore> map = subscribeNotWildcardCache.get(topic);
-            Collection<SubscribeStore> collection = map.values();
-            List<SubscribeStore> list = new ArrayList<SubscribeStore>(collection);
-            subscribeStores.addAll(list);
-        }
+        subscribeNotWildcardCache.all().forEach((topicFilter, map) -> {
+            if (topic.equals(topicFilter)) {
+                Collection<SubscribeStore> collection = map.values();
+                List<SubscribeStore> list = new ArrayList<SubscribeStore>(collection);
+                subscribeStores.addAll(list);
+            }
+        });
         subscribeWildcardCache.all().forEach((topicFilter, map) -> {
             if (StrUtil.split(topic, '/').size() >= StrUtil.split(topicFilter, '/').size()) {
                 List<String> splitTopics = StrUtil.split(topic, '/');

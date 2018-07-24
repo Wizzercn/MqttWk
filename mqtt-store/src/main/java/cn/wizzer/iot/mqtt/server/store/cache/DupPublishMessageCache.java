@@ -1,12 +1,12 @@
 package cn.wizzer.iot.mqtt.server.store.cache;
 
 import cn.wizzer.iot.mqtt.server.common.message.DupPublishMessageStore;
+import com.alibaba.fastjson.JSONObject;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Lang;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,22 +21,30 @@ public class DupPublishMessageCache {
     @Inject
     private PropertiesProxy conf;
 
-    public ConcurrentHashMap<Integer, DupPublishMessageStore> put(String clientId, ConcurrentHashMap<Integer, DupPublishMessageStore> map) {
-        redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(map));
-        return map;
+    public DupPublishMessageStore put(String clientId, Integer messageId, DupPublishMessageStore dupPublishMessageStore) {
+        redisService.hset(CACHE_PRE + clientId, String.valueOf(messageId), JSONObject.toJSONString(dupPublishMessageStore));
+        return dupPublishMessageStore;
     }
 
     public ConcurrentHashMap<Integer, DupPublishMessageStore> get(String clientId) {
-        return Lang.fromBytes(redisService.get((CACHE_PRE + clientId).getBytes()), ConcurrentHashMap.class);
-
+        ConcurrentHashMap<Integer, DupPublishMessageStore> map = new ConcurrentHashMap<>();
+        redisService.hgetAll(CACHE_PRE + clientId).forEach((k, v) -> {
+            map.put(Integer.valueOf(k), JSONObject.parseObject(v, DupPublishMessageStore.class));
+        });
+        return map;
     }
 
     public boolean containsKey(String clientId) {
-        return !redisService.keys((CACHE_PRE + clientId).getBytes()).isEmpty();
+        return !redisService.keys(CACHE_PRE + clientId).isEmpty();
+    }
+
+    @Async
+    public boolean remove(String clientId, Integer messageId) {
+        return redisService.hdel(CACHE_PRE + clientId, String.valueOf(messageId)) > 0;
     }
 
     @Async
     public boolean remove(String clientId) {
-        return redisService.del((CACHE_PRE + clientId).getBytes()) > 0;
+        return redisService.del(CACHE_PRE + clientId) > 0;
     }
 }

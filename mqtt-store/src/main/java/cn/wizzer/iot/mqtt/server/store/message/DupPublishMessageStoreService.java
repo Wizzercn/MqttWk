@@ -26,9 +26,7 @@ public class DupPublishMessageStoreService implements IDupPublishMessageStoreSer
 
     @Override
     public void put(String clientId, DupPublishMessageStore dupPublishMessageStore) {
-        ConcurrentHashMap<Integer, DupPublishMessageStore> map = dupPublishMessageCache.containsKey(clientId) ? dupPublishMessageCache.get(clientId) : new ConcurrentHashMap<Integer, DupPublishMessageStore>();
-        map.put(dupPublishMessageStore.getMessageId(), dupPublishMessageStore);
-        dupPublishMessageCache.put(clientId, map);
+        dupPublishMessageCache.put(clientId, dupPublishMessageStore.getMessageId(), dupPublishMessageStore);
     }
 
     @Override
@@ -43,17 +41,7 @@ public class DupPublishMessageStoreService implements IDupPublishMessageStoreSer
 
     @Override
     public void remove(String clientId, int messageId) {
-        if (dupPublishMessageCache.containsKey(clientId)) {
-            ConcurrentHashMap<Integer, DupPublishMessageStore> map = dupPublishMessageCache.get(clientId);
-            if (map.containsKey(messageId)) {
-                map.remove(messageId);
-                if (map.size() > 0) {
-                    dupPublishMessageCache.put(clientId, map);
-                } else {
-                    dupPublishMessageCache.remove(clientId);
-                }
-            }
-        }
+        dupPublishMessageCache.remove(clientId, messageId);
     }
 
     @Override

@@ -1,12 +1,11 @@
 package cn.wizzer.iot.mqtt.server.store.cache;
 
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
+import com.alibaba.fastjson.JSONObject;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.RedisService;
-import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Lang;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,32 +19,34 @@ public class SubscribeWildcardCache {
     private final static String CACHE_PRE = "mqttwk:subwildcard:";
     @Inject
     private RedisService redisService;
-    @Inject
-    private PropertiesProxy conf;
 
-    public ConcurrentHashMap<String, SubscribeStore> put(String clientId, ConcurrentHashMap<String, SubscribeStore> map) {
-        redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(map));
-        return map;
+    public SubscribeStore put(String topic, String clientId, SubscribeStore subscribeStore) {
+        redisService.hset(CACHE_PRE + topic, clientId, JSONObject.toJSONString(subscribeStore));
+        return subscribeStore;
     }
 
-    public ConcurrentHashMap<String, SubscribeStore> get(String clientId) {
-        return Lang.fromBytes(redisService.get((CACHE_PRE + clientId).getBytes()), ConcurrentHashMap.class);
+    public SubscribeStore get(String topic, String clientId) {
+        return JSONObject.parseObject(redisService.hget(CACHE_PRE + topic, clientId), SubscribeStore.class);
     }
 
-    public boolean containsKey(String clientId) {
-        return !redisService.keys((CACHE_PRE + clientId).getBytes()).isEmpty();
+    public boolean containsKey(String topic, String clientId) {
+        return redisService.hexists(CACHE_PRE + topic, clientId);
     }
 
     @Async
-    public boolean remove(String clientId) {
-        return redisService.del((CACHE_PRE + clientId).getBytes()) > 0;
+    public boolean remove(String topic, String clientId) {
+        return redisService.hdel(CACHE_PRE + topic, clientId) > 0;
     }
 
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
-        redisService.keys((CACHE_PRE + "*").getBytes()).forEach(
+        redisService.keys(CACHE_PRE + "*").forEach(
                 entry -> {
-                    map.put(new String(entry).substring(CACHE_PRE.length()), Lang.fromBytes(redisService.get(entry), ConcurrentHashMap.class));
+                    ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
+                    redisService.hgetAll(entry).forEach((k, v) -> {
+                        map1.put(k, JSONObject.parseObject(redisService.hget(entry, k), SubscribeStore.class));
+                    });
+                    map.put(entry.substring(CACHE_PRE.length()), map1);
                 }
         );
         return map;
