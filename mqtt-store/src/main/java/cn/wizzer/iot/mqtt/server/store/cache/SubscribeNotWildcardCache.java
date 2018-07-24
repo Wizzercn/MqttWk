@@ -47,7 +47,7 @@ public class SubscribeNotWildcardCache {
                         Map<String,String> map2=redisService.hgetAll(entry);
                         if(map2!=null&&!map2.isEmpty()) {
                             map2.forEach((k, v) -> {
-                                map1.put(k, JSONObject.parseObject(redisService.hget(entry, k), SubscribeStore.class));
+                                map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
                             });
                             map.put(entry.substring(CACHE_PRE.length()), map1);
                         }
