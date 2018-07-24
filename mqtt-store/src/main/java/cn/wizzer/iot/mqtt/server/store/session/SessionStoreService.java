@@ -6,46 +6,35 @@ package cn.wizzer.iot.mqtt.server.store.session;
 
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
-import org.nutz.aop.interceptor.async.Async;
-import org.nutz.integration.jedis.RedisService;
-import org.nutz.ioc.impl.PropertiesProxy;
-import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Lang;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 会话存储服务
  */
 @IocBean
 public class SessionStoreService implements ISessionStoreService {
-    private final static String CACHE_PRE = "mqttwk:session:";
-    @Inject
-    private RedisService redisService;
-    @Inject
-    private PropertiesProxy conf;
+    private Map<String, SessionStore> sessionCache = new ConcurrentHashMap<String, SessionStore>();
 
     @Override
     public void put(String clientId, SessionStore sessionStore) {
-        redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(sessionStore));
+        sessionCache.put(clientId, sessionStore);
     }
-
 
     @Override
     public SessionStore get(String clientId) {
-        byte[] obj = redisService.get((CACHE_PRE + clientId).getBytes());
-        if (obj != null)
-            return Lang.fromBytes(obj, SessionStore.class);
-        return null;
+        return sessionCache.get(clientId);
     }
 
     @Override
     public boolean containsKey(String clientId) {
-        return !redisService.keys((CACHE_PRE + clientId).getBytes()).isEmpty();
+        return sessionCache.containsKey(clientId);
     }
 
     @Override
-    @Async
     public void remove(String clientId) {
-        redisService.del((CACHE_PRE + clientId).getBytes());
+        sessionCache.remove(clientId);
     }
 }
