@@ -12,7 +12,8 @@ import cn.wizzer.iot.mqtt.server.common.message.*;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
-import cn.wizzer.iot.mqtt.tio.codec.*;
+import cn.wizzer.iot.mqtt.server.tio.codec.*;
+import org.nutz.aop.interceptor.async.Async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;
@@ -99,7 +100,8 @@ public class Publish {
         }
     }
 
-    private void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
+    @Async
+    public void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
         List<SubscribeStore> subscribeStores = subscribeStoreService.search(topic);
         subscribeStores.forEach(subscribeStore -> {
             if (sessionStoreService.containsKey(subscribeStore.getClientId())) {

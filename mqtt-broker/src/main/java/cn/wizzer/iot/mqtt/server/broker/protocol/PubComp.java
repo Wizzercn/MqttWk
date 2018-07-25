@@ -6,7 +6,7 @@ package cn.wizzer.iot.mqtt.server.broker.protocol;
 
 import cn.wizzer.iot.mqtt.server.common.message.IDupPubRelMessageStoreService;
 import cn.wizzer.iot.mqtt.server.common.message.IMessageIdService;
-import cn.wizzer.iot.mqtt.tio.codec.MqttMessageIdVariableHeader;
+import cn.wizzer.iot.mqtt.server.tio.codec.MqttMessageIdVariableHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;

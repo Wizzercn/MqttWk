@@ -1,6 +1,6 @@
 package cn.wizzer.iot.mqtt.server.broker.packet;
 
-import cn.wizzer.iot.mqtt.tio.codec.MqttMessage;
+import cn.wizzer.iot.mqtt.server.tio.codec.MqttMessage;
 import org.tio.core.intf.Packet;
 
 /**

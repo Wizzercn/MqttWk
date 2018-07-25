@@ -2,7 +2,7 @@ package cn.wizzer.iot.mqtt.server.broker.handler;
 
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
-import cn.wizzer.iot.mqtt.tio.codec.*;
+import cn.wizzer.iot.mqtt.server.tio.codec.*;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.slf4j.Logger;

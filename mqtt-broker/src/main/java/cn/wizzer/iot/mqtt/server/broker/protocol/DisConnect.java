@@ -9,7 +9,7 @@ import cn.wizzer.iot.mqtt.server.common.message.IDupPublishMessageStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
-import cn.wizzer.iot.mqtt.tio.codec.MqttMessage;
+import cn.wizzer.iot.mqtt.server.tio.codec.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tio.core.ChannelContext;

@@ -1,7 +1,7 @@
 package cn.wizzer.iot.mqtt.server.broker.handler;
 
 import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
-import cn.wizzer.iot.mqtt.tio.codec.MqttEncoder;
+import cn.wizzer.iot.mqtt.server.tio.codec.MqttEncoder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
