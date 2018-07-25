@@ -39,7 +39,7 @@ public class DupPubRelMessageCache {
     }
 
     public boolean containsKey(String clientId) {
-        return !redisService.keys(CACHE_PRE + clientId).isEmpty();
+        return redisService.exists(CACHE_PRE + clientId);
     }
 
     @Async

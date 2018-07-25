@@ -33,7 +33,7 @@ public class RetainMessageCache {
     }
 
     public boolean containsKey(String topic) {
-        return !redisService.keys(CACHE_PRE + topic).isEmpty();
+        return redisService.exists(CACHE_PRE + topic);
     }
 
     @Async

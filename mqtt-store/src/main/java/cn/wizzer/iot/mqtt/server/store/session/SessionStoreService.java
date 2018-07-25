@@ -6,12 +6,12 @@ package cn.wizzer.iot.mqtt.server.store.session;
 
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
+import com.alibaba.fastjson.JSONObject;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Lang;
 
 /**
  * 会话存储服务
@@ -26,26 +26,26 @@ public class SessionStoreService implements ISessionStoreService {
 
     @Override
     public void put(String clientId, SessionStore sessionStore) {
-        redisService.set((CACHE_PRE + clientId).getBytes(), Lang.toBytes(sessionStore));
+        redisService.set(CACHE_PRE + clientId, JSONObject.toJSONString(sessionStore));
     }
 
 
     @Override
     public SessionStore get(String clientId) {
-        byte[] obj = redisService.get((CACHE_PRE + clientId).getBytes());
+        String obj = redisService.get(CACHE_PRE + clientId);
         if (obj != null)
-            return Lang.fromBytes(obj, SessionStore.class);
+            return JSONObject.parseObject(obj, SessionStore.class);
         return null;
     }
 
     @Override
     public boolean containsKey(String clientId) {
-        return !redisService.keys((CACHE_PRE + clientId).getBytes()).isEmpty();
+        return redisService.exists(CACHE_PRE + clientId);
     }
 
     @Override
     @Async
     public void remove(String clientId) {
-        redisService.del((CACHE_PRE + clientId).getBytes());
+        redisService.del(CACHE_PRE + clientId);
     }
 }
