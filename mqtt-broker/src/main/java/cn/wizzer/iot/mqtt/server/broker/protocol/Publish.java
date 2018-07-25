@@ -100,7 +100,7 @@ public class Publish {
         }
     }
 
-    @Async
+    //@Async
     public void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
         List<SubscribeStore> subscribeStores = subscribeStoreService.search(topic);
         subscribeStores.forEach(subscribeStore -> {
