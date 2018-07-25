@@ -24,10 +24,10 @@ public class MessageIdService implements IMessageIdService {
     @Override
     public int getNextMessageId() {
         try {
-            nextMsgId = redisService.incr("mqttwk:messageid:index").intValue();
+            nextMsgId = redisService.incr("mqttwk:messageid:num").intValue();
             if (nextMsgId > MAX_MSG_ID) {
                 nextMsgId = MIN_MSG_ID;
-                redisService.set("mqttwk:messageid:index", "" + MIN_MSG_ID);
+                redisService.set("mqttwk:messageid:num", "" + MIN_MSG_ID);
             }
         } catch (Exception e) {
             e.printStackTrace();
