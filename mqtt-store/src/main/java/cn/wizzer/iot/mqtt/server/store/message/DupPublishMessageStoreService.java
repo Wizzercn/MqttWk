@@ -46,13 +46,6 @@ public class DupPublishMessageStoreService implements IDupPublishMessageStoreSer
 
     @Override
     public void removeByClient(String clientId) {
-        if (dupPublishMessageCache.containsKey(clientId)) {
-            ConcurrentHashMap<Integer, DupPublishMessageStore> map = dupPublishMessageCache.get(clientId);
-            map.forEach((messageId, dupPublishMessageStore) -> {
-                messageIdService.releaseMessageId(messageId);
-            });
-            map.clear();
-            dupPublishMessageCache.remove(clientId);
-        }
+        dupPublishMessageCache.remove(clientId);
     }
 }

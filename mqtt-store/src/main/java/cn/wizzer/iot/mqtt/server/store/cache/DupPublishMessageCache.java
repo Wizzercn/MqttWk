@@ -29,8 +29,8 @@ public class DupPublishMessageCache {
 
     public ConcurrentHashMap<Integer, DupPublishMessageStore> get(String clientId) {
         ConcurrentHashMap<Integer, DupPublishMessageStore> map = new ConcurrentHashMap<>();
-        Map<String,String> map1=redisService.hgetAll(CACHE_PRE + clientId);
-        if(map1!=null&&!map1.isEmpty()) {
+        Map<String, String> map1 = redisService.hgetAll(CACHE_PRE + clientId);
+        if (map1 != null && !map1.isEmpty()) {
             map1.forEach((k, v) -> {
                 map.put(Integer.valueOf(k), JSONObject.parseObject(v, DupPublishMessageStore.class));
             });
@@ -43,12 +43,12 @@ public class DupPublishMessageCache {
     }
 
     @Async
-    public boolean remove(String clientId, Integer messageId) {
-        return redisService.hdel(CACHE_PRE + clientId, String.valueOf(messageId)) > 0;
+    public void remove(String clientId, Integer messageId) {
+        redisService.hdel(CACHE_PRE + clientId, String.valueOf(messageId));
     }
 
     @Async
-    public boolean remove(String clientId) {
-        return redisService.del(CACHE_PRE + clientId) > 0;
+    public void remove(String clientId) {
+        redisService.del(CACHE_PRE + clientId);
     }
 }

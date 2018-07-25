@@ -121,7 +121,7 @@ public class Publish {
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
                     DupPublishMessageStore dupPublishMessageStore = new DupPublishMessageStore().setClientId(subscribeStore.getClientId())
-                            .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes);
+                            .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes).setMessageId(messageId);
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);
@@ -134,7 +134,7 @@ public class Publish {
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
                     DupPublishMessageStore dupPublishMessageStore = new DupPublishMessageStore().setClientId(subscribeStore.getClientId())
-                            .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes);
+                            .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes).setMessageId(messageId);
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
                     MqttPacket mqttPacket = new MqttPacket();
                     mqttPacket.setMqttMessage(publishMessage);

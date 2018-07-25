@@ -33,19 +33,19 @@ public class SubscribeWildcardCache {
     }
 
     @Async
-    public boolean remove(String topic, String clientId) {
-        return redisService.hdel(CACHE_PRE + topic, clientId) > 0;
+    public void remove(String topic, String clientId) {
+        redisService.hdel(CACHE_PRE + topic, clientId);
     }
 
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
-        Set<String> set=redisService.keys(CACHE_PRE + "*");
-        if(set!=null&&!set.isEmpty()) {
+        Set<String> set = redisService.keys(CACHE_PRE + "*");
+        if (set != null && !set.isEmpty()) {
             set.forEach(
                     entry -> {
                         ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-                        Map<String,String> map2=redisService.hgetAll(entry);
-                        if(map2!=null&&!map2.isEmpty()) {
+                        Map<String, String> map2 = redisService.hgetAll(entry);
+                        if (map2 != null && !map2.isEmpty()) {
                             map2.forEach((k, v) -> {
                                 map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
                             });

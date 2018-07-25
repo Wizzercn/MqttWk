@@ -33,8 +33,8 @@ public class SubscribeNotWildcardCache {
     }
 
     @Async
-    public boolean remove(String topic, String clientId) {
-        return redisService.hdel(CACHE_PRE + topic, clientId) > 0;
+    public void remove(String topic, String clientId) {
+        redisService.hdel(CACHE_PRE + topic, clientId);
     }
 
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {

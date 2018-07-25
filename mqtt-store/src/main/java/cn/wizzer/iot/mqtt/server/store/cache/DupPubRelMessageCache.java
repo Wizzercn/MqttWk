@@ -43,12 +43,12 @@ public class DupPubRelMessageCache {
     }
 
     @Async
-    public boolean remove(String clientId, Integer messageId) {
-        return redisService.hdel(CACHE_PRE + clientId, String.valueOf(messageId)) > 0;
+    public void remove(String clientId, Integer messageId) {
+        redisService.hdel(CACHE_PRE + clientId, String.valueOf(messageId));
     }
 
     @Async
-    public boolean remove(String clientId) {
-        return redisService.del(CACHE_PRE + clientId) > 0;
+    public void remove(String clientId) {
+        redisService.del(CACHE_PRE + clientId);
     }
 }

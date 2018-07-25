@@ -37,8 +37,8 @@ public class RetainMessageCache {
     }
 
     @Async
-    public boolean remove(String topic) {
-        return redisService.del(CACHE_PRE + topic) > 0;
+    public void remove(String topic) {
+        redisService.del(CACHE_PRE + topic);
     }
 
     public Map<String, RetainMessageStore> all() {

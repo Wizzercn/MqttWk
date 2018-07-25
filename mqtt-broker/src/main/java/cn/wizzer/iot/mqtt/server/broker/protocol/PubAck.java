@@ -31,7 +31,6 @@ public class PubAck {
         int messageId = variableHeader.messageId();
         LOGGER.debug("PUBACK - clientId: {}, messageId: {}", (String) channel.getAttribute("clientId"), messageId);
         dupPublishMessageStoreService.remove((String) channel.getAttribute("clientId"), messageId);
-        messageIdService.releaseMessageId(messageId);
     }
 
 }

@@ -31,6 +31,5 @@ public class PubComp {
         int messageId = variableHeader.messageId();
         LOGGER.debug("PUBCOMP - clientId: {}, messageId: {}", (String) channel.getAttribute("clientId"), messageId);
         dupPubRelMessageStoreService.remove((String) channel.getAttribute("clientId"), variableHeader.messageId());
-        messageIdService.releaseMessageId(messageId);
     }
 }
