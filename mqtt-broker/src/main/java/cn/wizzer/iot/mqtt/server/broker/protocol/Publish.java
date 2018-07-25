@@ -101,7 +101,7 @@ public class Publish {
     }
 
     //@Async
-    public void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
+    private void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
         List<SubscribeStore> subscribeStores = subscribeStoreService.search(topic);
         subscribeStores.forEach(subscribeStore -> {
             if (sessionStoreService.containsKey(subscribeStore.getClientId())) {
