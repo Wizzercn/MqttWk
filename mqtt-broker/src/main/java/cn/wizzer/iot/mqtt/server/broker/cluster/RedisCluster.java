@@ -7,6 +7,9 @@ import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.server.store.message.MessageIdService;
 import cn.wizzer.iot.mqtt.server.store.session.SessionStoreService;
 import cn.wizzer.iot.mqtt.server.store.subscribe.SubscribeStoreService;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelId;
+import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.mqtt.*;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.pubsub.PubSub;
@@ -19,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wizzer on 2018
@@ -37,6 +41,10 @@ public class RedisCluster implements PubSub {
     private MessageIdService messageIdService;
     @Inject
     private BrokerProperties brokerProperties;
+    @Inject
+    private ChannelGroup channelGroup;
+    @Inject
+    private Map<String, ChannelId> channelIdMap;
 
     public void init() {
         pubSubService.reg(CLUSTER_TOPIC, this);
@@ -64,7 +72,11 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, 0), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
-                    sessionStoreService.get(subscribeStore.getClientId()).getChannel().writeAndFlush(publishMessage);
+                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
+                    if(channelId!=null) {
+                        Channel channel = channelGroup.find(channelId);
+                        if (channel != null) channel.writeAndFlush(publishMessage);
+                    }
                 }
                 if (respQoS == MqttQoS.AT_LEAST_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -72,7 +84,11 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
-                    sessionStoreService.get(subscribeStore.getClientId()).getChannel().writeAndFlush(publishMessage);
+                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
+                    if(channelId!=null) {
+                        Channel channel = channelGroup.find(channelId);
+                        if (channel != null) channel.writeAndFlush(publishMessage);
+                    }
                 }
                 if (respQoS == MqttQoS.EXACTLY_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -80,7 +96,11 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
-                    sessionStoreService.get(subscribeStore.getClientId()).getChannel().writeAndFlush(publishMessage);
+                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
+                    if(channelId!=null) {
+                        Channel channel = channelGroup.find(channelId);
+                        if (channel != null) channel.writeAndFlush(publishMessage);
+                    }
                 }
             }
         });

@@ -16,6 +16,8 @@ import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelId;
+import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
@@ -24,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * CONNECT连接处理
@@ -44,13 +47,19 @@ public class Connect {
 
     private BrokerProperties brokerProperties;
 
-    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService, BrokerProperties brokerProperties) {
+    private ChannelGroup channelGroup;
+
+    private Map<String, ChannelId> channelIdMap;
+
+    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService, BrokerProperties brokerProperties,ChannelGroup channelGroup,Map<String, ChannelId> channelIdMap) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.dupPublishMessageStoreService = dupPublishMessageStoreService;
         this.dupPubRelMessageStoreService = dupPubRelMessageStoreService;
         this.authService = authService;
         this.brokerProperties = brokerProperties;
+        this.channelGroup=channelGroup;
+        this.channelIdMap=channelIdMap;
     }
 
     public void processConnect(Channel channel, MqttConnectMessage msg) {
@@ -102,8 +111,6 @@ public class Connect {
         // 如果会话中已存储这个新连接的clientId, 就关闭之前该clientId的连接
         if (sessionStoreService.containsKey(msg.payload().clientIdentifier())) {
             SessionStore sessionStore = sessionStoreService.get(msg.payload().clientIdentifier());
-            Channel previous = sessionStore.getChannel();
-
             Boolean cleanSession = sessionStore.isCleanSession();
             if (cleanSession) {
                 sessionStoreService.remove(msg.payload().clientIdentifier());
@@ -111,10 +118,18 @@ public class Connect {
                 dupPublishMessageStoreService.removeByClient(msg.payload().clientIdentifier());
                 dupPubRelMessageStoreService.removeByClient(msg.payload().clientIdentifier());
             }
-            previous.close();
+            try {
+                ChannelId channelId = channelIdMap.get(sessionStore.getChannelId());
+                if(channelId!=null) {
+                    Channel previous = channelGroup.find(channelId);
+                    if (previous != null) previous.close();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
         // 处理遗嘱信息
-        SessionStore sessionStore = new SessionStore(msg.payload().clientIdentifier(), channel, msg.variableHeader().isCleanSession(), null);
+        SessionStore sessionStore = new SessionStore(msg.payload().clientIdentifier(), channel.id().asShortText(), msg.variableHeader().isCleanSession(), null);
         if (msg.variableHeader().isWillFlag()) {
             MqttPublishMessage willMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
                     new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(msg.variableHeader().willQos()), msg.variableHeader().isWillRetain(), 0),

@@ -13,8 +13,12 @@ import cn.wizzer.iot.mqtt.server.common.message.IMessageIdService;
 import cn.wizzer.iot.mqtt.server.common.message.IRetainMessageStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
+import io.netty.channel.ChannelId;
+import io.netty.channel.group.ChannelGroup;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+
+import java.util.Map;
 
 /**
  * 协议处理
@@ -49,6 +53,12 @@ public class ProtocolProcess {
     @Inject
     private BrokerProperties brokerProperties;
 
+    @Inject
+    private ChannelGroup channelGroup;
+
+    @Inject
+    private Map<String, ChannelId> channelIdMap;
+
     private Connect connect;
 
     private Subscribe subscribe;
@@ -71,7 +81,7 @@ public class ProtocolProcess {
 
     public Connect connect() {
         if (connect == null) {
-            connect = new Connect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService, authService, brokerProperties);
+            connect = new Connect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService, authService, brokerProperties, channelGroup, channelIdMap);
         }
         return connect;
     }
@@ -92,7 +102,7 @@ public class ProtocolProcess {
 
     public Publish publish() {
         if (publish == null) {
-            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication);
+            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication, channelGroup, channelIdMap);
         }
         return publish;
     }

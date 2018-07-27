@@ -12,6 +12,8 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -27,6 +29,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import org.nutz.boot.starter.ServerFace;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.loader.annotation.Inject;
@@ -38,6 +41,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLEngine;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * t-io启动Broker
@@ -49,20 +54,18 @@ public class BrokerServer implements ServerFace {
     private BrokerProperties brokerProperties;
     @Inject("refer:$ioc")
     private Ioc ioc;
-    @Inject
-    private ProtocolProcess protocolProcess;
     private EventLoopGroup bossGroup;
-
     private EventLoopGroup workerGroup;
-
     private SslContext sslContext;
-
     private Channel channel;
-
     private Channel websocketChannel;
+    private ChannelGroup channelGroup;
+    private Map<String, ChannelId> channelIdMap;
 
     public void start() throws Exception {
         LOGGER.info("Initializing {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
+        channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+        channelIdMap = new HashMap<>();
         bossGroup = brokerProperties.getUseEpoll() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
         workerGroup = brokerProperties.getUseEpoll() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
         if (brokerProperties.getSslEnabled()) {
@@ -84,6 +87,8 @@ public class BrokerServer implements ServerFace {
 
     public void stop() {
         LOGGER.info("Shutdown {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
+        channelGroup = null;
+        channelIdMap = null;
         bossGroup.shutdownGracefully();
         bossGroup = null;
         workerGroup.shutdownGracefully();
@@ -95,14 +100,14 @@ public class BrokerServer implements ServerFace {
         LOGGER.info("MQTT Broker {} shutdown finish.", "[" + brokerProperties.getId() + "]");
     }
 
-    @IocBean
-    public EventLoopGroup getBossGroup() {
-        return this.bossGroup;
+    @IocBean(name = "channelGroup")
+    public ChannelGroup getChannels() {
+        return this.channelGroup;
     }
 
-    @IocBean
-    public EventLoopGroup getWorkerGroup() {
-        return this.workerGroup;
+    @IocBean(name = "channelIdMap")
+    public Map<String, ChannelId> getChannelIdMap() {
+        return this.channelIdMap;
     }
 
     private void mqttServer() throws Exception {
@@ -127,7 +132,7 @@ public class BrokerServer implements ServerFace {
                         }
                         channelPipeline.addLast("decoder", new MqttDecoder());
                         channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
-                        channelPipeline.addLast("broker", new BrokerHandler(protocolProcess));
+                        channelPipeline.addLast("broker", ioc.get(BrokerHandler.class));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, brokerProperties.getSoBacklog())
@@ -164,7 +169,7 @@ public class BrokerServer implements ServerFace {
                         channelPipeline.addLast("mqttWebSocket", new MqttWebSocketCodec());
                         channelPipeline.addLast("decoder", new MqttDecoder());
                         channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
-                        channelPipeline.addLast("broker", new BrokerHandler(protocolProcess));
+                        channelPipeline.addLast("broker", ioc.get(BrokerHandler.class));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, brokerProperties.getSoBacklog())
