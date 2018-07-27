@@ -1,20 +1,19 @@
 # MqttWk
 
-基于 nutzboot + t-io + redis + kafka 实现的MQTT服务broker
+基于 nutzboot + netty + redis + kafka 实现的MQTT服务broker
 
-本项目代码主要来源于 netty/t-io/iot-mqtt-server 等众多项目，开源免费，欢迎交流学习
+本项目代码主要来源于 netty/netty/iot-mqtt-server 等众多项目，开源免费，欢迎交流学习
 
 # 参考项目
 
 * [https://github.com/netty/netty](https://github.com/netty/netty)
-* [https://gitee.com/tywo45/tio-showcase/](https://gitee.com/tywo45/tio-showcase/)
 * [https://gitee.com/recallcode/iot-mqtt-server](https://gitee.com/recallcode/iot-mqtt-server)
 
 # 使用说明
 
 #### 软件架构说明
 
-1. 使用t-io实现通信及协议解析
+1. 使用netty实现通信及协议解析
 2. 使用nutzboot提供依赖注入及属性配置
 3. 使用redis实现消息缓存,集群
 4. 使用kafka实现消息代理
@@ -22,7 +21,6 @@
 #### 项目结构
 ```
 MqttWk
-  ├── mqtt-codec -- MQTT协议解析的t-io实现
   ├── mqtt-auth -- MQTT服务连接时用户名和密码认证
   ├── mqtt-broker -- MQTT服务器功能的核心实现
   ├── mqtt-common -- 公共类及其他模块使用的服务接口及对象
@@ -71,7 +69,7 @@ MqttWk
 - 使用中如果需要实现连接数据库或其他方式进行连接认证, 只需要重写`mqtt-auth`模块下的相应方法即可
 
 #### 自定义 - 服务端证书
-- 服务端证书存储在`mqtt-broker`的`resources/keystore/server.jks`
+- 服务端证书存储在`mqtt-broker`的`resources/keystore/server.pfx`
 - 用户可以制作自己的证书, 但存储位置和文件名必须使用上述描述的位置及文件名
 
 #### 生产环境部署
