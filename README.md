@@ -2,7 +2,7 @@
 
 基于 nutzboot + netty + redis + kafka 实现的MQTT服务broker
 
-本项目代码主要来源于 netty/netty/iot-mqtt-server 等众多项目，开源免费，欢迎交流学习
+本项目代码主要来源于 netty/iot-mqtt-server 等众多项目，开源免费，欢迎交流学习
 
 # 参考项目
 
