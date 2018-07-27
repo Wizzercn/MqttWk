@@ -58,6 +58,11 @@ public final class MqttDecoder {
             return invalidMessage(cause);
         }
         try {
+            if (bytesRemainingInVariablePart > buffer.remaining()) {
+                throw new DecoderException(
+                        "error number remaining payload bytes: " +
+                                bytesRemainingInVariablePart + " (" + mqttFixedHeader.messageType() + ')');
+            }
             final Result<?> decodedPayload =
                     decodePayload(
                             buffer,
@@ -366,8 +371,9 @@ public final class MqttDecoder {
     }
 
     private static Result<ByteBuffer> decodePublishPayload(ByteBuffer buffer, int bytesRemainingInVariablePart) {
-        ByteBuffer b = ByteBufferUtils.copy(buffer, buffer.position(), buffer.position() + bytesRemainingInVariablePart);
-        buffer.position(buffer.position() + bytesRemainingInVariablePart);
+        byte[] bytes = new byte[bytesRemainingInVariablePart];
+        buffer.get(bytes, 0, bytesRemainingInVariablePart);
+        ByteBuffer b = ByteBuffer.wrap(bytes);
         return new Result<ByteBuffer>(b, bytesRemainingInVariablePart);
     }
 
