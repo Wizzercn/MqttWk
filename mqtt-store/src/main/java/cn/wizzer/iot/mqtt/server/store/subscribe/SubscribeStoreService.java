@@ -48,20 +48,9 @@ public class SubscribeStoreService implements ISubscribeStoreService {
     }
 
     @Override
-    @Async
     public void removeForClient(String clientId) {
-        long a = System.currentTimeMillis();
-        subscribeNotWildcardCache.all().forEach((entry, map) -> {
-            if (map.containsKey(clientId)) {
-                subscribeNotWildcardCache.remove(entry, clientId);
-            }
-        });
-        subscribeWildcardCache.all().forEach((entry, map) -> {
-            if (map.containsKey(clientId)) {
-                subscribeWildcardCache.remove(entry, clientId);
-            }
-        });
-        System.out.println("subscribeStores removeForClient::" + (System.currentTimeMillis() - a) + "ms");
+        subscribeNotWildcardCache.removeForClient(clientId);
+        subscribeWildcardCache.removeForClient(clientId);
     }
 
     @Override
