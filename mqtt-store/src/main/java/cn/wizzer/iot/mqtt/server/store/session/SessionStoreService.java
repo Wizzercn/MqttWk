@@ -13,39 +13,34 @@ import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * 会话存储服务
  */
 @IocBean
 public class SessionStoreService implements ISessionStoreService {
     private final static String CACHE_PRE = "mqttwk:session:";
-    @Inject
-    private RedisService redisService;
-    @Inject
-    private PropertiesProxy conf;
+    private Map<String, SessionStore> sessionCache = new ConcurrentHashMap<String, SessionStore>();
 
     @Override
     public void put(String clientId, SessionStore sessionStore) {
-        redisService.set(CACHE_PRE + clientId, JSONObject.toJSONString(sessionStore));
+        sessionCache.put(clientId, sessionStore);
     }
-
 
     @Override
     public SessionStore get(String clientId) {
-        String obj = redisService.get(CACHE_PRE + clientId);
-        if (obj != null)
-            return JSONObject.parseObject(obj, SessionStore.class);
-        return null;
+        return sessionCache.get(clientId);
     }
 
     @Override
     public boolean containsKey(String clientId) {
-        return redisService.exists(CACHE_PRE + clientId);
+        return sessionCache.containsKey(clientId);
     }
 
     @Override
-    @Async
     public void remove(String clientId) {
-        redisService.del(CACHE_PRE + clientId);
+        sessionCache.remove(clientId);
     }
 }

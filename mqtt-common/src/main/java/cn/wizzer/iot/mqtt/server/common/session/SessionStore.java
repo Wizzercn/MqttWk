@@ -5,7 +5,8 @@
 package cn.wizzer.iot.mqtt.server.common.session;
 
 
-import cn.wizzer.iot.mqtt.server.tio.codec.MqttPublishMessage;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 import java.io.Serializable;
 
@@ -17,12 +18,15 @@ public class SessionStore implements Serializable {
 
     private String clientId;
 
+    private Channel channel;
+
     private boolean cleanSession;
 
     private MqttPublishMessage willMessage;
 
-    public SessionStore(String clientId, boolean cleanSession, MqttPublishMessage willMessage) {
+    public SessionStore(String clientId, Channel channel, boolean cleanSession, MqttPublishMessage willMessage) {
         this.clientId = clientId;
+        this.channel = channel;
         this.cleanSession = cleanSession;
         this.willMessage = willMessage;
     }
@@ -34,6 +38,14 @@ public class SessionStore implements Serializable {
     public SessionStore setClientId(String clientId) {
         this.clientId = clientId;
         return this;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
     public boolean isCleanSession() {

@@ -13,14 +13,14 @@
     <artifactId>mqtt-common</artifactId>
     <dependencies>
         <dependency>
-            <groupId>cn.wizzer</groupId>
-            <artifactId>mqtt-codec</artifactId>
-            <version>${mqttwk.version}</version>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-mqtt</artifactId>
+            <version>${netty.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.t-io</groupId>
-            <artifactId>tio-core</artifactId>
-            <version>${tio.version}</version>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
         </dependency>
     </dependencies>
 

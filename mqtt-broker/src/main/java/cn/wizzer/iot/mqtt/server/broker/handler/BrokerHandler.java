@@ -1,72 +1,106 @@
+/**
+ * Copyright (c) 2018, Mr.Wang (recallcode@aliyun.com) All rights reserved.
+ */
+
 package cn.wizzer.iot.mqtt.server.broker.handler;
 
-import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
 import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
-import cn.wizzer.iot.mqtt.server.tio.codec.*;
-import org.nutz.ioc.loader.annotation.Inject;
-import org.nutz.ioc.loader.annotation.IocBean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tio.core.ChannelContext;
-import org.tio.core.intf.Packet;
-import org.tio.server.intf.ServerAioHandler;
+import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.mqtt.*;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.AttributeKey;
+
+import java.io.IOException;
 
 /**
- * Created by wizzer on 2018
+ * MQTT消息处理
  */
-@IocBean
-public class BrokerHandler extends MqttAbsAioHandler implements ServerAioHandler {
-    private static Logger LOGGER = LoggerFactory.getLogger(BrokerHandler.class);
+public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
 
-    @Inject
-    private ProtocolProcess protocolProcess;
+	private ProtocolProcess protocolProcess;
 
-    @Override
-    public void handler(Packet packet, ChannelContext channelContext) throws Exception {
-        MqttPacket mqttPacket = (MqttPacket) packet;
-        if ("UNFINISHED".equals(mqttPacket.getMqttMessage().decoderResult()))
-            return;
-        switch (mqttPacket.getMqttMessage().fixedHeader().messageType()) {
-            case CONNECT:
-                protocolProcess.connect().processConnect(channelContext, (MqttConnectMessage) mqttPacket.getMqttMessage());
-                break;
-            case CONNACK:
-                break;
-            case PUBLISH:
-                protocolProcess.publish().processPublish(channelContext, (MqttPublishMessage) mqttPacket.getMqttMessage());
-                break;
-            case PUBACK:
-                protocolProcess.pubAck().processPubAck(channelContext, (MqttMessageIdVariableHeader) mqttPacket.getMqttMessage().variableHeader());
-                break;
-            case PUBREC:
-                protocolProcess.pubRec().processPubRec(channelContext, (MqttMessageIdVariableHeader) mqttPacket.getMqttMessage().variableHeader());
-                break;
-            case PUBREL:
-                protocolProcess.pubRel().processPubRel(channelContext, (MqttMessageIdVariableHeader) mqttPacket.getMqttMessage().variableHeader());
-                break;
-            case PUBCOMP:
-                protocolProcess.pubComp().processPubComp(channelContext, (MqttMessageIdVariableHeader) mqttPacket.getMqttMessage().variableHeader());
-                break;
-            case SUBSCRIBE:
-                protocolProcess.subscribe().processSubscribe(channelContext, (MqttSubscribeMessage) mqttPacket.getMqttMessage());
-                break;
-            case SUBACK:
-                break;
-            case UNSUBSCRIBE:
-                protocolProcess.unSubscribe().processUnSubscribe(channelContext, (MqttUnsubscribeMessage) mqttPacket.getMqttMessage());
-                break;
-            case UNSUBACK:
-                break;
-            case PINGREQ:
-                protocolProcess.pingReq().processPingReq(channelContext, mqttPacket.getMqttMessage());
-                break;
-            case PINGRESP:
-                break;
-            case DISCONNECT:
-                protocolProcess.disConnect().processDisConnect(channelContext, mqttPacket.getMqttMessage());
-                break;
-            default:
-                break;
-        }
-    }
+	public BrokerHandler(ProtocolProcess protocolProcess) {
+		this.protocolProcess = protocolProcess;
+	}
+
+	@Override
+	protected void channelRead0(ChannelHandlerContext ctx, MqttMessage msg) throws Exception {
+		switch (msg.fixedHeader().messageType()) {
+			case CONNECT:
+				protocolProcess.connect().processConnect(ctx.channel(), (MqttConnectMessage) msg);
+				break;
+			case CONNACK:
+				break;
+			case PUBLISH:
+				protocolProcess.publish().processPublish(ctx.channel(), (MqttPublishMessage) msg);
+				break;
+			case PUBACK:
+				protocolProcess.pubAck().processPubAck(ctx.channel(), (MqttMessageIdVariableHeader) msg.variableHeader());
+				break;
+			case PUBREC:
+				protocolProcess.pubRec().processPubRec(ctx.channel(), (MqttMessageIdVariableHeader) msg.variableHeader());
+				break;
+			case PUBREL:
+				protocolProcess.pubRel().processPubRel(ctx.channel(), (MqttMessageIdVariableHeader) msg.variableHeader());
+				break;
+			case PUBCOMP:
+				protocolProcess.pubComp().processPubComp(ctx.channel(), (MqttMessageIdVariableHeader) msg.variableHeader());
+				break;
+			case SUBSCRIBE:
+				protocolProcess.subscribe().processSubscribe(ctx.channel(), (MqttSubscribeMessage) msg);
+				break;
+			case SUBACK:
+				break;
+			case UNSUBSCRIBE:
+				protocolProcess.unSubscribe().processUnSubscribe(ctx.channel(), (MqttUnsubscribeMessage) msg);
+				break;
+			case UNSUBACK:
+				break;
+			case PINGREQ:
+				protocolProcess.pingReq().processPingReq(ctx.channel(), msg);
+				break;
+			case PINGRESP:
+				break;
+			case DISCONNECT:
+				protocolProcess.disConnect().processDisConnect(ctx.channel(), msg);
+				break;
+			default:
+				break;
+		}
+	}
+
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		if (cause instanceof IOException) {
+			// 远程主机强迫关闭了一个现有的连接的异常
+			ctx.close();
+		} else {
+			super.exceptionCaught(ctx, cause);
+		}
+	}
+
+	@Override
+	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+		if (evt instanceof IdleStateEvent) {
+			IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
+			if (idleStateEvent.state() == IdleState.ALL_IDLE) {
+				Channel channel = ctx.channel();
+				String clientId = (String) channel.attr(AttributeKey.valueOf("clientId")).get();
+				// 发送遗嘱消息
+				if (this.protocolProcess.getSessionStoreService().containsKey(clientId)) {
+					SessionStore sessionStore = this.protocolProcess.getSessionStoreService().get(clientId);
+					if (sessionStore.getWillMessage() != null) {
+						this.protocolProcess.publish().processPublish(ctx.channel(), sessionStore.getWillMessage());
+					}
+				}
+				ctx.close();
+			}
+		} else {
+			super.userEventTriggered(ctx, evt);
+		}
+	}
 }

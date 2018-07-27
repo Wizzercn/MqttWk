@@ -54,7 +54,13 @@ public class BrokerProperties {
      */
     private boolean websocketEnabled;
     @PropDoc(group = "broker", value = "WebSocket 是否启用", type = "boolean", defaultValue = "false")
-    public static final String PROP_WEBSOCKEENABLED = PRE + "websocket-enabled";
+    public static final String PROP_WEBSOCKETENABLED = PRE + "websocket-enabled";
+    /**
+     * WebSocket 路径
+     */
+    private String websocketPath;
+    @PropDoc(group = "broker", value = "WebSocket 访问路径, 默认 /mqtt", defaultValue = "/mqtt")
+    public static final String PROP_WEBSOCKETPATH = PRE + "websocket-path";
     /**
      * SSL是否启用
      */
@@ -74,6 +80,24 @@ public class BrokerProperties {
     @PropDoc(group = "broker", value = "心跳时间(秒), 默认60秒, 该值可被客户端连接时相应配置覆盖", type = "int", defaultValue = "60")
     public static final String PROP_KEEPALIVE = PRE + "keep-alive";
     /**
+     * 是否开启Epoll模式, 默认关闭
+     */
+    private boolean useEpoll;
+    @PropDoc(group = "broker", value = "是否开启Epoll模式, 默认关闭", type = "boolean", defaultValue = "false")
+    public static final String PROP_USEEPOLL = PRE + "use-epoll";
+    /**
+     * Sokcet参数, 存放已完成三次握手请求的队列最大长度, 默认511长度
+     */
+    private int soBacklog;
+    @PropDoc(group = "broker", value = "Sokcet参数, 存放已完成三次握手请求的队列最大长度, 默认511长度", type = "int", defaultValue = "511")
+    public static final String PROP_SOBACKLOG = PRE + "so-backlog";
+    /**
+     * Socket参数, 是否开启心跳保活机制, 默认开启
+     */
+    private boolean soKeepAlive;
+    @PropDoc(group = "broker", value = "是否开启心跳保活机制, 默认开启", type = "boolean", defaultValue = "true")
+    public static final String PROP_SOKEEPALIVE = PRE + "so-keep-alive";
+    /**
      * 转发kafka主题
      */
     private String producerTopic;
@@ -91,12 +115,14 @@ public class BrokerProperties {
     private boolean kafkaBrokerEnabled;
     public static final String PROP_KAFKA_BROKER_ENABLED = PRE + "kafka.broker-enabled";
 
+
     public void init() {
         this.id = conf.get(_id, "mqttwk");
         this.host = conf.get(PROP_HOST, "127.0.0.1");
         this.port = conf.getInt(PROP_PORT, 8885);
         this.websocketPort = conf.getInt(PROP_WEBSOCKETPORT, 9995);
-        this.websocketEnabled = conf.getBoolean(PROP_WEBSOCKEENABLED, false);
+        this.websocketEnabled = conf.getBoolean(PROP_WEBSOCKETENABLED, false);
+        this.websocketPath = conf.get(PROP_WEBSOCKETPATH, "/mqtt");
         this.sslEnabled = conf.getBoolean(PROP_SSLENABLED, true);
         this.sslPassword = conf.get(PROP_SSLPASSWORD);
         this.keepAlive = conf.getInt(PROP_KEEPALIVE, 60);
@@ -104,6 +130,9 @@ public class BrokerProperties {
         this.mqttPasswordMust = conf.getBoolean(PROP_MQTTPASSWORDMUST, true);
         this.clusterEnabled = conf.getBoolean(PROP_CLUSTERON, false);
         this.kafkaBrokerEnabled = conf.getBoolean(PROP_KAFKA_BROKER_ENABLED, false);
+        this.useEpoll = conf.getBoolean(PROP_USEEPOLL, false);
+        this.soBacklog = conf.getInt(PROP_SOBACKLOG, 511);
+        this.soKeepAlive = conf.getBoolean(PROP_SOKEEPALIVE, true);
     }
 
     public String getId() {
@@ -151,12 +180,21 @@ public class BrokerProperties {
         return this;
     }
 
-    public boolean getWebsockeenabled() {
+    public boolean getWebsocketEnabled() {
         return websocketEnabled;
     }
 
     public BrokerProperties setWebsocketEnabled(boolean websocketEnabled) {
         this.websocketEnabled = websocketEnabled;
+        return this;
+    }
+
+    public String getWebsocketPath() {
+        return websocketPath;
+    }
+
+    public BrokerProperties setWebsocketPath(String websocketPath) {
+        this.websocketPath = websocketPath;
         return this;
     }
 
@@ -213,4 +251,32 @@ public class BrokerProperties {
         this.kafkaBrokerEnabled = kafkaBrokerEnabled;
         return this;
     }
+
+    public boolean getUseEpoll() {
+        return useEpoll;
+    }
+
+    public BrokerProperties setUseEpoll(boolean useEpoll) {
+        this.useEpoll = useEpoll;
+        return this;
+    }
+
+    public int getSoBacklog() {
+        return soBacklog;
+    }
+
+    public BrokerProperties setSoBacklog(int soBacklog) {
+        this.soBacklog = soBacklog;
+        return this;
+    }
+
+    public boolean getSoKeepAlive() {
+        return soKeepAlive;
+    }
+
+    public BrokerProperties setSoKeepAlive(boolean soKeepAlive) {
+        this.soKeepAlive = soKeepAlive;
+        return this;
+    }
+
 }

@@ -9,11 +9,11 @@ import cn.wizzer.iot.mqtt.server.common.message.IDupPublishMessageStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
-import cn.wizzer.iot.mqtt.server.tio.codec.MqttMessage;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tio.core.ChannelContext;
-import org.tio.core.Tio;
 
 
 /**
@@ -38,8 +38,8 @@ public class DisConnect {
         this.dupPubRelMessageStoreService = dupPubRelMessageStoreService;
     }
 
-    public void processDisConnect(ChannelContext channel, MqttMessage msg) {
-        String clientId = (String) channel.getAttribute("clientId");
+    public void processDisConnect(Channel channel, MqttMessage msg) {
+        String clientId = (String) channel.attr(AttributeKey.valueOf("clientId")).get();
         SessionStore sessionStore = sessionStoreService.get(clientId);
         if (sessionStore != null && sessionStore.isCleanSession()) {
             subscribeStoreService.removeForClient(clientId);
@@ -48,7 +48,7 @@ public class DisConnect {
         }
         LOGGER.debug("DISCONNECT - clientId: {}, cleanSession: {}", clientId, sessionStore.isCleanSession());
         sessionStoreService.remove(clientId);
-        Tio.close(channel, "");
+        channel.close();
     }
 
 }

@@ -3,13 +3,11 @@ package cn.wizzer.iot.mqtt.server.broker.cluster;
 import cn.hutool.core.util.HexUtil;
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
-import cn.wizzer.iot.mqtt.server.broker.packet.MqttPacket;
-import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.server.store.message.MessageIdService;
 import cn.wizzer.iot.mqtt.server.store.session.SessionStoreService;
 import cn.wizzer.iot.mqtt.server.store.subscribe.SubscribeStoreService;
-import cn.wizzer.iot.mqtt.server.tio.codec.*;
+import io.netty.handler.codec.mqtt.*;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.pubsub.PubSub;
 import org.nutz.integration.jedis.pubsub.PubSubService;
@@ -37,8 +35,6 @@ public class RedisCluster implements PubSub {
     private SessionStoreService sessionStoreService;
     @Inject
     private MessageIdService messageIdService;
-    @Inject
-    private TioService tioService;
     @Inject
     private BrokerProperties brokerProperties;
 
@@ -68,9 +64,7 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, 0), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
-                    MqttPacket mqttPacket = new MqttPacket();
-                    mqttPacket.setMqttMessage(publishMessage);
-                    tioService.send(subscribeStore.getClientId(), mqttPacket);
+                    sessionStoreService.get(subscribeStore.getClientId()).getChannel().writeAndFlush(publishMessage);
                 }
                 if (respQoS == MqttQoS.AT_LEAST_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -78,9 +72,7 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
-                    MqttPacket mqttPacket = new MqttPacket();
-                    mqttPacket.setMqttMessage(publishMessage);
-                    tioService.send(subscribeStore.getClientId(), mqttPacket);
+                    sessionStoreService.get(subscribeStore.getClientId()).getChannel().writeAndFlush(publishMessage);
                 }
                 if (respQoS == MqttQoS.EXACTLY_ONCE) {
                     int messageId = messageIdService.getNextMessageId();
@@ -88,9 +80,7 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
-                    MqttPacket mqttPacket = new MqttPacket();
-                    mqttPacket.setMqttMessage(publishMessage);
-                    tioService.send(subscribeStore.getClientId(), mqttPacket);
+                    sessionStoreService.get(subscribeStore.getClientId()).getChannel().writeAndFlush(publishMessage);
                 }
             }
         });

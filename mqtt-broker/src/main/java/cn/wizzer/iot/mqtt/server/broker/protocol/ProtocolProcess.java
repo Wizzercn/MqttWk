@@ -6,7 +6,6 @@ package cn.wizzer.iot.mqtt.server.broker.protocol;
 
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalCommunication;
-import cn.wizzer.iot.mqtt.server.broker.service.TioService;
 import cn.wizzer.iot.mqtt.server.common.auth.IAuthService;
 import cn.wizzer.iot.mqtt.server.common.message.IDupPubRelMessageStoreService;
 import cn.wizzer.iot.mqtt.server.common.message.IDupPublishMessageStoreService;
@@ -48,9 +47,6 @@ public class ProtocolProcess {
     private InternalCommunication internalCommunication;
 
     @Inject
-    private TioService tioService;
-
-    @Inject
     private BrokerProperties brokerProperties;
 
     private Connect connect;
@@ -75,7 +71,7 @@ public class ProtocolProcess {
 
     public Connect connect() {
         if (connect == null) {
-            connect = new Connect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService, authService, tioService, brokerProperties);
+            connect = new Connect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService, authService, brokerProperties);
         }
         return connect;
     }
@@ -96,7 +92,7 @@ public class ProtocolProcess {
 
     public Publish publish() {
         if (publish == null) {
-            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication, tioService);
+            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication);
         }
         return publish;
     }
@@ -124,7 +120,7 @@ public class ProtocolProcess {
 
     public PubAck pubAck() {
         if (pubAck == null) {
-            pubAck = new PubAck(messageIdService, dupPublishMessageStoreService);
+            pubAck = new PubAck(dupPublishMessageStoreService);
         }
         return pubAck;
     }
@@ -138,7 +134,7 @@ public class ProtocolProcess {
 
     public PubComp pubComp() {
         if (pubComp == null) {
-            pubComp = new PubComp(messageIdService, dupPubRelMessageStoreService);
+            pubComp = new PubComp(dupPubRelMessageStoreService);
         }
         return pubComp;
     }
