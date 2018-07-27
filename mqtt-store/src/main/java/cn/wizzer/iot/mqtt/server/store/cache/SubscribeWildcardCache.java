@@ -16,11 +16,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @IocBean
 public class SubscribeWildcardCache {
     private final static String CACHE_PRE = "mqttwk:subwildcard:";
+    private final static String CACHE_CLIENT_PRE = "mqttwk:client:";
     @Inject
     private RedisService redisService;
 
     public SubscribeStore put(String topic, String clientId, SubscribeStore subscribeStore) {
         redisService.hset(CACHE_PRE + topic, clientId, JSONObject.toJSONString(subscribeStore));
+        redisService.sadd(CACHE_CLIENT_PRE + clientId, topic);
         return subscribeStore;
     }
 
@@ -34,7 +36,16 @@ public class SubscribeWildcardCache {
 
     @Async
     public void remove(String topic, String clientId) {
+        redisService.srem(CACHE_CLIENT_PRE + clientId, topic);
         redisService.hdel(CACHE_PRE + topic, clientId);
+    }
+
+    @Async
+    public void removeForClient(String clientId) {
+        for (String topic : redisService.smembers(CACHE_CLIENT_PRE + clientId)) {
+            redisService.hdel(CACHE_PRE + topic, clientId);
+        }
+        redisService.del(CACHE_CLIENT_PRE + clientId);
     }
 
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
