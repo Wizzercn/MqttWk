@@ -32,6 +32,12 @@
             <email>wizzer@qq.com</email>
             <url>https://wizzer.cn</url>
         </developer>
+        <developer>
+            <id>wendal</id>
+            <name>Wendal Chen</name>
+            <email>wendal1985@gmail.com</email>
+            <url>http://wendal.net/</url>
+        </developer>
     </developers>
     <dependencyManagement>
         <dependencies>
