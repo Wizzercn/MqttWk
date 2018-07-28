@@ -7,7 +7,6 @@ package cn.wizzer.iot.mqtt.server.broker.server;
 import cn.wizzer.iot.mqtt.server.broker.codec.MqttWebSocketCodec;
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.handler.BrokerHandler;
-import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -34,6 +33,7 @@ import org.nutz.boot.starter.ServerFace;
 import org.nutz.ioc.Ioc;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.lang.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +137,11 @@ public class BrokerServer implements ServerFace {
                 })
                 .option(ChannelOption.SO_BACKLOG, brokerProperties.getSoBacklog())
                 .childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.getSoKeepAlive());
-        channel = sb.bind(brokerProperties.getHost(), brokerProperties.getPort()).sync().channel();
+        if (Strings.isNotBlank(brokerProperties.getHost())) {
+            channel = sb.bind(brokerProperties.getHost(), brokerProperties.getPort()).sync().channel();
+        } else {
+            channel = sb.bind(brokerProperties.getPort()).sync().channel();
+        }
     }
 
     private void websocketServer() throws Exception {
@@ -174,6 +178,10 @@ public class BrokerServer implements ServerFace {
                 })
                 .option(ChannelOption.SO_BACKLOG, brokerProperties.getSoBacklog())
                 .childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.getSoKeepAlive());
-        websocketChannel = sb.bind(brokerProperties.getHost(), brokerProperties.getWebsocketPort()).sync().channel();
+        if (Strings.isNotBlank(brokerProperties.getHost())) {
+            websocketChannel = sb.bind(brokerProperties.getHost(), brokerProperties.getWebsocketPort()).sync().channel();
+        } else {
+            websocketChannel = sb.bind(brokerProperties.getWebsocketPort()).sync().channel();
+        }
     }
 }
