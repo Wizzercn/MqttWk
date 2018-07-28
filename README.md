@@ -1,4 +1,4 @@
-# MqttWk
+# MqttWk by netty
 
 基于 nutzboot + netty + redis + kafka 实现的MQTT服务broker
 
