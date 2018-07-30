@@ -55,13 +55,11 @@ public class SubscribeStoreService implements ISubscribeStoreService {
 
     @Override
     public List<SubscribeStore> search(String topic) {
-        long a = System.currentTimeMillis();
         List<SubscribeStore> subscribeStores = new ArrayList<SubscribeStore>();
         List<SubscribeStore> list = subscribeNotWildcardCache.all(topic);
         if (list.size() > 0) {
             subscribeStores.addAll(list);
         }
-        System.out.println("subscribeStores search1::" + (System.currentTimeMillis() - a) + "ms");
         subscribeWildcardCache.all().forEach((topicFilter, map) -> {
             if (StrUtil.split(topic, '/').size() >= StrUtil.split(topicFilter, '/').size()) {
                 List<String> splitTopics = StrUtil.split(topic, '/');//a
@@ -86,7 +84,6 @@ public class SubscribeStoreService implements ISubscribeStoreService {
                 }
             }
         });
-        System.out.println("subscribeStores search2::" + (System.currentTimeMillis() - a) + "ms");
         return subscribeStores;
     }
 
