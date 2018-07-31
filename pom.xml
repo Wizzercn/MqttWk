@@ -6,16 +6,15 @@
     <groupId>cn.wizzer</groupId>
     <artifactId>mqtt-wk</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-netty</version>
     <modules>
         <module>mqtt-common</module>
         <module>mqtt-auth</module>
         <module>mqtt-broker</module>
         <module>mqtt-store</module>
-        <module>mqtt-zoo</module>
     </modules>
     <properties>
-        <mqttwk.version>1.0-SNAPSHOT</mqttwk.version>
+        <mqttwk.version>1.0.0-netty</mqttwk.version>
         <nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
         <netty.version>4.1.28.Final</netty.version>
         <fastjson.version>1.2.47</fastjson.version>

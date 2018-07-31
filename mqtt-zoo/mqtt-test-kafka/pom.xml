@@ -2,15 +2,30 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>mqtt-zoo</artifactId>
-        <groupId>cn.wizzer</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
+    <groupId>cn.wizzer</groupId>
+    <artifactId>mqtt-test-kafka</artifactId>
+    <version>1.0.0-netty</version>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <artifactId>mqtt-test-kafka</artifactId>
+    <properties>
+        <mqttwk.version>1.0.0-netty</mqttwk.version>
+        <nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
+        <netty.version>4.1.28.Final</netty.version>
+        <fastjson.version>1.2.47</fastjson.version>
+        <hutool.version>4.1.2</hutool.version>
+        <kafka_2.12.version>2.0.0</kafka_2.12.version>
+        <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.nutz</groupId>
+            <artifactId>nutzboot-parent</artifactId>
+            <version>${nutzboot.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
         <dependency>
             <groupId>cn.wizzer</groupId>
             <artifactId>mqtt-common</artifactId>
@@ -29,6 +44,7 @@
         <dependency>
             <groupId>org.nutz</groupId>
             <artifactId>nutzboot-core</artifactId>
+            <version>${nutzboot.version}</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
@@ -36,12 +52,60 @@
             <version>${hutool.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.12</artifactId>
+            <version>${kafka_2.12.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j-log4j12.version}</version>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>nutz</id>
+            <url>http://jfrog.nutz.cn/artifactory/libs-release</url>
+        </repository>
+        <repository>
+            <id>nutz-snapshots</id>
+            <url>http://jfrog.nutz.cn/artifactory/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nutz-snapshots</id>
+            <url>http://jfrog.nutz.cn/artifactory/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.nutz.boot</groupId>
                 <artifactId>nutzboot-maven-plugin</artifactId>

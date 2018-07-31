@@ -43,6 +43,7 @@ MqttWk
 9. Kafka消息转发功能(可选择是否开启)
 
 #### 快速开始
+- JDK1.8
 - 项目根目录执行  `mvn install` 
 - mqtt-broker 下执行 `mvn clean package nutzboot:shade` 进行打包
 - `java -jar mqtt-broker-xxx.jar -Dnutz.profiles.active=prod` [此时加载application-prod.properties配置文件]

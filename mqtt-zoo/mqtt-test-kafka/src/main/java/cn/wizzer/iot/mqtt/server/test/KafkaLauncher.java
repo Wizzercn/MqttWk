@@ -13,6 +13,7 @@ import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.annotation.Modules;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -48,7 +49,7 @@ public class KafkaLauncher {
         kafkaConsumer.subscribe(Arrays.asList(conf.get("mqttwk.broker.kafka.producer.topic")));
         int sum=0;
         while (true) {
-            ConsumerRecords<String, String> records = kafkaConsumer.poll(500);
+            ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(500));
             for (ConsumerRecord<String, String> record : records) {
                 log.debugf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), new String(HexUtil.decodeHex(record.value())));
                 log.debugf("总计收到 %s条",++sum);
