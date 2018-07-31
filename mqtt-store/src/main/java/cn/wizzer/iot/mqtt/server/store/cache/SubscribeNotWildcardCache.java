@@ -70,7 +70,7 @@ public class SubscribeNotWildcardCache {
 
     public List<SubscribeStore> all(String topic) {
         List<SubscribeStore> list = new ArrayList<>();
-        Map<String, String> map = redisService.hgetAll(topic);
+        Map<String, String> map = redisService.hgetAll(CACHE_PRE + topic);
         if (map != null && !map.isEmpty()) {
             map.forEach((k, v) -> {
                 list.add(JSONObject.parseObject(v, SubscribeStore.class));
