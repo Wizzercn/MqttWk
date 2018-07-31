@@ -19,7 +19,9 @@ public class MessageIdService implements IMessageIdService {
     @Override
     public int getNextMessageId() {
         try {
-            nextMsgId = (int) (redisService.incr("mqttwk:messageid:num") % 65535);
+            nextMsgId = (int) (redisService.incr("mqttwk:messageid:num") % 65536);
+            if (nextMsgId == 0)
+                return this.getNextMessageId();
         } catch (Exception e) {
             e.printStackTrace();
         }
