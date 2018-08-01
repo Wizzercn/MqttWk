@@ -14,18 +14,17 @@ public class MessageIdService implements IMessageIdService {
     @Inject
     private RedisService redisService;
 
-    private int nextMsgId = 0;
-
     @Override
     public int getNextMessageId() {
         try {
-            nextMsgId = (int) (redisService.incr("mqttwk:messageid:num") % 65536);
+            int nextMsgId = (int) (redisService.incr("mqttwk:messageid:num") % 65536);
             if (nextMsgId == 0)
                 return this.getNextMessageId();
+            return nextMsgId;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return nextMsgId;
+        return 0;
     }
 
     /**
