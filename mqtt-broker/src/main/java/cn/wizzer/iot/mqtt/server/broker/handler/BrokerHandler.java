@@ -33,14 +33,14 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelRegistered(ctx);
+        super.channelActive(ctx);
         this.channelGroup.add(ctx.channel());
         this.channelIdMap.put(ctx.channel().id().asShortText(), ctx.channel().id());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelUnregistered(ctx);
+        super.channelInactive(ctx);
         this.channelGroup.remove(ctx.channel());
         this.channelIdMap.remove(ctx.channel().id().asShortText());
     }
