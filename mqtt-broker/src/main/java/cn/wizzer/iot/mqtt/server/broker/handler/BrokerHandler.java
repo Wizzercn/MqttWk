@@ -47,6 +47,23 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, MqttMessage msg) throws Exception {
+        if (msg.decoderResult().isFailure()) {
+            Throwable cause = msg.decoderResult().cause();
+            if (cause instanceof MqttUnacceptableProtocolVersionException) {
+                ctx.writeAndFlush(MqttMessageFactory.newMessage(
+                        new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
+                        new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL_VERSION, false),
+                        null));
+            } else if (cause instanceof MqttIdentifierRejectedException) {
+                ctx.writeAndFlush(MqttMessageFactory.newMessage(
+                        new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
+                        new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_REFUSED_IDENTIFIER_REJECTED, false),
+                        null));
+            }
+            ctx.close();
+            return;
+        }
+
         switch (msg.fixedHeader().messageType()) {
             case CONNECT:
                 protocolProcess.connect().processConnect(ctx.channel(), (MqttConnectMessage) msg);
