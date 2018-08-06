@@ -1,8 +1,8 @@
 package cn.wizzer.iot.mqtt.server.broker.service;
 
-import cn.hutool.core.util.HexUtil;
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -29,7 +29,7 @@ public class KafkaService {
     public void send(InternalMessage internalMessage) {
         try {
             //消息体转换为Hex字符串进行转发
-            ProducerRecord<String, String> data = new ProducerRecord<>(brokerProperties.getProducerTopic(), internalMessage.getTopic(), HexUtil.encodeHexStr(internalMessage.getMessageBytes()));
+            ProducerRecord<String, String> data = new ProducerRecord<>(brokerProperties.getProducerTopic(), internalMessage.getTopic(), JSONObject.toJSONString(internalMessage));
             kafkaProducer.send(data,
                     new Callback() {
                         public void onCompletion(RecordMetadata metadata, Exception e) {

@@ -1,12 +1,12 @@
 package cn.wizzer.iot.mqtt.server.broker.cluster;
 
-import cn.hutool.core.util.HexUtil;
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.server.store.message.MessageIdService;
 import cn.wizzer.iot.mqtt.server.store.session.SessionStoreService;
 import cn.wizzer.iot.mqtt.server.store.subscribe.SubscribeStoreService;
+import com.alibaba.fastjson.JSONObject;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
 import io.netty.channel.group.ChannelGroup;
@@ -16,7 +16,6 @@ import org.nutz.integration.jedis.pubsub.PubSub;
 import org.nutz.integration.jedis.pubsub.PubSubService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,13 +51,13 @@ public class RedisCluster implements PubSub {
 
     @Override
     public void onMessage(String channel, String message) {
-        InternalMessage internalMessage = Lang.fromBytes(HexUtil.decodeHex(message), InternalMessage.class);
+        InternalMessage internalMessage = JSONObject.parseObject(message, InternalMessage.class);
         this.sendPublishMessage(internalMessage.getClientId(), internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
     }
 
     @Async
     public void sendMessage(InternalMessage internalMessage) {
-        pubSubService.fire(CLUSTER_TOPIC, HexUtil.encodeHexStr(Lang.toBytes(internalMessage)));
+        pubSubService.fire(CLUSTER_TOPIC, JSONObject.toJSONString(internalMessage));
     }
 
     private void sendPublishMessage(String clientId, String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
@@ -73,7 +72,7 @@ public class RedisCluster implements PubSub {
                             new MqttPublishVariableHeader(topic, 0), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
                     ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
-                    if(channelId!=null) {
+                    if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);
                     }
@@ -85,7 +84,7 @@ public class RedisCluster implements PubSub {
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
                     ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
-                    if(channelId!=null) {
+                    if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);
                     }
@@ -97,7 +96,7 @@ public class RedisCluster implements PubSub {
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
                     ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
-                    if(channelId!=null) {
+                    if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);
                     }

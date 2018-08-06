@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <groupId>cn.wizzer</groupId>
     <artifactId>mqtt-test-kafka</artifactId>
-    <version>1.0.0-netty</version>
+    <version>1.0.3-netty</version>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <properties>
-        <mqttwk.version>1.0.0-netty</mqttwk.version>
+        <mqttwk.version>1.0.3-netty</mqttwk.version>
         <nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
         <netty.version>4.1.28.Final</netty.version>
-        <fastjson.version>1.2.47</fastjson.version>
+        <fastjson.version>1.2.49</fastjson.version>
         <hutool.version>4.1.2</hutool.version>
         <kafka_2.12.version>2.0.0</kafka_2.12.version>
         <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>

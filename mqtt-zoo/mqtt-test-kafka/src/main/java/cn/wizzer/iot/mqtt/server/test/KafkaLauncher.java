@@ -1,6 +1,6 @@
 package cn.wizzer.iot.mqtt.server.test;
 
-import cn.hutool.core.util.HexUtil;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -8,7 +8,6 @@ import org.nutz.boot.NbApp;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.json.Json;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
 import org.nutz.mvc.annotation.Modules;
@@ -44,15 +43,15 @@ public class KafkaLauncher {
     }
 
     public void init() {
-        KafkaConsumer kafkaConsumer=new KafkaConsumer(getProperties());
+        KafkaConsumer kafkaConsumer = new KafkaConsumer(getProperties());
         //kafka消费消息,接收MQTT发来的消息
         kafkaConsumer.subscribe(Arrays.asList(conf.get("mqttwk.broker.kafka.producer.topic")));
-        int sum=0;
+        int sum = 0;
         while (true) {
             ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(500));
             for (ConsumerRecord<String, String> record : records) {
-                log.debugf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), new String(HexUtil.decodeHex(record.value())));
-                log.debugf("总计收到 %s条",++sum);
+                log.debugf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), JSONObject.parseObject(record.value(), InternalMessage.class));
+                log.debugf("总计收到 %s条", ++sum);
             }
         }
 
