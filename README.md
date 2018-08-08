@@ -4,6 +4,11 @@
 
 本项目代码主要来源于 netty/iot-mqtt-server 等众多项目，开源免费，欢迎交流学习
 
+#### QQ交流群
+* MqttWk 群号: 225991747
+* NutzWk 群号: 24457628 
+`作者开发的Java微服务分布式开源框架`
+
 # 参考项目
 
 * [https://github.com/netty/netty](https://github.com/netty/netty)
