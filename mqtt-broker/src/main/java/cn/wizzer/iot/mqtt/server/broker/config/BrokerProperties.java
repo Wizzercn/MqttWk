@@ -235,7 +235,7 @@ public class BrokerProperties {
     }
 
     public boolean getMqttPasswordMust() {
-        return sslEnabled;
+        return mqttPasswordMust;
     }
 
     public BrokerProperties setMqttPasswordMust(boolean mqttPasswordMust) {
