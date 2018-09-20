@@ -6,11 +6,12 @@ package cn.wizzer.iot.mqtt.server.store.session;
 
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
-import com.alibaba.fastjson.JSONObject;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.json.Json;
+import org.nutz.json.JsonFormat;
 
 /**
  * 会话存储服务
@@ -23,7 +24,8 @@ public class SessionStoreService implements ISessionStoreService {
 
     @Override
     public void put(String clientId, SessionStore sessionStore) {
-        redisService.set(CACHE_PRE + clientId, JSONObject.toJSONString(sessionStore));
+        //fastjson需要对象有get/set方法，而MqttPublishMessage对象没有get/set方法造成转换失败，改成nutz的工具类
+        redisService.set(CACHE_PRE + clientId, Json.toJson(sessionStore, JsonFormat.compact()));
     }
 
 
@@ -31,7 +33,7 @@ public class SessionStoreService implements ISessionStoreService {
     public SessionStore get(String clientId) {
         String obj = redisService.get(CACHE_PRE + clientId);
         if (obj != null)
-            return JSONObject.parseObject(obj, SessionStore.class);
+            return Json.fromJson(SessionStore.class, obj);
         return null;
     }
 

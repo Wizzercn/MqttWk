@@ -6,7 +6,7 @@
     <groupId>cn.wizzer</groupId>
     <artifactId>mqtt-wk</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.4-netty</version>
+    <version>1.0.5-netty</version>
     <name>MqttWk</name>
     <modules>
         <module>mqtt-common</module>
