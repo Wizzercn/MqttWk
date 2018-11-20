@@ -1,17 +1,19 @@
 /**
- * Copyright (c) 2018, Mr.Wang (recallcode@aliyun.com) All rights reserved.
+ * Created by wizzer on 2018
  */
 
 package cn.wizzer.iot.mqtt.server.store.session;
 
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
+import cn.wizzer.iot.mqtt.server.store.util.StoreUtil;
+import com.alibaba.fastjson.JSON;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.json.Json;
-import org.nutz.json.JsonFormat;
+import org.nutz.lang.Strings;
+import org.nutz.lang.util.NutMap;
 
 /**
  * 会话存储服务
@@ -24,16 +26,19 @@ public class SessionStoreService implements ISessionStoreService {
 
     @Override
     public void put(String clientId, SessionStore sessionStore) {
-        //fastjson需要对象有get/set方法，而MqttPublishMessage对象没有get/set方法造成转换失败，改成nutz的工具类
-        redisService.set(CACHE_PRE + clientId, Json.toJson(sessionStore, JsonFormat.compact()));
+        //SessionStore对象不能正常转为JSON,使用工具类类解决
+        NutMap nutMap = StoreUtil.transPublishToMapBeta(sessionStore);
+        redisService.set(CACHE_PRE + clientId, JSON.toJSONString(nutMap));
     }
 
 
     @Override
     public SessionStore get(String clientId) {
-        String obj = redisService.get(CACHE_PRE + clientId);
-        if (obj != null)
-            return Json.fromJson(SessionStore.class, obj);
+        String jsonObj = redisService.get(CACHE_PRE + clientId);
+        if (Strings.isNotBlank(jsonObj)) {
+            NutMap nutMap = JSON.parseObject(jsonObj, NutMap.class);
+            return StoreUtil.mapTransToPublishMsgBeta(nutMap);
+        }
         return null;
     }
 

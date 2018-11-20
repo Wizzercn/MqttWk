@@ -23,6 +23,10 @@ public class SessionStore implements Serializable {
 
     private MqttPublishMessage willMessage;
 
+    public SessionStore(){
+
+    }
+
     public SessionStore(String clientId, String channelId, boolean cleanSession, MqttPublishMessage willMessage) {
         this.clientId = clientId;
         this.channelId = channelId;
