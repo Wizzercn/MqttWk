@@ -28,7 +28,8 @@ public class SessionStoreService implements ISessionStoreService {
     public void put(String clientId, SessionStore sessionStore) {
         //SessionStore对象不能正常转为JSON,使用工具类类解决
         NutMap nutMap = StoreUtil.transPublishToMapBeta(sessionStore);
-        redisService.set(CACHE_PRE + clientId, JSON.toJSONString(nutMap));
+        if (nutMap != null)
+            redisService.set(CACHE_PRE + clientId, JSON.toJSONString(nutMap));
     }
 
 

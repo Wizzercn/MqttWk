@@ -6,7 +6,7 @@
     <groupId>cn.wizzer</groupId>
     <artifactId>mqtt-wk</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.6-netty</version>
+    <version>1.0.7-netty</version>
     <name>MqttWk</name>
     <modules>
         <module>mqtt-common</module>
@@ -15,7 +15,7 @@
         <module>mqtt-store</module>
     </modules>
     <properties>
-        <mqttwk.version>1.0.6-netty</mqttwk.version>
+        <mqttwk.version>1.0.7-netty</mqttwk.version>
         <nutzboot.version>2.3-SNAPSHOT</nutzboot.version>
         <netty.version>4.1.28.Final</netty.version>
         <fastjson.version>1.2.49</fastjson.version>

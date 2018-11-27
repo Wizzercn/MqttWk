@@ -30,10 +30,9 @@ public class StoreUtil {
                 sessionStore.addv("qosLevel", msg.fixedHeader().qosLevel().value());
                 sessionStore.addv("isRetain", msg.fixedHeader().isRetain());
                 sessionStore.addv("remainingLength", msg.fixedHeader().remainingLength());
-
                 sessionStore.addv("topicName", msg.variableHeader().topicName());
                 sessionStore.addv("packetId", msg.variableHeader().packetId());
-                sessionStore.addv("msg", true);
+                sessionStore.addv("hasWillMessage", true);
             }
 
             return sessionStore;
@@ -43,24 +42,28 @@ public class StoreUtil {
         return null;
     }
 
+
     public static SessionStore mapTransToPublishMsgBeta(NutMap store) {
         SessionStore sessionStore = new SessionStore();
-        String payload = store.getString("payload");
-        ByteBuf buf = ByteBufUtil.writeUtf8(ByteBufAllocator.DEFAULT, payload);
-        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
-                MqttMessageType.valueOf(store.getInt("messageType")),
-                store.getBoolean("isDup"),
-                MqttQoS.valueOf(store.getInt("qosLevel")),
-                store.getBoolean("isRetain"),
-                store.getInt("remainingLength"));
-        MqttPublishVariableHeader mqttPublishVariableHeader = new MqttPublishVariableHeader(store.getString("topicName"),
-                store.getInt("packetId"));
-        MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(mqttFixedHeader, mqttPublishVariableHeader, buf);
+        if (store.getBoolean("hasWillMessage",false)) {
+            String payload = store.getString("payload");
+            ByteBuf buf = ByteBufUtil.writeUtf8(ByteBufAllocator.DEFAULT, payload);
+            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
+                    MqttMessageType.valueOf(store.getInt("messageType")),
+                    store.getBoolean("isDup"),
+                    MqttQoS.valueOf(store.getInt("qosLevel")),
+                    store.getBoolean("isRetain"),
+                    store.getInt("remainingLength"));
+
+            MqttPublishVariableHeader mqttPublishVariableHeader = new MqttPublishVariableHeader(store.getString("topicName"),
+                    store.getInt("packetId"));
+
+            MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(mqttFixedHeader, mqttPublishVariableHeader, buf);
+            sessionStore.setWillMessage(mqttPublishMessage);
+        }
         sessionStore.setChannelId(store.getString("channelId"));
         sessionStore.setClientId(store.getString("clientId"));
         sessionStore.setCleanSession(store.getBoolean("cleanSession"));
-        sessionStore.setWillMessage(mqttPublishMessage);
         return sessionStore;
     }
-
 }
