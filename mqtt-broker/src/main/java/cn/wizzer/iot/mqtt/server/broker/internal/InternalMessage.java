@@ -13,6 +13,8 @@ public class InternalMessage implements Serializable {
 
     private static final long serialVersionUID = -1L;
 
+    private String brokerId;
+
     //当前频道clientId
     private String clientId;
 
@@ -25,6 +27,14 @@ public class InternalMessage implements Serializable {
     private boolean retain;
 
     private boolean dup;
+
+    public String getBrokerId() {
+        return brokerId;
+    }
+
+    public void setBrokerId(String brokerId) {
+        this.brokerId = brokerId;
+    }
 
     public String getClientId() {
         return clientId;

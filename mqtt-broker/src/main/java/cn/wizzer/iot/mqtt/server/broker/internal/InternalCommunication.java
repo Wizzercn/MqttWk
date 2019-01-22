@@ -9,6 +9,7 @@ import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.service.KafkaService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.lang.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,8 @@ public class InternalCommunication {
     private RedisCluster redisCluster;
 
     public void internalSend(InternalMessage internalMessage) {
+        String brokerId= Lang.JdkTool.getProcessId("0");
+        internalMessage.setBrokerId(brokerId);
         //如果开启kafka消息转发
         if (brokerProperties.getKafkaBrokerEnabled()) {
             kafkaService.send(internalMessage);

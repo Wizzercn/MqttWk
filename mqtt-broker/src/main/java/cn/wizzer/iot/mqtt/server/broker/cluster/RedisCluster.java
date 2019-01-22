@@ -16,6 +16,7 @@ import org.nutz.integration.jedis.pubsub.PubSub;
 import org.nutz.integration.jedis.pubsub.PubSubService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.lang.Lang;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,9 @@ public class RedisCluster implements PubSub {
     @Override
     public void onMessage(String channel, String message) {
         InternalMessage internalMessage = JSONObject.parseObject(message, InternalMessage.class);
-        this.sendPublishMessage(internalMessage.getClientId(), internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
+        //判断进程ID是否是自身实例,若相同则不发送,否则集群模式下重复发消息
+        if (!Lang.JdkTool.getProcessId("0").equals(internalMessage.getBrokerId()))
+            this.sendPublishMessage(internalMessage.getClientId(), internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
     }
 
     @Async
