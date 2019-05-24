@@ -12,7 +12,12 @@ public interface ISessionStoreService {
     /**
      * 存储会话
      */
-    void put(String clientId, SessionStore sessionStore);
+    void put(String clientId, SessionStore sessionStore, int expire);
+
+    /**
+     * 设置session失效时间
+     */
+    void expire(String clientId, int expire);
 
     /**
      * 获取会话

@@ -116,7 +116,7 @@ public class ProtocolProcess {
 
     public PingReq pingReq() {
         if (pingReq == null) {
-            pingReq = new PingReq();
+            pingReq = new PingReq(sessionStoreService, brokerProperties, channelGroup, channelIdMap);
         }
         return pingReq;
     }

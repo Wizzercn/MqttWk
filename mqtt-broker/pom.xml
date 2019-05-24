@@ -57,6 +57,16 @@
             <version>${hutool.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.nutz</groupId>
+            <artifactId>nutzboot-starter-nutz-mvc</artifactId>
+            <version>${nutzboot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.nutz</groupId>
+            <artifactId>nutzboot-starter-jetty</artifactId>
+            <version>${nutzboot.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>

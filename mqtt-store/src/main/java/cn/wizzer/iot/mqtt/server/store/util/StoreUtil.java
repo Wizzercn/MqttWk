@@ -19,9 +19,11 @@ public class StoreUtil {
     public static NutMap transPublishToMapBeta(SessionStore store) {
         try {
             NutMap sessionStore = new NutMap();
-            sessionStore.addv("clientId", store.getClientId());
-            sessionStore.addv("channelId", store.getChannelId());
-            sessionStore.addv("cleanSession", store.isCleanSession());
+            sessionStore.put("clientId", store.getClientId());
+            sessionStore.put("channelId", store.getChannelId());
+            sessionStore.put("cleanSession", store.isCleanSession());
+            sessionStore.put("brokerId", store.getBrokerId());
+            sessionStore.put("expire", store.getExpire());
             MqttPublishMessage msg = store.getWillMessage();
             if (null != msg) {
                 sessionStore.addv("payload", new String(msg.payload().array(), "UTF-8"));
@@ -45,7 +47,7 @@ public class StoreUtil {
 
     public static SessionStore mapTransToPublishMsgBeta(NutMap store) {
         SessionStore sessionStore = new SessionStore();
-        if (store.getBoolean("hasWillMessage",false)) {
+        if (store.getBoolean("hasWillMessage", false)) {
             String payload = store.getString("payload");
             ByteBuf buf = ByteBufUtil.writeUtf8(ByteBufAllocator.DEFAULT, payload);
             MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
@@ -64,6 +66,8 @@ public class StoreUtil {
         sessionStore.setChannelId(store.getString("channelId"));
         sessionStore.setClientId(store.getString("clientId"));
         sessionStore.setCleanSession(store.getBoolean("cleanSession"));
+        sessionStore.setBrokerId(store.getString("brokerId"));
+        sessionStore.setExpire(store.getInt("expire"));
         return sessionStore;
     }
 }

@@ -2,6 +2,7 @@ package cn.wizzer.iot.mqtt.server.broker.cluster;
 
 import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
+import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import cn.wizzer.iot.mqtt.server.store.message.MessageIdService;
 import cn.wizzer.iot.mqtt.server.store.session.SessionStoreService;
@@ -74,7 +75,8 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, 0), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
-                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
+                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
+                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
                     if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);
@@ -86,7 +88,8 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
-                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
+                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
+                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
                     if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);
@@ -98,7 +101,8 @@ public class RedisCluster implements PubSub {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, messageId), ByteBuffer.wrap(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
-                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
+                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
+                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
                     if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);

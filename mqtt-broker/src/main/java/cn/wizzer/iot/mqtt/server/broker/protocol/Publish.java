@@ -8,6 +8,7 @@ import cn.wizzer.iot.mqtt.server.broker.internal.InternalCommunication;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
 import cn.wizzer.iot.mqtt.server.common.message.*;
 import cn.wizzer.iot.mqtt.server.common.session.ISessionStoreService;
+import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.ISubscribeStoreService;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import io.netty.buffer.Unpooled;
@@ -115,8 +116,9 @@ public class Publish {
                             new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
                             new MqttPublishVariableHeader(topic, 0), Unpooled.buffer().writeBytes(messageBytes));
                     LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
-                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
-                    if(channelId!=null) {
+                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
+                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
+                    if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);
                     }
@@ -130,8 +132,9 @@ public class Publish {
                     DupPublishMessageStore dupPublishMessageStore = new DupPublishMessageStore().setClientId(subscribeStore.getClientId())
                             .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes).setMessageId(messageId);
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
-                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
-                    if(channelId!=null) {
+                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
+                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
+                    if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);
                     }
@@ -145,8 +148,9 @@ public class Publish {
                     DupPublishMessageStore dupPublishMessageStore = new DupPublishMessageStore().setClientId(subscribeStore.getClientId())
                             .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes).setMessageId(messageId);
                     dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
-                    ChannelId channelId = channelIdMap.get(sessionStoreService.get(subscribeStore.getClientId()).getChannelId());
-                    if(channelId!=null) {
+                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
+                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
+                    if (channelId != null) {
                         Channel channel = channelGroup.find(channelId);
                         if (channel != null) channel.writeAndFlush(publishMessage);
                     }

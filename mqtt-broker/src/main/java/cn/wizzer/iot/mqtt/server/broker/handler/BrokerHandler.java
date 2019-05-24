@@ -4,6 +4,7 @@
 
 package cn.wizzer.iot.mqtt.server.broker.handler;
 
+import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.protocol.ProtocolProcess;
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import io.netty.channel.*;
@@ -27,6 +28,8 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
     @Inject
     private ProtocolProcess protocolProcess;
     @Inject
+    private BrokerProperties brokerProperties;
+    @Inject
     private ChannelGroup channelGroup;
     @Inject
     private Map<String, ChannelId> channelIdMap;
@@ -35,14 +38,14 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         this.channelGroup.add(ctx.channel());
-        this.channelIdMap.put(ctx.channel().id().asShortText(), ctx.channel().id());
+        this.channelIdMap.put(brokerProperties.getId()+"_"+ctx.channel().id().asLongText(), ctx.channel().id());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         this.channelGroup.remove(ctx.channel());
-        this.channelIdMap.remove(ctx.channel().id().asShortText());
+        this.channelIdMap.remove(brokerProperties.getId()+"_"+ctx.channel().id().asLongText());
     }
 
     @Override

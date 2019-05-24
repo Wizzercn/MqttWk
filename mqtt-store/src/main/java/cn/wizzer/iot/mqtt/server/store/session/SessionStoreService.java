@@ -25,11 +25,22 @@ public class SessionStoreService implements ISessionStoreService {
     private RedisService redisService;
 
     @Override
-    public void put(String clientId, SessionStore sessionStore) {
+    public void put(String clientId, SessionStore sessionStore, int expire) {
         //SessionStore对象不能正常转为JSON,使用工具类类解决
         NutMap nutMap = StoreUtil.transPublishToMapBeta(sessionStore);
-        if (nutMap != null)
-            redisService.set(CACHE_PRE + clientId, JSON.toJSONString(nutMap));
+        if (nutMap != null) {
+            if (expire > 0) {
+                redisService.setex(CACHE_PRE + clientId, expire, JSON.toJSONString(nutMap));
+            } else {
+                redisService.set(CACHE_PRE + clientId, JSON.toJSONString(nutMap));
+            }
+        }
+
+    }
+
+    @Override
+    public void expire(String clientId, int expire) {
+        redisService.expire(CACHE_PRE + clientId, expire);
     }
 
 
@@ -47,6 +58,7 @@ public class SessionStoreService implements ISessionStoreService {
     public boolean containsKey(String clientId) {
         return redisService.exists(CACHE_PRE + clientId);
     }
+
 
     @Override
     @Async

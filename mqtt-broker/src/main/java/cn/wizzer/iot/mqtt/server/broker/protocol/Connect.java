@@ -51,15 +51,15 @@ public class Connect {
 
     private Map<String, ChannelId> channelIdMap;
 
-    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService, BrokerProperties brokerProperties,ChannelGroup channelGroup,Map<String, ChannelId> channelIdMap) {
+    public Connect(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, IDupPubRelMessageStoreService dupPubRelMessageStoreService, IAuthService authService, BrokerProperties brokerProperties, ChannelGroup channelGroup, Map<String, ChannelId> channelIdMap) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.dupPublishMessageStoreService = dupPublishMessageStoreService;
         this.dupPubRelMessageStoreService = dupPubRelMessageStoreService;
         this.authService = authService;
         this.brokerProperties = brokerProperties;
-        this.channelGroup=channelGroup;
-        this.channelIdMap=channelIdMap;
+        this.channelGroup = channelGroup;
+        this.channelIdMap = channelIdMap;
     }
 
     public void processConnect(Channel channel, MqttConnectMessage msg) {
@@ -111,7 +111,7 @@ public class Connect {
         // 如果会话中已存储这个新连接的clientId, 就关闭之前该clientId的连接
         if (sessionStoreService.containsKey(msg.payload().clientIdentifier())) {
             SessionStore sessionStore = sessionStoreService.get(msg.payload().clientIdentifier());
-            Boolean cleanSession = sessionStore.isCleanSession();
+            boolean cleanSession = sessionStore.isCleanSession();
             if (cleanSession) {
                 sessionStoreService.remove(msg.payload().clientIdentifier());
                 subscribeStoreService.removeForClient(msg.payload().clientIdentifier());
@@ -119,35 +119,37 @@ public class Connect {
                 dupPubRelMessageStoreService.removeByClient(msg.payload().clientIdentifier());
             }
             try {
-                ChannelId channelId = channelIdMap.get(sessionStore.getChannelId());
-                if(channelId!=null) {
+                ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
+                if (channelId != null) {
                     Channel previous = channelGroup.find(channelId);
                     if (previous != null) previous.close();
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        // 处理连接心跳包
+        int expire = 0;
+        if (msg.variableHeader().keepAliveTimeSeconds() > 0) {
+            if (channel.pipeline().names().contains("idle")) {
+                channel.pipeline().remove("idle");
+            }
+            expire = Math.round(msg.variableHeader().keepAliveTimeSeconds() * 1.5f);
+            channel.pipeline().addFirst("idle", new IdleStateHandler(0, 0, expire));
+        }
         // 处理遗嘱信息
-        SessionStore sessionStore = new SessionStore(msg.payload().clientIdentifier(), channel.id().asShortText(), msg.variableHeader().isCleanSession(), null);
+        SessionStore sessionStore = new SessionStore(brokerProperties.getId(), msg.payload().clientIdentifier(), channel.id().asLongText(), msg.variableHeader().isCleanSession(), null, expire);
         if (msg.variableHeader().isWillFlag()) {
             MqttPublishMessage willMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
                     new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(msg.variableHeader().willQos()), msg.variableHeader().isWillRetain(), 0),
                     new MqttPublishVariableHeader(msg.payload().willTopic(), 0), Unpooled.buffer().writeBytes(msg.payload().willMessageInBytes()));
             sessionStore.setWillMessage(willMessage);
         }
-        // 处理连接心跳包
-        if (msg.variableHeader().keepAliveTimeSeconds() > 0) {
-            if (channel.pipeline().names().contains("idle")) {
-                channel.pipeline().remove("idle");
-            }
-            channel.pipeline().addFirst("idle", new IdleStateHandler(0, 0, Math.round(msg.variableHeader().keepAliveTimeSeconds() * 1.5f)));
-        }
         // 至此存储会话信息及返回接受客户端连接
-        sessionStoreService.put(msg.payload().clientIdentifier(), sessionStore);
+        sessionStoreService.put(msg.payload().clientIdentifier(), sessionStore, expire);
         // 将clientId存储到channel的map中
         channel.attr(AttributeKey.valueOf("clientId")).set(msg.payload().clientIdentifier());
-        Boolean sessionPresent = sessionStoreService.containsKey(msg.payload().clientIdentifier()) && !msg.variableHeader().isCleanSession();
+        boolean sessionPresent = sessionStoreService.containsKey(msg.payload().clientIdentifier()) && !msg.variableHeader().isCleanSession();
         MqttConnAckMessage okResp = (MqttConnAckMessage) MqttMessageFactory.newMessage(
                 new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                 new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_ACCEPTED, sessionPresent), null);
