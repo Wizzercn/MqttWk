@@ -54,7 +54,7 @@ public class RedisCluster implements PubSub {
     public void onMessage(String channel, String message) {
         InternalMessage internalMessage = JSONObject.parseObject(message, InternalMessage.class);
         //判断进程ID是否是自身实例,若相同则不发送,否则集群模式下重复发消息
-        if (!Lang.JdkTool.getProcessId("0").equals(internalMessage.getBrokerId()))
+        if (!brokerProperties.getId().equals(internalMessage.getBrokerId()) && !Lang.JdkTool.getProcessId("0").equals(internalMessage.getProcessId()))
             this.sendPublishMessage(internalMessage.getClientId(), internalMessage.getTopic(), MqttQoS.valueOf(internalMessage.getMqttQoS()), internalMessage.getMessageBytes(), internalMessage.isRetain(), internalMessage.isDup());
     }
 

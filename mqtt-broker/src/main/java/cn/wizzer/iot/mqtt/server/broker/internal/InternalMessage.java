@@ -15,6 +15,8 @@ public class InternalMessage implements Serializable {
 
     private String brokerId;
 
+    private String processId;
+
     //当前频道clientId
     private String clientId;
 
@@ -34,6 +36,14 @@ public class InternalMessage implements Serializable {
 
     public void setBrokerId(String brokerId) {
         this.brokerId = brokerId;
+    }
+
+    public String getProcessId() {
+        return processId;
+    }
+
+    public void setProcessId(String processId) {
+        this.processId = processId;
     }
 
     public String getClientId() {

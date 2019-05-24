@@ -27,8 +27,10 @@ public class InternalCommunication {
     private RedisCluster redisCluster;
 
     public void internalSend(InternalMessage internalMessage) {
-        String brokerId= Lang.JdkTool.getProcessId("0");
-        internalMessage.setBrokerId(brokerId);
+        String processId = Lang.JdkTool.getProcessId("0");
+        //broker唯一标识 mqttwk.broker.id
+        internalMessage.setBrokerId(brokerProperties.getId());
+        internalMessage.setProcessId(processId);
         //如果开启kafka消息转发
         if (brokerProperties.getKafkaBrokerEnabled()) {
             kafkaService.send(internalMessage);
