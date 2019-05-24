@@ -125,8 +125,13 @@ public class Connect {
                     if (previous != null) previous.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
+        } else {
+            //如果不存在session，则清除之前的其他缓存
+            subscribeStoreService.removeForClient(msg.payload().clientIdentifier());
+            dupPublishMessageStoreService.removeByClient(msg.payload().clientIdentifier());
+            dupPubRelMessageStoreService.removeByClient(msg.payload().clientIdentifier());
         }
         // 处理连接心跳包
         int expire = 0;

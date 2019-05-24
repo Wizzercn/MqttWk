@@ -40,6 +40,4 @@ public class InternalCommunication {
             redisCluster.sendMessage(internalMessage);
         }
     }
-
-
 }

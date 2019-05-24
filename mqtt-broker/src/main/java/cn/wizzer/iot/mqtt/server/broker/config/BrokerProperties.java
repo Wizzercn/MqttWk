@@ -38,7 +38,7 @@ public class BrokerProperties {
     @PropDoc(group = "broker", value = "端口号, 默认8885端口", type = "int", defaultValue = "8885")
     public static final String PROP_PORT = PRE + "port";
     /**
-     * t-io是否开启集群
+     * 是否开启集群
      */
     private boolean clusterEnabled;
     @PropDoc(group = "broker", value = "是否开启集群模式, 默认false", type = "boolean", defaultValue = "false")
