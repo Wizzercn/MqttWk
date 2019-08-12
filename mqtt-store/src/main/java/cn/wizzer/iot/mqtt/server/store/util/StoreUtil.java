@@ -9,6 +9,8 @@ import org.nutz.lang.util.NutMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Base64;
+
 /**
  * Created by cs on 2018
  */
@@ -26,7 +28,7 @@ public class StoreUtil {
             sessionStore.put("expire", store.getExpire());
             MqttPublishMessage msg = store.getWillMessage();
             if (null != msg) {
-                sessionStore.addv("payload", new String(msg.payload().array(), "UTF-8"));
+                sessionStore.addv("payload", Base64.getEncoder().encodeToString(msg.payload().array()));
                 sessionStore.addv("messageType", msg.fixedHeader().messageType().value());
                 sessionStore.addv("isDup", msg.fixedHeader().isDup());
                 sessionStore.addv("qosLevel", msg.fixedHeader().qosLevel().value());
@@ -48,8 +50,9 @@ public class StoreUtil {
     public static SessionStore mapTransToPublishMsgBeta(NutMap store) {
         SessionStore sessionStore = new SessionStore();
         if (store.getBoolean("hasWillMessage", false)) {
-            String payload = store.getString("payload");
-            ByteBuf buf = ByteBufUtil.writeUtf8(ByteBufAllocator.DEFAULT, payload);
+            byte[] payloads = Base64.getDecoder().decode(store.getString("payload"));
+            ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(payloads.length);
+            buf.writeBytes(payloads);
             MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
                     MqttMessageType.valueOf(store.getInt("messageType")),
                     store.getBoolean("isDup"),
