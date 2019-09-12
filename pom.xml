@@ -18,7 +18,7 @@
         <mqttwk.version>1.1.2-netty</mqttwk.version>
         <nutzboot.version>2.3.5.v20190516</nutzboot.version>
         <netty.version>4.1.28.Final</netty.version>
-        <fastjson.version>1.2.55</fastjson.version>
+        <fastjson.version>1.2.60</fastjson.version>
         <hutool.version>4.1.2</hutool.version>
         <kafka_2.12.version>2.0.0</kafka_2.12.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
