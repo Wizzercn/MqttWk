@@ -1,11 +1,14 @@
 package cn.wizzer.iot.mqtt.server.store.cache;
 
+import cn.wizzer.iot.mqtt.server.common.message.RetainMessageStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import com.alibaba.fastjson.JSONObject;
 import org.nutz.aop.interceptor.async.Async;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,21 +53,21 @@ public class SubscribeWildcardCache {
 
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
-        Set<String> set = redisService.keys(CACHE_PRE + "*");
-        if (set != null && !set.isEmpty()) {
-            set.forEach(
-                    entry -> {
-                        ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-                        Map<String, String> map2 = redisService.hgetAll(entry);
-                        if (map2 != null && !map2.isEmpty()) {
-                            map2.forEach((k, v) -> {
-                                map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
-                            });
-                            map.put(entry.substring(CACHE_PRE.length()), map1);
-                        }
-                    }
-            );
-        }
+        ScanParams match = new ScanParams().match(CACHE_PRE + "*");
+        ScanResult<String> scan = null;
+        do {
+            scan = redisService.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+            for (String key : scan.getResult()) {
+                ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
+                Map<String, String> map2 = redisService.hgetAll(key);
+                if (map2 != null && !map2.isEmpty()) {
+                    map2.forEach((k, v) -> {
+                        map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
+                    });
+                    map.put(key.substring(CACHE_PRE.length()), map1);
+                }
+            }
+        } while (!scan.isCompleteIteration());
         return map;
     }
 

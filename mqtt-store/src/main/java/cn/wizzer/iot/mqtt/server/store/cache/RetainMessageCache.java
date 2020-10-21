@@ -7,6 +7,8 @@ import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.impl.PropertiesProxy;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,14 +45,15 @@ public class RetainMessageCache {
 
     public Map<String, RetainMessageStore> all() {
         Map<String, RetainMessageStore> map = new HashMap<>();
-        Set<String> set=redisService.keys(CACHE_PRE + "*");
-        if(set!=null&&!set.isEmpty()) {
-            set.forEach(
-                    entry -> {
-                        map.put(entry.substring(CACHE_PRE.length()), JSONObject.parseObject(redisService.get(entry), RetainMessageStore.class));
-                    }
-            );
-        }
+        ScanParams match = new ScanParams().match(CACHE_PRE + "*");
+        ScanResult<String> scan = null;
+        do {
+            scan = redisService.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+            for (String key : scan.getResult()) {
+                map.put(key.substring(CACHE_PRE.length()), JSONObject.parseObject(redisService.get(key), RetainMessageStore.class));
+
+            }
+        } while (!scan.isCompleteIteration());
         return map;
     }
 }
