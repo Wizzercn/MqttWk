@@ -1,16 +1,19 @@
 package cn.wizzer.iot.mqtt.server.store.cache;
 
-import cn.wizzer.iot.mqtt.server.common.message.RetainMessageStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import com.alibaba.fastjson.JSONObject;
 import org.nutz.aop.interceptor.async.Async;
+import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import org.nutz.lang.Streams;
+import redis.clients.jedis.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,6 +25,8 @@ public class SubscribeWildcardCache {
     private final static String CACHE_CLIENT_PRE = "mqttwk:client:";
     @Inject
     private RedisService redisService;
+    @Inject
+    private JedisAgent jedisAgent;
 
     public SubscribeStore put(String topic, String clientId, SubscribeStore subscribeStore) {
         redisService.hset(CACHE_PRE + topic, clientId, JSONObject.toJSONString(subscribeStore));
@@ -54,20 +59,48 @@ public class SubscribeWildcardCache {
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
         ScanParams match = new ScanParams().match(CACHE_PRE + "*");
-        ScanResult<String> scan = null;
-        do {
-            scan = redisService.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-            for (String key : scan.getResult()) {
-                ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-                Map<String, String> map2 = redisService.hgetAll(key);
-                if (map2 != null && !map2.isEmpty()) {
-                    map2.forEach((k, v) -> {
-                        map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
-                    });
-                    map.put(key.substring(CACHE_PRE.length()), map1);
+        if (jedisAgent.isClusterMode()) {
+            JedisCluster jedisCluster = jedisAgent.getJedisClusterWrapper().getJedisCluster();
+            for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
+                try (Jedis jedis = pool.getResource()) {
+                    ScanResult<String> scan = null;
+                    do {
+                        scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                        for (String key : scan.getResult()) {
+                            ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
+                            Map<String, String> map2 = redisService.hgetAll(key);
+                            if (map2 != null && !map2.isEmpty()) {
+                                map2.forEach((k, v) -> {
+                                    map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
+                                });
+                                map.put(key.substring(CACHE_PRE.length()), map1);
+                            }
+                        }
+                    } while (!scan.isCompleteIteration());
                 }
             }
-        } while (!scan.isCompleteIteration());
+        } else {
+            Jedis jedis = null;
+            try {
+                jedis = jedisAgent.jedis();
+                ScanResult<String> scan = null;
+                do {
+                    scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                    for (String key : scan.getResult()) {
+                        ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
+                        Map<String, String> map2 = redisService.hgetAll(key);
+                        if (map2 != null && !map2.isEmpty()) {
+                            map2.forEach((k, v) -> {
+                                map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
+                            });
+                            map.put(key.substring(CACHE_PRE.length()), map1);
+                        }
+                    }
+                } while (!scan.isCompleteIteration());
+            } finally {
+                Streams.safeClose(jedis);
+            }
+        }
         return map;
     }
 

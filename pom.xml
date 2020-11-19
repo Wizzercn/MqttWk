@@ -16,7 +16,7 @@
     </modules>
     <properties>
         <mqttwk.version>1.2.0-netty</mqttwk.version>
-        <nutzboot.version>2.4.1.v20201014</nutzboot.version>
+        <nutzboot.version>2.4.2-SNAPSHOT</nutzboot.version>
         <netty.version>4.1.28.Final</netty.version>
         <fastjson.version>1.2.74</fastjson.version>
         <hutool.version>4.1.2</hutool.version>

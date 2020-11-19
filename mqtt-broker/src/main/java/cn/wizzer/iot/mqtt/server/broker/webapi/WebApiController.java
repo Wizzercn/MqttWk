@@ -8,11 +8,13 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 import org.nutz.http.Request;
 import org.nutz.http.Response;
 import org.nutz.http.Sender;
+import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.json.Json;
 import org.nutz.lang.Lang;
+import org.nutz.lang.Streams;
 import org.nutz.lang.random.R;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
@@ -21,8 +23,7 @@ import org.nutz.mvc.adaptor.JsonAdaptor;
 import org.nutz.mvc.annotation.AdaptBy;
 import org.nutz.mvc.annotation.At;
 import org.nutz.mvc.annotation.Ok;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,8 @@ public class WebApiController {
     private BrokerProperties brokerProperties;
     @Inject
     private RedisCluster redisCluster;
+    @Inject
+    private JedisAgent jedisAgent;
 
     /**
      * 向设备发送数据,发送格式见 test_send 方法实例代码
@@ -117,31 +120,44 @@ public class WebApiController {
         NutMap nutMap = NutMap.NEW();
         try {
             NutMap data = NutMap.NEW();
-            ScanParams scanParams = new ScanParams();
-            scanParams.match(CACHE_SESSION_PRE + "*");
-            scanParams.count(Integer.MAX_VALUE);
-            List<String> list = new ArrayList<>();
-            int total = 0;
-            while (true) {
-                ScanResult scanResult = redisService.scan("0", scanParams);
-                List elements = scanResult.getResult();
-                if (elements != null && elements.size() > 0) {
-                    list.addAll(elements);
-                    total += elements.size();
+            List<String> keys = new ArrayList<>();
+            if (jedisAgent.isClusterMode()) {
+                JedisCluster jedisCluster = jedisAgent.getJedisClusterWrapper().getJedisCluster();
+                for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
+                    try (Jedis jedis = pool.getResource()) {
+                        ScanParams match = new ScanParams().match(CACHE_SESSION_PRE + "*");
+                        ScanResult<String> scan = null;
+                        do {
+                            scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                            keys.addAll(scan.getResult());
+                        } while (!scan.isCompleteIteration());
+                    }
                 }
-                String cursor = scanResult.getStringCursor();
-                if ("0".equals(cursor)) {
-                    break;
+            } else {
+                Jedis jedis = null;
+                try {
+                    jedis =jedisAgent.jedis();
+                    // 使用 scan 指令来查找所有匹配到的 Key
+                    ScanParams match = new ScanParams().match(CACHE_SESSION_PRE + "*");
+                    ScanResult<String> scan = null;
+                    do {
+                        scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
+                        for (String key : scan.getResult()) {
+                            jedis.del(key.getBytes());
+                        }
+                    } while (!scan.isCompleteIteration());
+                } finally {
+                    Streams.safeClose(jedis);
                 }
             }
             List<NutMap> dataList = new ArrayList<>();
-            for (String k : list) {
+            for (String k : keys) {
                 dataList.add(NutMap.NEW()
                         .addv("clientId", k.substring(k.lastIndexOf(":") + 1))
                         .addv("topics", redisService.smembers(CACHE_CLIENT_PRE + k.substring(k.lastIndexOf(":") + 1)))
                 );
             }
-            data.addv("total", total);
+            data.addv("total", keys.size());
             data.addv("list", dataList);
             nutMap.put("code", 0);
             nutMap.put("msg", "");
