@@ -120,12 +120,12 @@ public class WebApiController {
         NutMap nutMap = NutMap.NEW();
         try {
             NutMap data = NutMap.NEW();
+            ScanParams match = new ScanParams().match(CACHE_SESSION_PRE + "*");
             List<String> keys = new ArrayList<>();
             if (jedisAgent.isClusterMode()) {
                 JedisCluster jedisCluster = jedisAgent.getJedisClusterWrapper().getJedisCluster();
                 for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
                     try (Jedis jedis = pool.getResource()) {
-                        ScanParams match = new ScanParams().match(CACHE_SESSION_PRE + "*");
                         ScanResult<String> scan = null;
                         do {
                             scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
@@ -137,14 +137,10 @@ public class WebApiController {
                 Jedis jedis = null;
                 try {
                     jedis =jedisAgent.jedis();
-                    // 使用 scan 指令来查找所有匹配到的 Key
-                    ScanParams match = new ScanParams().match(CACHE_SESSION_PRE + "*");
                     ScanResult<String> scan = null;
                     do {
                         scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                        for (String key : scan.getResult()) {
-                            jedis.del(key.getBytes());
-                        }
+                        keys.addAll(scan.getResult());
                     } while (!scan.isCompleteIteration());
                 } finally {
                     Streams.safeClose(jedis);
