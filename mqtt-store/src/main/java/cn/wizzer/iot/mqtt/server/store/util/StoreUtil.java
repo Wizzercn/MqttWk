@@ -2,8 +2,7 @@ package cn.wizzer.iot.mqtt.server.store.util;
 
 import cn.wizzer.iot.mqtt.server.common.session.SessionStore;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
 import org.nutz.lang.util.NutMap;
 import org.slf4j.Logger;
@@ -51,20 +50,25 @@ public class StoreUtil {
         SessionStore sessionStore = new SessionStore();
         if (store.getBoolean("hasWillMessage", false)) {
             byte[] payloads = Base64.getDecoder().decode(store.getString("payload"));
-            ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(payloads.length);
-            buf.writeBytes(payloads);
-            MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
-                    MqttMessageType.valueOf(store.getInt("messageType")),
-                    store.getBoolean("isDup"),
-                    MqttQoS.valueOf(store.getInt("qosLevel")),
-                    store.getBoolean("isRetain"),
-                    store.getInt("remainingLength"));
+            ByteBuf buf = null;
+            try {
+                buf = Unpooled.wrappedBuffer(payloads);
+                MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(
+                        MqttMessageType.valueOf(store.getInt("messageType")),
+                        store.getBoolean("isDup"),
+                        MqttQoS.valueOf(store.getInt("qosLevel")),
+                        store.getBoolean("isRetain"),
+                        store.getInt("remainingLength"));
 
-            MqttPublishVariableHeader mqttPublishVariableHeader = new MqttPublishVariableHeader(store.getString("topicName"),
-                    store.getInt("packetId"));
-
-            MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(mqttFixedHeader, mqttPublishVariableHeader, buf);
-            sessionStore.setWillMessage(mqttPublishMessage);
+                MqttPublishVariableHeader mqttPublishVariableHeader = new MqttPublishVariableHeader(store.getString("topicName"),
+                        store.getInt("packetId"));
+                MqttPublishMessage mqttPublishMessage = new MqttPublishMessage(mqttFixedHeader, mqttPublishVariableHeader, buf);
+                sessionStore.setWillMessage(mqttPublishMessage);
+            } finally {
+                if (buf != null) {
+                    buf.release();
+                }
+            }
         }
         sessionStore.setChannelId(store.getString("channelId"));
         sessionStore.setClientId(store.getString("clientId"));
