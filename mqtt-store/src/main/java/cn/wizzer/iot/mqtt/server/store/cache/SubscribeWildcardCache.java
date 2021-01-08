@@ -59,6 +59,7 @@ public class SubscribeWildcardCache {
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
         ScanParams match = new ScanParams().match(CACHE_PRE + "*");
+        List<String> keys = new ArrayList<>();
         if (jedisAgent.isClusterMode()) {
             JedisCluster jedisCluster = jedisAgent.getJedisClusterWrapper().getJedisCluster();
             for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
@@ -66,16 +67,7 @@ public class SubscribeWildcardCache {
                     ScanResult<String> scan = null;
                     do {
                         scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                        for (String key : scan.getResult()) {
-                            ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-                            Map<String, String> map2 = redisService.hgetAll(key);
-                            if (map2 != null && !map2.isEmpty()) {
-                                map2.forEach((k, v) -> {
-                                    map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
-                                });
-                                map.put(key.substring(CACHE_PRE.length()), map1);
-                            }
-                        }
+                        keys.addAll(scan.getResult());
                     } while (!scan.isCompleteIteration());
                 }
             }
@@ -86,19 +78,20 @@ public class SubscribeWildcardCache {
                 ScanResult<String> scan = null;
                 do {
                     scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                    for (String key : scan.getResult()) {
-                        ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-                        Map<String, String> map2 = redisService.hgetAll(key);
-                        if (map2 != null && !map2.isEmpty()) {
-                            map2.forEach((k, v) -> {
-                                map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
-                            });
-                            map.put(key.substring(CACHE_PRE.length()), map1);
-                        }
-                    }
+                    keys.addAll(scan.getResult());
                 } while (!scan.isCompleteIteration());
             } finally {
                 Streams.safeClose(jedis);
+            }
+        }
+        for (String key : keys) {
+            ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
+            Map<String, String> map2 = redisService.hgetAll(key);
+            if (map2 != null && !map2.isEmpty()) {
+                map2.forEach((k, v) -> {
+                    map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
+                });
+                map.put(key.substring(CACHE_PRE.length()), map1);
             }
         }
         return map;

@@ -1,6 +1,5 @@
 package cn.wizzer.iot.mqtt.server.store.cache;
 
-import cn.wizzer.iot.mqtt.server.common.message.RetainMessageStore;
 import cn.wizzer.iot.mqtt.server.common.subscribe.SubscribeStore;
 import com.alibaba.fastjson.JSONObject;
 import org.nutz.aop.interceptor.async.Async;
@@ -11,7 +10,10 @@ import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Streams;
 import redis.clients.jedis.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -57,6 +59,7 @@ public class SubscribeNotWildcardCache {
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
         ScanParams match = new ScanParams().match(CACHE_PRE + "*");
+        List<String> keys = new ArrayList<>();
         if (jedisAgent.isClusterMode()) {
             JedisCluster jedisCluster = jedisAgent.getJedisClusterWrapper().getJedisCluster();
             for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
@@ -64,16 +67,7 @@ public class SubscribeNotWildcardCache {
                     ScanResult<String> scan = null;
                     do {
                         scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                        for (String key : scan.getResult()) {
-                            ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-                            Map<String, String> map2 = redisService.hgetAll(key);
-                            if (map2 != null && !map2.isEmpty()) {
-                                map2.forEach((k, v) -> {
-                                    map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
-                                });
-                                map.put(key.substring(CACHE_PRE.length()), map1);
-                            }
-                        }
+                        keys.addAll(scan.getResult());
                     } while (!scan.isCompleteIteration());
                 }
             }
@@ -84,19 +78,20 @@ public class SubscribeNotWildcardCache {
                 ScanResult<String> scan = null;
                 do {
                     scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                    for (String key : scan.getResult()) {
-                        ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-                        Map<String, String> map2 = redisService.hgetAll(key);
-                        if (map2 != null && !map2.isEmpty()) {
-                            map2.forEach((k, v) -> {
-                                map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
-                            });
-                            map.put(key.substring(CACHE_PRE.length()), map1);
-                        }
-                    }
+                    keys.addAll(scan.getResult());
                 } while (!scan.isCompleteIteration());
             } finally {
                 Streams.safeClose(jedis);
+            }
+        }
+        for (String key : keys) {
+            ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
+            Map<String, String> map2 = redisService.hgetAll(key);
+            if (map2 != null && !map2.isEmpty()) {
+                map2.forEach((k, v) -> {
+                    map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
+                });
+                map.put(key.substring(CACHE_PRE.length()), map1);
             }
         }
         return map;

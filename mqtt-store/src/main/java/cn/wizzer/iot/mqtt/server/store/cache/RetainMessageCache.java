@@ -11,7 +11,9 @@ import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.lang.Streams;
 import redis.clients.jedis.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,6 +50,7 @@ public class RetainMessageCache {
     public Map<String, RetainMessageStore> all() {
         Map<String, RetainMessageStore> map = new HashMap<>();
         ScanParams match = new ScanParams().match(CACHE_PRE + "*");
+        List<String> keys = new ArrayList<>();
         if (jedisAgent.isClusterMode()) {
             JedisCluster jedisCluster = jedisAgent.getJedisClusterWrapper().getJedisCluster();
             for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
@@ -55,9 +58,7 @@ public class RetainMessageCache {
                     ScanResult<String> scan = null;
                     do {
                         scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                        for (String key : scan.getResult()) {
-                            map.put(key.substring(CACHE_PRE.length()), JSONObject.parseObject(redisService.get(key), RetainMessageStore.class));
-                        }
+                        keys.addAll(scan.getResult());
                     } while (!scan.isCompleteIteration());
                 }
             }
@@ -68,13 +69,14 @@ public class RetainMessageCache {
                 ScanResult<String> scan = null;
                 do {
                     scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                    for (String key : scan.getResult()) {
-                        map.put(key.substring(CACHE_PRE.length()), JSONObject.parseObject(redisService.get(key), RetainMessageStore.class));
-                    }
+                    keys.addAll(scan.getResult());
                 } while (!scan.isCompleteIteration());
             } finally {
                 Streams.safeClose(jedis);
             }
+        }
+        for (String key : keys) {
+            map.put(key.substring(CACHE_PRE.length()), JSONObject.parseObject(redisService.get(key), RetainMessageStore.class));
         }
         return map;
     }
