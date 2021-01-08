@@ -4,6 +4,7 @@
 
 package cn.wizzer.iot.mqtt.server.broker.protocol;
 
+import cn.wizzer.iot.mqtt.server.broker.config.BrokerProperties;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalCommunication;
 import cn.wizzer.iot.mqtt.server.broker.internal.InternalMessage;
 import cn.wizzer.iot.mqtt.server.common.message.*;
@@ -46,7 +47,9 @@ public class Publish {
 
     private Map<String, ChannelId> channelIdMap;
 
-    public Publish(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IMessageIdService messageIdService, IRetainMessageStoreService retainMessageStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, InternalCommunication internalCommunication, ChannelGroup channelGroup, Map<String, ChannelId> channelIdMap) {
+    private BrokerProperties brokerProperties;
+
+    public Publish(ISessionStoreService sessionStoreService, ISubscribeStoreService subscribeStoreService, IMessageIdService messageIdService, IRetainMessageStoreService retainMessageStoreService, IDupPublishMessageStoreService dupPublishMessageStoreService, InternalCommunication internalCommunication, ChannelGroup channelGroup, Map<String, ChannelId> channelIdMap, BrokerProperties brokerProperties) {
         this.sessionStoreService = sessionStoreService;
         this.subscribeStoreService = subscribeStoreService;
         this.messageIdService = messageIdService;
@@ -55,10 +58,19 @@ public class Publish {
         this.internalCommunication = internalCommunication;
         this.channelGroup = channelGroup;
         this.channelIdMap = channelIdMap;
+        this.brokerProperties = brokerProperties;
     }
 
     public void processPublish(Channel channel, MqttPublishMessage msg) {
         String clientId = (String) channel.attr(AttributeKey.valueOf("clientId")).get();
+        // publish 延长session失效时间
+        if (sessionStoreService.containsKey(clientId)) {
+            SessionStore sessionStore = sessionStoreService.get(clientId);
+            ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
+            if (brokerProperties.getId().equals(sessionStore.getBrokerId()) && channelId != null) {
+                sessionStoreService.expire(clientId, sessionStore.getExpire());
+            }
+        }
         // QoS=0
         if (msg.fixedHeader().qosLevel() == MqttQoS.AT_MOST_ONCE) {
             byte[] messageBytes = new byte[msg.payload().readableBytes()];

@@ -102,7 +102,7 @@ public class ProtocolProcess {
 
     public Publish publish() {
         if (publish == null) {
-            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication, channelGroup, channelIdMap);
+            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication, channelGroup, channelIdMap, brokerProperties);
         }
         return publish;
     }
