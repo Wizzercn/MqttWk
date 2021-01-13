@@ -30,6 +30,7 @@ MqttWk
   ├── mqtt-broker -- MQTT服务器功能的核心实现
   ├── mqtt-common -- 公共类及其他模块使用的服务接口及对象
   ├── mqtt-store -- MQTT服务器会话信息(redis缓存及kafka加载)
+  ├── mqtt-client -- MQTT客户端示例代码(配置文件修改数据库连接启动之)
   ├── mqtt-zoo -- 教程文档或文件
     ├── mqtt-test-kafka -- kafka消费者接收消息
     ├── mqtt-test-websocket -- websocket通信测试示例
