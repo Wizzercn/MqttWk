@@ -54,7 +54,7 @@ public class ClientMainLauncher {
             while (true) {
                 //topic一般包含设备ID
                 myMqttClient.publishMessage("/mqtt/dev/dev00001", "hello"+i, 1);
-                Thread.sleep(500);
+                Thread.sleep(2500);
                 i++;
             }
         } catch (Exception e) {

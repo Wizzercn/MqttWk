@@ -48,7 +48,7 @@ public class MqttRecieveCallback implements MqttCallback {
     // 异步插入数据库
     @Async
     public void insert(IotDev iotDev){
-       //dao.fastInsert(iotDev);
+       dao.fastInsert(iotDev);
     }
 
 }
