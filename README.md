@@ -6,8 +6,13 @@
 
 #### QQ交流群
 * MqttWk 群号: 225991747
-* NutzWk ②群: 24457628 
-`作者开发的Java微服务分布式开源框架`
+
+#### 微服务分布式Java开发框架
+
+* 演示地址：[https://demo.budwk.com](https://demo.budwk.com)
+* Github：[https://github.com/budwk/budwk](https://github.com/budwk/budwk)
+* Gitee：[https://gitee.com/budwk/budwk](https://gitee.com/budwk/budwk)
+* BudWk 群号：24457628
 
 # 参考项目
 
