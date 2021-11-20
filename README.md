@@ -1,32 +1,41 @@
-# MqttWk by netty
+<div align="center">
+    <br/>
+    <h1>MqttWk - by netty</h1>
 
-基于 nutzboot + netty + redis + kafka 实现的MQTT服务broker
+[![GitHub release](https://img.shields.io/github/release/Wizzercn/MqttWk.svg)](https://github.com/Wizzercn/MqttWk/releases)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![PowerByNutz](https://img.shields.io/badge/PowerBy-NutzBoot-green.svg)](https://github.com/nutzam/nutzboot)
+</div>
 
-本项目代码主要来源于 netty/iot-mqtt-server 等众多项目，开源免费，欢迎交流学习
+<div align="center">
 
-#### QQ交流群
-* MqttWk 群号: 225991747
+**[官网](https://budwk.com)** |
+**[捐赠清单](https://budwk.com/donation)**
 
-#### 微服务分布式Java开发框架
+</div>
 
+
+> 本项目开源免费，欢迎交流学习、贡献代码。
+
+#### MqttWk
+* QQ群号：225991747
+
+#### BudWk
+
+* 微服务分布式 + 前后端分离开发框架
 * 演示地址：[https://demo.budwk.com](https://demo.budwk.com)
 * Github：[https://github.com/budwk/budwk](https://github.com/budwk/budwk)
 * Gitee：[https://gitee.com/budwk/budwk](https://gitee.com/budwk/budwk)
-* BudWk 群号：24457628
+* QQ群号：24457628
 
-# 参考项目
+# 开发指南
 
-* [https://github.com/netty/netty](https://github.com/netty/netty)
-* [https://gitee.com/recallcode/iot-mqtt-server](https://gitee.com/recallcode/iot-mqtt-server)
+#### 技术体系
 
-# 使用说明
-
-#### 软件架构说明
-
-1. 使用netty实现通信及协议解析
-2. 使用nutzboot提供依赖注入及属性配置
-3. 使用redis实现消息缓存,集群
-4. 使用kafka实现消息代理
+1. 使用 netty 实现通信及协议解析
+2. 使用 nutzboot 提供依赖注入及属性配置
+3. 使用 redis 实现消息缓存,集群
+4. 使用 kafka 实现消息代理(可选)
 
 #### 项目结构
 ```
@@ -91,3 +100,11 @@ MqttWk
 
 #### 示例截图
 ![示例截图](mqtt-zoo/test.png)
+
+
+# 参考项目
+
+* [https://github.com/netty/netty](https://github.com/netty/netty)
+* [https://gitee.com/recallcode/iot-mqtt-server](https://gitee.com/recallcode/iot-mqtt-server)
+
+> 如果您觉得还不错请在右上角点一下 star，帮忙转发，谢谢 🙏🙏🙏 大家的支持是开源最大动力
