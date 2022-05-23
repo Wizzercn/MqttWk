@@ -26,7 +26,7 @@ mqttwk:
     # broker唯一标识,用于集群实例判断
     id: mqttwk
     host:
-    port: 8855
+    port: 8885
     # websocket 端口
     websocket-port: 9995
     # websocket 是否启用

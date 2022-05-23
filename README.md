@@ -67,24 +67,46 @@ MqttWk
 - JDK1.8
 - 项目根目录执行  `mvn install` 
 - mqtt-broker 下执行 `mvn clean package nutzboot:shade` 进行打包
-- `java -jar mqtt-broker-xxx.jar -Dnutz.profiles.active=prod` [此时加载application-prod.properties配置文件]
+- 运行并加载jar内部yaml配置文件 `java -jar mqtt-broker-xxx.jar -Dnutz.profiles.active=prod` [此时加载application-prod.yaml配置文件]
+- 部署并加载指定文件夹下yaml配置文件 `nohup java -Dnutz.boot.configure.yaml.dir=/data -jar mqtt-broker-xxx.jar >/dev/null 2>&1 & `
 - 打开mqtt-spy客户端, 填写相应配置[下载](https://github.com/eclipse/paho.mqtt-spy/wiki/Downloads)
-- 连接端口:8885, websocket 端口: 9995 websocket
+- 连接端口: 8885, websocket 端口: 9995 websocket
 - 连接使用的用户名: demo
 - 连接使用的密码: 8F3B8DE2FDC8BD3D792BE77EAC412010971765E5BDD6C499ADCEE840CE441BDEF17E30684BD95CA708F55022222CC6161D0D23C2DFCB12F8AC998F59E7213393
 - 连接使用的证书在 `mqtt-zoo`\keystore\server.cer
 
 #### 集群使用
 - 多机环境集群:
-  - `mqttwk.broker.cluster-on=true`
-  - `mqttwk.broker.kafka.bootstrap.servers=192.168.1.101:9092,192.168.1.102:9093`
-  - `redis.mode=cluster` 
-  - `redis.nodes=192.168.1.103:16379,192.168.1.104:26379`
+
+```yaml
+mqttwk:
+  broker:
+    cluster-on: true
+    kafka:
+      # 是否启用kafka消息转发
+      broker-enabled: false
+      bootstrap:
+        servers: 192.168.1.101:9092,192.168.1.102:9093
+redis:
+  mode: cluster
+  nodes: 192.168.1.103:16379,192.168.1.104:26379,192.168.1.103:36379
+```
 - 单机环境集群: 
-  - `mqttwk.broker.cluster-on=true`
-  - `mqttwk.broker.kafka.bootstrap.servers=127.0.0.1:9092,127.0.0.1:9093`
-  - `redis.mode=normal`
-  - `redis.host=127.0.0.1`
+
+```yaml
+mqttwk:
+  broker:
+    cluster-on: true
+    kafka:
+      # 是否启用kafka消息转发
+      broker-enabled: false
+      bootstrap:
+        servers: 192.168.1.101:9092,192.168.1.102:9093
+redis:
+  mode: normal
+  host: 127.0.0.1
+  port: 6379
+```
 
 #### 自定义 - 连接认证
 - 默认只是简单使用对用户名进行RSA密钥对加密生成密码, 连接认证时对密码进行解密和相应用户名进行匹配认证
