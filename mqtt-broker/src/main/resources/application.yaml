@@ -1,0 +1,90 @@
+nutz:
+  application:
+    name: mqttwk
+  propdoc:
+    packages: cn.wizzer.iot.mqtt.server.broker
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  timeout: 2000
+  max_redir: 10
+  database: 0
+  maxTotal: 100
+  #password: 123
+  pool:
+    maxTotal: 200
+    maxIdle: 50
+    minIdle: 10
+  # 集群模式=cluster 单机模式=normal
+  mode: normal
+  # 集群模式配置节点
+  #nodes:
+
+mqttwk:
+  broker:
+    # broker唯一标识,用于集群实例判断
+    id: mqttwk
+    host:
+    port: 8855
+    # websocket 端口
+    websocket-port: 9995
+    # websocket 是否启用
+    websocket-enabled: true
+    # 是否开启集群功能
+    cluster-on: false
+    # 启用ssl验证(含websocket)
+    ssl-enabled: false
+    # SSL密钥文件密码
+    ssl-password: 123456
+    # MQTT服务端是否强制要求Connect消息必须通过用户名密码验证
+    mqtt-password-must: true
+    # 默认心跳时间(秒)(会被客户端参数覆盖)
+    keep-alive: 60
+    # 是否开启Epoll模式, 默认关闭
+    use-epoll: false
+    # Sokcet参数, 存放已完成三次握手请求的队列最大长度, 默认511长度
+    so-backlog: 511
+    # Socket参数, 是否开启心跳保活机制, 默认开启
+    so-keep-alive: true
+    kafka:
+      # 是否启用kafka消息转发
+      broker-enabled: false
+      bootstrap:
+        # kafka地址 127.0.0.1:9092,127.0.0.1:9093
+        servers: 127.0.0.1:9092
+      # acks回令 如果必须等待回令,那么设置acks为all,否则，设置为-1,等待回令会有性能损耗
+      acks: -1
+      # 重试次数
+      retries: 3
+      batch:
+        # 批量提交大小
+        size: 16384
+      linger:
+        # 提交延迟等待时间（等待时间内可以追加提交）
+        ms: 1
+      buffer:
+        # 缓存大小
+        memory: 33554432
+      key:
+        # 序列化方式
+        serializer: org.apache.kafka.common.serialization.StringSerializer
+      value:
+        # 序列化方式
+        serializer: org.apache.kafka.common.serialization.StringSerializer
+      partitioner:
+        class: cn.wizzer.iot.mqtt.server.store.kafka.SimplePartitioner
+      producer:
+        # kafka转发的主题
+        topic: mqtt_publish
+
+
+# web api 服务相关配置
+server:
+  port: 8922
+jetty:
+  contextPath: /
+  threadpool:
+    idleTimeout: 60000
+    minThreads: 10
+    maxThreads: 200
