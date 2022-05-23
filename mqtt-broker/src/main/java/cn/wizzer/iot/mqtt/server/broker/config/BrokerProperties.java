@@ -115,6 +115,12 @@ public class BrokerProperties {
     private boolean kafkaBrokerEnabled;
     public static final String PROP_KAFKA_BROKER_ENABLED = PRE + "kafka.broker-enabled";
 
+    private int bossGroup_nThreads;
+    @PropDoc(group = "broker", value = "bossGroup线程数", type = "int", defaultValue = "4")
+    public static final String PROP_BOSSGROUP_NTHREADS = PRE + "bossGroup-nThreads";
+    private int workerGroup_nThreads;
+    @PropDoc(group = "broker", value = "bossGroup线程数", type = "int", defaultValue = "20")
+    public static final String PROP_WORKERGROUP_NTHREADS = PRE + "workerGroup-nThreads";
 
     public void init() {
         this.id = conf.get(_id, "mqttwk");
@@ -133,6 +139,8 @@ public class BrokerProperties {
         this.useEpoll = conf.getBoolean(PROP_USEEPOLL, false);
         this.soBacklog = conf.getInt(PROP_SOBACKLOG, 511);
         this.soKeepAlive = conf.getBoolean(PROP_SOKEEPALIVE, true);
+        this.bossGroup_nThreads = conf.getInt(PROP_BOSSGROUP_NTHREADS, 4);
+        this.workerGroup_nThreads = conf.getInt(PROP_WORKERGROUP_NTHREADS, 20);
     }
 
     public String getId() {
@@ -279,4 +287,21 @@ public class BrokerProperties {
         return this;
     }
 
+    public int getBossGroup_nThreads() {
+        return bossGroup_nThreads;
+    }
+
+    public BrokerProperties setBossGroup_nThreads(int bossGroup_nThreads) {
+        this.bossGroup_nThreads = bossGroup_nThreads;
+        return this;
+    }
+
+    public int getWorkerGroup_nThreads() {
+        return workerGroup_nThreads;
+    }
+
+    public BrokerProperties setWorkerGroup_nThreads(int workerGroup_nThreads) {
+        this.workerGroup_nThreads = workerGroup_nThreads;
+        return this;
+    }
 }

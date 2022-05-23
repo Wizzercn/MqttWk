@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * t-io启动Broker
+ * 启动Broker
  */
 @IocBean
 public class BrokerServer implements ServerFace {
@@ -66,8 +66,8 @@ public class BrokerServer implements ServerFace {
         LOGGER.info("Initializing {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
         channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         channelIdMap = new HashMap<>();
-        bossGroup = brokerProperties.getUseEpoll() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
-        workerGroup = brokerProperties.getUseEpoll() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
+        bossGroup = brokerProperties.getUseEpoll() ? new EpollEventLoopGroup(brokerProperties.getBossGroup_nThreads()) : new NioEventLoopGroup(brokerProperties.getBossGroup_nThreads());
+        workerGroup = brokerProperties.getUseEpoll() ? new EpollEventLoopGroup(brokerProperties.getWorkerGroup_nThreads()) : new NioEventLoopGroup(brokerProperties.getWorkerGroup_nThreads());
         if (brokerProperties.getSslEnabled()) {
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("keystore/server.pfx");

@@ -31,6 +31,10 @@ mqttwk:
     websocket-port: 9995
     # websocket 是否启用
     websocket-enabled: true
+    # bossGroup线程数
+    bossGroup-nThreads: 4
+    # workerGroup线程数
+    workerGroup-nThreads: 200
     # 是否开启集群功能
     cluster-on: false
     # 启用ssl验证(含websocket)
