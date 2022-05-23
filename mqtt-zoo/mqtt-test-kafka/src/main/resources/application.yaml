@@ -1,0 +1,40 @@
+nutz:
+  application:
+    name: test
+
+mqttwk:
+  broker:
+    kafka:
+      # 是否启用kafka消息转发
+      broker-enabled: false
+      bootstrap:
+        # kafka地址 127.0.0.1:9092,127.0.0.1:9093
+        servers: 127.0.0.1:9092
+      # acks回令 如果必须等待回令,那么设置acks为all,否则，设置为-1,等待回令会有性能损耗
+      acks: -1
+      # 重试次数
+      retries: 3
+      batch:
+        # 批量提交大小
+        size: 16384
+      linger:
+        # 提交延迟等待时间（等待时间内可以追加提交）
+        ms: 1
+      buffer:
+        # 缓存大小
+        memory: 33554432
+      key:
+        # 序列化方式
+        serializer: org.apache.kafka.common.serialization.StringSerializer
+      value:
+        # 序列化方式
+        serializer: org.apache.kafka.common.serialization.StringSerializer
+      partitioner:
+        class: cn.wizzer.iot.mqtt.server.store.kafka.SimplePartitioner
+      producer:
+        # kafka转发的主题
+        topic: mqtt_publish
+      consumer:
+        topic: mqtt_subscribe
+      group:
+        id: mqttwk
