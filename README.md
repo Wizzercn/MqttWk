@@ -7,26 +7,11 @@
 [![PowerByNutz](https://img.shields.io/badge/PowerBy-NutzBoot-green.svg)](https://github.com/nutzam/nutzboot)
 </div>
 
-<div align="center">
-
-**[官网](https://budwk.com)** |
-**[捐赠清单](https://budwk.com/donation)**
-
-</div>
-
 
 > 本项目开源免费，欢迎交流学习、贡献代码。
 
 #### MqttWk
 * QQ群号：225991747
-
-#### BudWk
-
-* 微服务分布式 + 前后端分离开发框架
-* 演示地址：[https://demo.budwk.com](https://demo.budwk.com)
-* Github：[https://github.com/budwk/budwk](https://github.com/budwk/budwk)
-* Gitee：[https://gitee.com/budwk/budwk](https://gitee.com/budwk/budwk)
-* QQ群号：24457628
 
 # 开发指南
 
