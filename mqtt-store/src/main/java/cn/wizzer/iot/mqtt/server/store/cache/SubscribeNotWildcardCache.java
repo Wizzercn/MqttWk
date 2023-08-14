@@ -7,13 +7,8 @@ import org.nutz.integration.jedis.JedisAgent;
 import org.nutz.integration.jedis.RedisService;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.lang.Streams;
-import redis.clients.jedis.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -23,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SubscribeNotWildcardCache {
     private final static String CACHE_PRE = "mqttwk:subnotwildcard:";
     private final static String CACHE_CLIENT_PRE = "mqttwk:client:";
+    private final static String CACHE_TOPIC = "mqttwk:subnotwildcard:topic:";
     @Inject
     private RedisService redisService;
     @Inject
@@ -31,6 +27,7 @@ public class SubscribeNotWildcardCache {
     public SubscribeStore put(String topic, String clientId, SubscribeStore subscribeStore) {
         redisService.hset(CACHE_PRE + topic, clientId, JSONObject.toJSONString(subscribeStore));
         redisService.sadd(CACHE_CLIENT_PRE + clientId, topic);
+        redisService.sadd(CACHE_TOPIC, topic);
         return subscribeStore;
     }
 
@@ -46,52 +43,33 @@ public class SubscribeNotWildcardCache {
     public void remove(String topic, String clientId) {
         redisService.srem(CACHE_CLIENT_PRE + clientId, topic);
         redisService.hdel(CACHE_PRE + topic, clientId);
+        if (redisService.hlen(CACHE_PRE + topic) == 0) {
+            redisService.srem(CACHE_TOPIC, topic);
+        }
     }
 
     @Async
     public void removeForClient(String clientId) {
         for (String topic : redisService.smembers(CACHE_CLIENT_PRE + clientId)) {
             redisService.hdel(CACHE_PRE + topic, clientId);
+            if (redisService.hlen(CACHE_PRE + topic) == 0) {
+                redisService.srem(CACHE_TOPIC, topic);
+            }
         }
         redisService.del(CACHE_CLIENT_PRE + clientId);
     }
 
     public Map<String, ConcurrentHashMap<String, SubscribeStore>> all() {
         Map<String, ConcurrentHashMap<String, SubscribeStore>> map = new HashMap<>();
-        ScanParams match = new ScanParams().match(CACHE_PRE + "*");
-        List<String> keys = new ArrayList<>();
-        if (jedisAgent.isClusterMode()) {
-            JedisCluster jedisCluster = jedisAgent.getJedisClusterWrapper().getJedisCluster();
-            for (JedisPool pool : jedisCluster.getClusterNodes().values()) {
-                try (Jedis jedis = pool.getResource()) {
-                    ScanResult<String> scan = null;
-                    do {
-                        scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                        keys.addAll(scan.getResult());
-                    } while (!scan.isCompleteIteration());
-                }
-            }
-        } else {
-            Jedis jedis = null;
-            try {
-                jedis = jedisAgent.jedis();
-                ScanResult<String> scan = null;
-                do {
-                    scan = jedis.scan(scan == null ? ScanParams.SCAN_POINTER_START : scan.getStringCursor(), match);
-                    keys.addAll(scan.getResult());
-                } while (!scan.isCompleteIteration());
-            } finally {
-                Streams.safeClose(jedis);
-            }
-        }
-        for (String key : keys) {
+        Set<String> topics = redisService.smembers(CACHE_TOPIC);
+        for (String topic : topics) {
             ConcurrentHashMap<String, SubscribeStore> map1 = new ConcurrentHashMap<>();
-            Map<String, String> map2 = redisService.hgetAll(key);
+            Map<String, String> map2 = redisService.hgetAll(CACHE_PRE + topic);
             if (map2 != null && !map2.isEmpty()) {
                 map2.forEach((k, v) -> {
                     map1.put(k, JSONObject.parseObject(v, SubscribeStore.class));
                 });
-                map.put(key.substring(CACHE_PRE.length()), map1);
+                map.put(topic, map1);
             }
         }
         return map;
