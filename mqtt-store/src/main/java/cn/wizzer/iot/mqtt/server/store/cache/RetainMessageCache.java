@@ -18,7 +18,7 @@ import java.util.Set;
 @IocBean
 public class RetainMessageCache {
     private final static String CACHE_PRE = "mqttwk:retain:";
-    private final static String CACHE_TOPIC = "mqttwk:retain:topic:";
+    private final static String CACHE_TOPIC = "mqttwk:retain_topic";
     @Inject
     private RedisService redisService;
     @Inject

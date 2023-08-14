@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SubscribeWildcardCache {
     private final static String CACHE_PRE = "mqttwk:subwildcard:";
     private final static String CACHE_CLIENT_PRE = "mqttwk:client:";
-    private final static String CACHE_TOPIC = "mqttwk:subwildcard:topic:";
+    private final static String CACHE_TOPIC = "mqttwk:subwildcard_topic";
 
     @Inject
     private RedisService redisService;
