@@ -7,6 +7,7 @@
 [![PowerByNutz](https://img.shields.io/badge/PowerBy-NutzBoot-green.svg)](https://github.com/nutzam/nutzboot)
 </div>
 
+中文 | [English](README_EN.md)
 
 > 本项目开源免费，欢迎交流学习、贡献代码。
 
@@ -51,7 +52,7 @@ MqttWk
 #### 快速开始
 - JDK1.8
 - 项目根目录执行  `mvn install` 
-- mqtt-broker 下执行 `mvn clean package nutzboot:shade` 进行打包
+- mqtt-broker 下执行 `mvn clean package nutzboot:shade` 进行打包
 - 运行并加载jar内部yaml配置文件 `java -jar mqtt-broker-xxx.jar -Dnutz.profiles.active=prod` [此时加载application-prod.yaml配置文件]
 - 部署并加载指定文件夹下yaml配置文件 `nohup java -Dnutz.boot.configure.yaml.dir=/data -jar mqtt-broker-xxx.jar >/dev/null 2>&1 & `
 - 打开mqtt-spy客户端, 填写相应配置[下载](https://github.com/eclipse/paho.mqtt-spy/wiki/Downloads)
@@ -114,4 +115,4 @@ redis:
 * [https://github.com/netty/netty](https://github.com/netty/netty)
 * [https://gitee.com/recallcode/iot-mqtt-server](https://gitee.com/recallcode/iot-mqtt-server)
 
-> 如果您觉得还不错请在右上角点一下 star，帮忙转发，谢谢 🙏🙏🙏 大家的支持是开源最大动力
+> 如果您觉得还不错请在右上角点一下 star，帮忙转发，谢谢 ��🙏🙏 大家的支持是开源最大动力
