@@ -41,8 +41,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLEngine;
 import java.io.InputStream;
 import java.security.KeyStore;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 启动Broker
@@ -65,7 +65,7 @@ public class BrokerServer implements ServerFace {
     public void start() throws Exception {
         LOGGER.info("Initializing {} MQTT Broker ...", "[" + brokerProperties.getId() + "]");
         channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-        channelIdMap = new HashMap<>();
+        channelIdMap = new ConcurrentHashMap<>();
         bossGroup = brokerProperties.getUseEpoll() ? new EpollEventLoopGroup(brokerProperties.getBossGroup_nThreads()) : new NioEventLoopGroup(brokerProperties.getBossGroup_nThreads());
         workerGroup = brokerProperties.getUseEpoll() ? new EpollEventLoopGroup(brokerProperties.getWorkerGroup_nThreads()) : new NioEventLoopGroup(brokerProperties.getWorkerGroup_nThreads());
         if (brokerProperties.getSslEnabled()) {
@@ -130,13 +130,17 @@ public class BrokerServer implements ServerFace {
                             sslEngine.setNeedClientAuth(false);        // 不需要验证客户端
                             channelPipeline.addLast("ssl", new SslHandler(sslEngine));
                         }
-                        channelPipeline.addLast("decoder", new MqttDecoder());
+                        // 限制最大payload为10MB,防止大消息攻击
+                        channelPipeline.addLast("decoder", new MqttDecoder(10 * 1024 * 1024));
                         channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
                         channelPipeline.addLast("broker", ioc.get(BrokerHandler.class));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, brokerProperties.getSoBacklog())
-                .childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.getSoKeepAlive());
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.getSoKeepAlive())
+                .childOption(ChannelOption.TCP_NODELAY, true)
+                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         if (Strings.isNotBlank(brokerProperties.getHost())) {
             channel = sb.bind(brokerProperties.getHost(), brokerProperties.getPort()).sync().channel();
         } else {
@@ -171,13 +175,16 @@ public class BrokerServer implements ServerFace {
                         channelPipeline.addLast("compressor ", new HttpContentCompressor());
                         channelPipeline.addLast("protocol", new WebSocketServerProtocolHandler(brokerProperties.getWebsocketPath(), "mqtt,mqttv3.1,mqttv3.1.1", true, 65536));
                         channelPipeline.addLast("mqttWebSocket", new MqttWebSocketCodec());
-                        channelPipeline.addLast("decoder", new MqttDecoder());
+                        channelPipeline.addLast("decoder", new MqttDecoder(10 * 1024 * 1024));
                         channelPipeline.addLast("encoder", MqttEncoder.INSTANCE);
                         channelPipeline.addLast("broker", ioc.get(BrokerHandler.class));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, brokerProperties.getSoBacklog())
-                .childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.getSoKeepAlive());
+                .option(ChannelOption.SO_REUSEADDR, true)
+                .childOption(ChannelOption.SO_KEEPALIVE, brokerProperties.getSoKeepAlive())
+                .childOption(ChannelOption.TCP_NODELAY, true)
+                .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(32 * 1024, 64 * 1024));
         if (Strings.isNotBlank(brokerProperties.getHost())) {
             websocketChannel = sb.bind(brokerProperties.getHost(), brokerProperties.getWebsocketPort()).sync().channel();
         } else {

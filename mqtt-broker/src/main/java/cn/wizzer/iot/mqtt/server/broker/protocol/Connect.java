@@ -109,8 +109,9 @@ public class Connect {
             }
         }
         // 如果会话中已存储这个新连接的clientId, 就关闭之前该clientId的连接
-        if (sessionStoreService.containsKey(msg.payload().clientIdentifier())) {
-            SessionStore sessionStore = sessionStoreService.get(msg.payload().clientIdentifier());
+        // 优化: 直接get避免containsKey+get两次Redis调用
+        SessionStore sessionStore = sessionStoreService.get(msg.payload().clientIdentifier());
+        if (sessionStore != null) {
             boolean cleanSession = sessionStore.isCleanSession();
             if (cleanSession) {
                 sessionStoreService.remove(msg.payload().clientIdentifier());
@@ -143,7 +144,7 @@ public class Connect {
             channel.pipeline().addFirst("idle", new IdleStateHandler(0, 0, expire));
         }
         // 处理遗嘱信息
-        SessionStore sessionStore = new SessionStore(brokerProperties.getId(), msg.payload().clientIdentifier(), channel.id().asLongText(), msg.variableHeader().isCleanSession(), null, expire);
+        sessionStore = new SessionStore(brokerProperties.getId(), msg.payload().clientIdentifier(), channel.id().asLongText(), msg.variableHeader().isCleanSession(), null, expire);
         if (msg.variableHeader().isWillFlag()) {
             MqttPublishMessage willMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
                     new MqttFixedHeader(MqttMessageType.PUBLISH, false, MqttQoS.valueOf(msg.variableHeader().willQos()), msg.variableHeader().isWillRetain(), 0),
@@ -154,7 +155,8 @@ public class Connect {
         sessionStoreService.put(msg.payload().clientIdentifier(), sessionStore, expire);
         // 将clientId存储到channel的map中
         channel.attr(AttributeKey.valueOf("clientId")).set(msg.payload().clientIdentifier());
-        boolean sessionPresent = sessionStoreService.containsKey(msg.payload().clientIdentifier()) && !msg.variableHeader().isCleanSession();
+        // 优化: 刚put过, sessionPresent一定存在, 不需要再containsKey查询Redis
+        boolean sessionPresent = !msg.variableHeader().isCleanSession();
         MqttConnAckMessage okResp = (MqttConnAckMessage) MqttMessageFactory.newMessage(
                 new MqttFixedHeader(MqttMessageType.CONNACK, false, MqttQoS.AT_MOST_ONCE, false, 0),
                 new MqttConnAckVariableHeader(MqttConnectReturnCode.CONNECTION_ACCEPTED, sessionPresent), null);

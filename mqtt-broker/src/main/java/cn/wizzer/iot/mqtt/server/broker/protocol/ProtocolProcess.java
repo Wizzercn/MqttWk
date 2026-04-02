@@ -59,92 +59,132 @@ public class ProtocolProcess {
     @Inject
     private Map<String, ChannelId> channelIdMap;
 
-    private Connect connect;
+    private volatile Connect connect;
 
-    private Subscribe subscribe;
+    private volatile Subscribe subscribe;
 
-    private UnSubscribe unSubscribe;
+    private volatile UnSubscribe unSubscribe;
 
-    private Publish publish;
+    private volatile Publish publish;
 
-    private DisConnect disConnect;
+    private volatile DisConnect disConnect;
 
-    private PingReq pingReq;
+    private volatile PingReq pingReq;
 
-    private PubRel pubRel;
+    private volatile PubRel pubRel;
 
-    private PubAck pubAck;
+    private volatile PubAck pubAck;
 
-    private PubRec pubRec;
+    private volatile PubRec pubRec;
 
-    private PubComp pubComp;
+    private volatile PubComp pubComp;
 
     public Connect connect() {
         if (connect == null) {
-            connect = new Connect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService, authService, brokerProperties, channelGroup, channelIdMap);
+            synchronized (this) {
+                if (connect == null) {
+                    connect = new Connect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService, authService, brokerProperties, channelGroup, channelIdMap);
+                }
+            }
         }
         return connect;
     }
 
     public Subscribe subscribe() {
         if (subscribe == null) {
-            subscribe = new Subscribe(subscribeStoreService, messageIdService, messageStoreService);
+            synchronized (this) {
+                if (subscribe == null) {
+                    subscribe = new Subscribe(subscribeStoreService, messageIdService, messageStoreService);
+                }
+            }
         }
         return subscribe;
     }
 
     public UnSubscribe unSubscribe() {
         if (unSubscribe == null) {
-            unSubscribe = new UnSubscribe(subscribeStoreService);
+            synchronized (this) {
+                if (unSubscribe == null) {
+                    unSubscribe = new UnSubscribe(subscribeStoreService);
+                }
+            }
         }
         return unSubscribe;
     }
 
     public Publish publish() {
         if (publish == null) {
-            publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication, channelGroup, channelIdMap, brokerProperties);
+            synchronized (this) {
+                if (publish == null) {
+                    publish = new Publish(sessionStoreService, subscribeStoreService, messageIdService, messageStoreService, dupPublishMessageStoreService, internalCommunication, channelGroup, channelIdMap, brokerProperties);
+                }
+            }
         }
         return publish;
     }
 
     public DisConnect disConnect() {
         if (disConnect == null) {
-            disConnect = new DisConnect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService);
+            synchronized (this) {
+                if (disConnect == null) {
+                    disConnect = new DisConnect(sessionStoreService, subscribeStoreService, dupPublishMessageStoreService, dupPubRelMessageStoreService);
+                }
+            }
         }
         return disConnect;
     }
 
     public PingReq pingReq() {
         if (pingReq == null) {
-            pingReq = new PingReq(sessionStoreService, brokerProperties, channelGroup, channelIdMap);
+            synchronized (this) {
+                if (pingReq == null) {
+                    pingReq = new PingReq(sessionStoreService, brokerProperties, channelGroup, channelIdMap);
+                }
+            }
         }
         return pingReq;
     }
 
     public PubRel pubRel() {
         if (pubRel == null) {
-            pubRel = new PubRel();
+            synchronized (this) {
+                if (pubRel == null) {
+                    pubRel = new PubRel();
+                }
+            }
         }
         return pubRel;
     }
 
     public PubAck pubAck() {
         if (pubAck == null) {
-            pubAck = new PubAck(dupPublishMessageStoreService);
+            synchronized (this) {
+                if (pubAck == null) {
+                    pubAck = new PubAck(dupPublishMessageStoreService);
+                }
+            }
         }
         return pubAck;
     }
 
     public PubRec pubRec() {
         if (pubRec == null) {
-            pubRec = new PubRec(dupPublishMessageStoreService, dupPubRelMessageStoreService);
+            synchronized (this) {
+                if (pubRec == null) {
+                    pubRec = new PubRec(dupPublishMessageStoreService, dupPubRelMessageStoreService);
+                }
+            }
         }
         return pubRec;
     }
 
     public PubComp pubComp() {
         if (pubComp == null) {
-            pubComp = new PubComp(dupPubRelMessageStoreService);
+            synchronized (this) {
+                if (pubComp == null) {
+                    pubComp = new PubComp(dupPubRelMessageStoreService);
+                }
+            }
         }
         return pubComp;
     }

@@ -128,10 +128,10 @@ public class BrokerHandler extends SimpleChannelInboundHandler<MqttMessage> {
             if (idleStateEvent.state() == IdleState.ALL_IDLE) {
                 Channel channel = ctx.channel();
                 String clientId = (String) channel.attr(AttributeKey.valueOf("clientId")).get();
-                // 发送遗嘱消息
-                if (this.protocolProcess.getSessionStoreService().containsKey(clientId)) {
+                // 优化: 直接get避免containsKey+get两次Redis调用
+                if (clientId != null) {
                     SessionStore sessionStore = this.protocolProcess.getSessionStoreService().get(clientId);
-                    if (sessionStore.getWillMessage() != null) {
+                    if (sessionStore != null && sessionStore.getWillMessage() != null) {
                         this.protocolProcess.publish().processPublish(ctx.channel(), sessionStore.getWillMessage());
                     }
                 }

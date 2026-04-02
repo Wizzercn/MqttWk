@@ -37,8 +37,9 @@ public class PingReq {
 
     public void processPingReq(Channel channel, MqttMessage msg) {
         String clientId = (String) channel.attr(AttributeKey.valueOf("clientId")).get();
-        if (sessionStoreService.containsKey(clientId)) {
-            SessionStore sessionStore = sessionStoreService.get(clientId);
+        // 优化: 直接get避免containsKey+get两次Redis调用
+        SessionStore sessionStore = sessionStoreService.get(clientId);
+        if (sessionStore != null) {
             ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
             if (brokerProperties.getId().equals(sessionStore.getBrokerId()) && channelId != null) {
                 sessionStoreService.expire(clientId, sessionStore.getExpire());

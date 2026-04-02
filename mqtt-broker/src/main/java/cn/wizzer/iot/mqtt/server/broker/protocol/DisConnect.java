@@ -46,7 +46,7 @@ public class DisConnect {
             dupPublishMessageStoreService.removeByClient(clientId);
             dupPubRelMessageStoreService.removeByClient(clientId);
         }
-        LOGGER.debug("DISCONNECT - clientId: {}, cleanSession: {}", clientId, sessionStore.isCleanSession());
+        LOGGER.debug("DISCONNECT - clientId: {}, cleanSession: {}", clientId, sessionStore != null ? sessionStore.isCleanSession() : "N/A");
         sessionStoreService.remove(clientId);
         channel.close();
     }

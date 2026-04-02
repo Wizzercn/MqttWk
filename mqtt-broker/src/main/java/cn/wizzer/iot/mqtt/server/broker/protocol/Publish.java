@@ -63,112 +63,77 @@ public class Publish {
 
     public void processPublish(Channel channel, MqttPublishMessage msg) {
         String clientId = (String) channel.attr(AttributeKey.valueOf("clientId")).get();
-        // publish 延长session失效时间
-        if (sessionStoreService.containsKey(clientId)) {
-            SessionStore sessionStore = sessionStoreService.get(clientId);
-            ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
-            if (brokerProperties.getId().equals(sessionStore.getBrokerId()) && channelId != null) {
-                sessionStoreService.expire(clientId, sessionStore.getExpire());
+        // publish 延长session失效时间 - 优化: 直接get避免containsKey+get两次Redis调用
+        SessionStore currentSession = sessionStoreService.get(clientId);
+        if (currentSession != null) {
+            ChannelId channelId = channelIdMap.get(currentSession.getBrokerId() + "_" + currentSession.getChannelId());
+            if (brokerProperties.getId().equals(currentSession.getBrokerId()) && channelId != null) {
+                sessionStoreService.expire(clientId, currentSession.getExpire());
             }
         }
-        // QoS=0
-        if (msg.fixedHeader().qosLevel() == MqttQoS.AT_MOST_ONCE) {
-            byte[] messageBytes = new byte[msg.payload().readableBytes()];
-            msg.payload().getBytes(msg.payload().readerIndex(), messageBytes);
-            InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
-                    .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
-                    .setDup(false).setRetain(false).setClientId(clientId);
-            internalCommunication.internalSend(internalMessage);
-            this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
-        }
-        // QoS=1
-        if (msg.fixedHeader().qosLevel() == MqttQoS.AT_LEAST_ONCE) {
-            byte[] messageBytes = new byte[msg.payload().readableBytes()];
-            msg.payload().getBytes(msg.payload().readerIndex(), messageBytes);
-            InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
-                    .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
-                    .setDup(false).setRetain(false).setClientId(clientId);
-            internalCommunication.internalSend(internalMessage);
-            this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
+        // 优化: payload只读取一次, 所有QoS分支和retain共用
+        byte[] messageBytes = new byte[msg.payload().readableBytes()];
+        msg.payload().getBytes(msg.payload().readerIndex(), messageBytes);
+        String topic = msg.variableHeader().topicName();
+        MqttQoS qosLevel = msg.fixedHeader().qosLevel();
+        // 构建内部消息并转发
+        InternalMessage internalMessage = new InternalMessage().setTopic(topic)
+                .setMqttQoS(qosLevel.value()).setMessageBytes(messageBytes)
+                .setDup(false).setRetain(false).setClientId(clientId);
+        internalCommunication.internalSend(internalMessage);
+        // 本地发布消息给订阅者
+        this.sendPublishMessage(topic, qosLevel, messageBytes, false, false);
+        // QoS=1 返回PUBACK
+        if (qosLevel == MqttQoS.AT_LEAST_ONCE) {
             this.sendPubAckMessage(channel, msg.variableHeader().packetId());
         }
-        // QoS=2
-        if (msg.fixedHeader().qosLevel() == MqttQoS.EXACTLY_ONCE) {
-            byte[] messageBytes = new byte[msg.payload().readableBytes()];
-            msg.payload().getBytes(msg.payload().readerIndex(), messageBytes);
-            InternalMessage internalMessage = new InternalMessage().setTopic(msg.variableHeader().topicName())
-                    .setMqttQoS(msg.fixedHeader().qosLevel().value()).setMessageBytes(messageBytes)
-                    .setDup(false).setRetain(false).setClientId(clientId);
-            internalCommunication.internalSend(internalMessage);
-            this.sendPublishMessage(msg.variableHeader().topicName(), msg.fixedHeader().qosLevel(), messageBytes, false, false);
+        // QoS=2 返回PUBREC
+        if (qosLevel == MqttQoS.EXACTLY_ONCE) {
             this.sendPubRecMessage(channel, msg.variableHeader().packetId());
         }
         // retain=1, 保留消息
         if (msg.fixedHeader().isRetain()) {
-            byte[] messageBytes = new byte[msg.payload().readableBytes()];
-            msg.payload().getBytes(msg.payload().readerIndex(), messageBytes);
             if (messageBytes.length == 0) {
-                retainMessageStoreService.remove(msg.variableHeader().topicName());
+                retainMessageStoreService.remove(topic);
             } else {
-                RetainMessageStore retainMessageStore = new RetainMessageStore().setTopic(msg.variableHeader().topicName()).setMqttQoS(msg.fixedHeader().qosLevel().value())
+                RetainMessageStore retainMessageStore = new RetainMessageStore().setTopic(topic).setMqttQoS(qosLevel.value())
                         .setMessageBytes(messageBytes);
-                retainMessageStoreService.put(msg.variableHeader().topicName(), retainMessageStore);
+                retainMessageStoreService.put(topic, retainMessageStore);
             }
         }
     }
 
     private void sendPublishMessage(String topic, MqttQoS mqttQoS, byte[] messageBytes, boolean retain, boolean dup) {
         List<SubscribeStore> subscribeStores = subscribeStoreService.search(topic);
-        subscribeStores.forEach(subscribeStore -> {
-            if (sessionStoreService.containsKey(subscribeStore.getClientId())) {
-                // 订阅者收到MQTT消息的QoS级别, 最终取决于发布消息的QoS和主题订阅的QoS
-                MqttQoS respQoS = mqttQoS.value() > subscribeStore.getMqttQoS() ? MqttQoS.valueOf(subscribeStore.getMqttQoS()) : mqttQoS;
-                if (respQoS == MqttQoS.AT_MOST_ONCE) {
-                    MqttPublishMessage publishMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
-                            new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
-                            new MqttPublishVariableHeader(topic, 0), Unpooled.buffer().writeBytes(messageBytes));
-                    LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}", subscribeStore.getClientId(), topic, respQoS.value());
-                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
-                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
-                    if (channelId != null) {
-                        Channel channel = channelGroup.find(channelId);
-                        if (channel != null) channel.writeAndFlush(publishMessage);
-                    }
-                }
-                if (respQoS == MqttQoS.AT_LEAST_ONCE) {
-                    int messageId = messageIdService.getNextMessageId();
-                    MqttPublishMessage publishMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
-                            new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
-                            new MqttPublishVariableHeader(topic, messageId), Unpooled.buffer().writeBytes(messageBytes));
-                    LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
-                    DupPublishMessageStore dupPublishMessageStore = new DupPublishMessageStore().setClientId(subscribeStore.getClientId())
-                            .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes).setMessageId(messageId);
-                    dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
-                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
-                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
-                    if (channelId != null) {
-                        Channel channel = channelGroup.find(channelId);
-                        if (channel != null) channel.writeAndFlush(publishMessage);
-                    }
-                }
-                if (respQoS == MqttQoS.EXACTLY_ONCE) {
-                    int messageId = messageIdService.getNextMessageId();
-                    MqttPublishMessage publishMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
-                            new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
-                            new MqttPublishVariableHeader(topic, messageId), Unpooled.buffer().writeBytes(messageBytes));
-                    LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
-                    DupPublishMessageStore dupPublishMessageStore = new DupPublishMessageStore().setClientId(subscribeStore.getClientId())
-                            .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes).setMessageId(messageId);
-                    dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
-                    SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
-                    ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
-                    if (channelId != null) {
-                        Channel channel = channelGroup.find(channelId);
-                        if (channel != null) channel.writeAndFlush(publishMessage);
-                    }
+        for (SubscribeStore subscribeStore : subscribeStores) {
+            // 优化: 直接get, 避免containsKey+get两次Redis调用
+            SessionStore sessionStore = sessionStoreService.get(subscribeStore.getClientId());
+            if (sessionStore == null) {
+                continue;
+            }
+            // 订阅者收到MQTT消息的QoS级别, 最终取决于发布消息的QoS和主题订阅的QoS
+            MqttQoS respQoS = mqttQoS.value() > subscribeStore.getMqttQoS() ? MqttQoS.valueOf(subscribeStore.getMqttQoS()) : mqttQoS;
+            int messageId = 0;
+            // QoS > 0 需要消息ID和重复消息存储
+            if (respQoS != MqttQoS.AT_MOST_ONCE) {
+                messageId = messageIdService.getNextMessageId();
+                DupPublishMessageStore dupPublishMessageStore = new DupPublishMessageStore().setClientId(subscribeStore.getClientId())
+                        .setTopic(topic).setMqttQoS(respQoS.value()).setMessageBytes(messageBytes).setMessageId(messageId);
+                dupPublishMessageStoreService.put(subscribeStore.getClientId(), dupPublishMessageStore);
+            }
+            MqttPublishMessage publishMessage = (MqttPublishMessage) MqttMessageFactory.newMessage(
+                    new MqttFixedHeader(MqttMessageType.PUBLISH, dup, respQoS, retain, 0),
+                    new MqttPublishVariableHeader(topic, messageId), Unpooled.buffer().writeBytes(messageBytes));
+            LOGGER.debug("PUBLISH - clientId: {}, topic: {}, Qos: {}, messageId: {}", subscribeStore.getClientId(), topic, respQoS.value(), messageId);
+            // 优化: sessionStore已经在前面获取, 不再重复查询Redis
+            ChannelId channelId = channelIdMap.get(sessionStore.getBrokerId() + "_" + sessionStore.getChannelId());
+            if (channelId != null) {
+                Channel channel = channelGroup.find(channelId);
+                if (channel != null) {
+                    channel.writeAndFlush(publishMessage);
                 }
             }
-        });
+        }
     }
 
     private void sendPubAckMessage(Channel channel, int messageId) {
@@ -186,3 +151,4 @@ public class Publish {
     }
 
 }
+

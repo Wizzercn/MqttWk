@@ -60,27 +60,31 @@ public class SubscribeStoreService implements ISubscribeStoreService {
         if (list.size() > 0) {
             subscribeStores.addAll(list);
         }
+        // 优化: 预先分割topic, 避免在循环中重复分割
+        List<String> splitTopics = StrUtil.split(topic, '/');
         subscribeWildcardCache.all().forEach((topicFilter, map) -> {
-            if (StrUtil.split(topic, '/').size() >= StrUtil.split(topicFilter, '/').size()) {
-                List<String> splitTopics = StrUtil.split(topic, '/');//a
-                List<String> spliteTopicFilters = StrUtil.split(topicFilter, '/');//#
-                String newTopicFilter = "";
-                for (int i = 0; i < spliteTopicFilters.size(); i++) {
-                    String value = spliteTopicFilters.get(i);
+            List<String> splitTopicFilters = StrUtil.split(topicFilter, '/');
+            if (splitTopics.size() >= splitTopicFilters.size()) {
+                // 优化: 使用StringBuilder替代String拼接, 减少GC压力
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < splitTopicFilters.size(); i++) {
+                    String value = splitTopicFilters.get(i);
                     if (value.equals("+")) {
-                        newTopicFilter = newTopicFilter + "+/";
+                        sb.append("+/");
                     } else if (value.equals("#")) {
-                        newTopicFilter = newTopicFilter + "#/";
+                        sb.append("#/");
                         break;
                     } else {
-                        newTopicFilter = newTopicFilter + splitTopics.get(i) + "/";
+                        sb.append(splitTopics.get(i)).append('/');
                     }
                 }
-                newTopicFilter = StrUtil.removeSuffix(newTopicFilter, "/");
-                if (topicFilter.equals(newTopicFilter)) {
+                // 移除末尾的 /
+                if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '/') {
+                    sb.setLength(sb.length() - 1);
+                }
+                if (topicFilter.equals(sb.toString())) {
                     Collection<SubscribeStore> collection = map.values();
-                    List<SubscribeStore> list2 = new ArrayList<SubscribeStore>(collection);
-                    subscribeStores.addAll(list2);
+                    subscribeStores.addAll(collection);
                 }
             }
         });
